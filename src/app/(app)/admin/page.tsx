@@ -4,12 +4,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, Eye, CheckCircle, Inbox, MailOpen } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, Inbox, MailOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
-import type { Producer, StudioReservationRequest } from '@/types';
+import type { Producer, StudioReservationRequest, AdditionalService, CateringService } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getReservations, subscribe, updateReservationStatus } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
@@ -33,6 +33,38 @@ const getServiceTypeLabel = (serviceType: StudioReservationRequest['studioServic
     case 'without_crew': return 'بدون عوامل';
     default: return 'نامشخص';
   }
+};
+
+const additionalServiceItemsMap: Record<AdditionalService, string> = {
+  videowall: 'ویدئووال',
+  led_monitor: 'LED Monitor',
+  xdcam: 'XDCAM',
+  stream_iranian: 'استریم روی سرویس‌های ایرانی',
+  stream_foreign: 'استریم روی سرویس‌های خارجی',
+  stream_server: 'راه‌اندازی سرور استریم شخصی',
+  zoom: 'ZOOM',
+  google_meet: 'Google Meet',
+  ms_teams: 'Microsoft Teams',
+  lobby: 'لابی پذیرایی مهمان',
+  crane: 'کرین',
+  makeup_artist: 'گریمور',
+  service_staff: 'نیروی خدمات',
+};
+
+const getAdditionalServiceLabel = (serviceId: AdditionalService): string => {
+  return additionalServiceItemsMap[serviceId] || serviceId;
+};
+
+const cateringServiceItemsMap: Record<CateringService, string> = {
+  drinks: 'نوشیدنی',
+  breakfast: 'صبحانه',
+  snack: 'میان وعده',
+  lunch: 'ناهار',
+  dinner: 'شام',
+};
+
+const getCateringServiceLabel = (serviceId: CateringService): string => {
+  return cateringServiceItemsMap[serviceId] || serviceId;
 };
 
 
@@ -130,10 +162,10 @@ export default function AdminPanelPage() {
           </>
         )}
         {request.additionalServices && request.additionalServices.length > 0 && (
-          <p><strong>خدمات جانبی:</strong> {request.additionalServices.join('، ')}</p>
+          <p><strong>خدمات جانبی:</strong> {request.additionalServices.map(getAdditionalServiceLabel).join('، ')}</p>
         )}
         {request.cateringServices && request.cateringServices.length > 0 && (
-           <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.join('، ')}</p>
+           <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.map(getCateringServiceLabel).join('، ')}</p>
         )}
       </CardContent>
       {isNew && (
