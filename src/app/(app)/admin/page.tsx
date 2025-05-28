@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, Eye, CheckCircle } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, Eye, CheckCircle, Inbox, MailOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,13 +93,12 @@ export default function AdminPanelPage() {
     toast({
       title: "موفقیت",
       description: "تهیه‌کننده با موفقیت حذف شد.",
-      variant: "default" // Changed from destructive for less alarm
+      variant: "default" 
     });
   };
 
   const handleMarkAsRead = (requestId: string) => {
     updateReservationStatus(requestId, 'read');
-    // The local state `allRequests` will update via the subscription
     toast({
       title: "وضعیت بروز شد",
       description: "درخواست به عنوان خوانده شده علامت‌گذاری شد.",
@@ -113,16 +112,16 @@ export default function AdminPanelPage() {
           <div>
             <CardTitle className="text-lg">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription>
-              تاریخ ثبت: {format(request.submittedAt, 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
+              تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
             </CardDescription>
           </div>
           <Badge variant={request.status === 'new' ? 'destructive' : 'secondary'}>
-            {request.status === 'new' ? 'جدید' : 'خوانده شده'}
+            {request.status === 'new' ? 'جدید' : request.status === 'read' ? 'خوانده شده' : request.status}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
-        <p><strong>تاریخ رزرو:</strong> {format(request.dateTime.reservationDate, 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+        <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
         <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
         {request.personalInfo && (
@@ -131,19 +130,19 @@ export default function AdminPanelPage() {
           </>
         )}
         {request.additionalServices && request.additionalServices.length > 0 && (
-          <p><strong>خدمات جانبی:</strong> {request.additionalServices.join(', ')}</p>
+          <p><strong>خدمات جانبی:</strong> {request.additionalServices.join('، ')}</p>
         )}
         {request.cateringServices && request.cateringServices.length > 0 && (
-           <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.join(', ')}</p>
+           <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.join('، ')}</p>
         )}
       </CardContent>
-      <CardFooter>
-        {isNew && (
+      {isNew && (
+        <CardFooter>
           <Button onClick={() => handleMarkAsRead(request.id)} size="sm" variant="outline">
             <CheckCircle className="ms-2 h-4 w-4" /> علامت‌گذاری به عنوان خوانده شده
           </Button>
-        )}
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   );
 
@@ -178,19 +177,30 @@ export default function AdminPanelPage() {
                   <CardDescription>مشاهده و مدیریت تمامی درخواست‌های ثبت شده.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <h3 className="text-xl font-semibold border-b pb-2 mb-3">درخواست‌های جدید ({newSystemRequests.length})</h3>
-                  {newSystemRequests.length === 0 ? (
-                    <p className="text-muted-foreground">هیچ درخواست جدیدی وجود ندارد.</p>
-                  ) : (
-                    newSystemRequests.map(req => renderRequestCard(req, true))
-                  )}
-
-                  <h3 className="text-xl font-semibold border-b pb-2 mt-6 mb-3">درخواست‌های خوانده شده ({oldSystemRequests.length})</h3>
-                  {oldSystemRequests.length === 0 ? (
-                     <p className="text-muted-foreground">هیچ درخواست خوانده شده‌ای وجود ندارد.</p>
-                  ) : (
-                    oldSystemRequests.map(req => renderRequestCard(req, false))
-                  )}
+                  <Tabs defaultValue="new-requests" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="new-requests">
+                        <Inbox className="me-2 h-4 w-4" /> درخواست‌های جدید ({newSystemRequests.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="old-requests">
+                        <MailOpen className="me-2 h-4 w-4" /> درخواست‌های خوانده شده ({oldSystemRequests.length})
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="new-requests">
+                      {newSystemRequests.length === 0 ? (
+                        <p className="text-muted-foreground py-4 text-center">هیچ درخواست جدیدی وجود ندارد.</p>
+                      ) : (
+                        newSystemRequests.map(req => renderRequestCard(req, true))
+                      )}
+                    </TabsContent>
+                    <TabsContent value="old-requests">
+                      {oldSystemRequests.length === 0 ? (
+                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست خوانده شده‌ای وجود ندارد.</p>
+                      ) : (
+                        oldSystemRequests.map(req => renderRequestCard(req, false))
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -304,3 +314,4 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
