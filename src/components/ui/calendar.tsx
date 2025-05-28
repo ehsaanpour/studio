@@ -1,13 +1,24 @@
+
 "use client"
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react" // These are absolute directions, fine for calendar nav
-import { DayPicker } from "react-day-picker"
+import { DayPicker, type CaptionLabelProps } from "react-day-picker"
+import { format } from "date-fns-jalali"
+import faIR from "date-fns-jalali/locale/fa-IR"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
+
+function CustomCaptionLabel(props: CaptionLabelProps) {
+  return (
+    <div className="text-sm font-medium">
+      {format(props.displayMonth, 'LLLL yyyy', { locale: faIR })}
+    </div>
+  );
+}
 
 function Calendar({
   className,
@@ -23,7 +34,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 rtl:space-x-reverse",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        // caption_label is managed by CustomCaptionLabel now
         nav: "space-x-1 rtl:space-x-reverse flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -54,11 +65,12 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} /> // Flipped for RTL
+        CaptionLabel: CustomCaptionLabel,
+        IconLeft: ({ className: iconClassName, ...iconProps }) => ( // Renamed className to iconClassName to avoid conflict
+          <ChevronRight className={cn("h-4 w-4", iconClassName)} {...iconProps} /> // Flipped for RTL
         ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} /> // Flipped for RTL
+        IconRight: ({ className: iconClassName, ...iconProps }) => ( // Renamed className to iconClassName
+          <ChevronLeft className={cn("h-4 w-4", iconClassName)} {...iconProps} /> // Flipped for RTL
         ),
       }}
       {...props}
