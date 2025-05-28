@@ -78,7 +78,7 @@ export default function LandingPage() {
       <footer className="py-8 bg-muted border-t border-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground">
           <p>
-            تمامی حقوق برای <a href="#" className="text-primary hover:underline">احسان احسانپور</a> محفوظ است
+            تمامی حقوق برای <a href="https://ehsaanpour.github.io/Me/index.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">احسان احسانپور</a> محفوظ است
           </p>
         </div>
       </footer>
