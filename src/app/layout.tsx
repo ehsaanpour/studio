@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'FormEase - AI Powered Form Builder',
-  description: 'Create beautiful, intelligent forms with AI assistance.',
+  title: 'فرم‌ایزی - فرم‌ساز مجهز به هوش مصنوعی',
+  description: 'فرم‌های زیبا و هوشمند با کمک هوش مصنوعی بسازید.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className={`${GeistSans.variable} font-sans antialiased`}>
         {children}
         <Toaster />

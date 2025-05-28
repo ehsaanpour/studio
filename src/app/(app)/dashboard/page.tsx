@@ -6,20 +6,20 @@ import Image from 'next/image';
 
 // Mock data for forms
 const mockForms = [
-  { id: '1', name: 'Customer Feedback Survey', description: 'Collect feedback from recent customers.', submissions: 120, createdAt: '2024-07-15', image: 'https://placehold.co/600x400.png', imageHint: 'survey chart' },
-  { id: '2', name: 'Event Registration Form', description: 'Register attendees for the annual tech conference.', submissions: 85, createdAt: '2024-07-10', image: 'https://placehold.co/600x400.png', imageHint: 'event form' },
-  { id: '3', name: 'Job Application Form', description: 'Collect applications for open positions.', submissions: 45, createdAt: '2024-07-05', image: 'https://placehold.co/600x400.png', imageHint: 'application office' },
-  { id: '4', name: 'Contact Us Form', description: 'Allow website visitors to get in touch.', submissions: 210, createdAt: '2024-06-28', image: 'https://placehold.co/600x400.png', imageHint: 'contact mail' },
+  { id: '1', name: 'نظرسنجی بازخورد مشتری', description: 'جمع‌آوری بازخورد از مشتریان اخیر.', submissions: 120, createdAt: '2024-07-15', image: 'https://placehold.co/600x400.png', imageHint: 'survey chart' },
+  { id: '2', name: 'فرم ثبت‌نام رویداد', description: 'ثبت‌نام شرکت‌کنندگان برای کنفرانس سالانه فناوری.', submissions: 85, createdAt: '2024-07-10', image: 'https://placehold.co/600x400.png', imageHint: 'event form' },
+  { id: '3', name: 'فرم درخواست کار', description: 'جمع‌آوری درخواست‌ها برای موقعیت‌های شغلی باز.', submissions: 45, createdAt: '2024-07-05', image: 'https://placehold.co/600x400.png', imageHint: 'application office' },
+  { id: '4', name: 'فرم تماس با ما', description: 'به بازدیدکنندگان وب‌سایت اجازه دهید با ما در تماس باشند.', submissions: 210, createdAt: '2024-06-28', image: 'https://placehold.co/600x400.png', imageHint: 'contact mail' },
 ];
 
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">My Forms</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">فرم‌های من</h2>
         <Button asChild>
           <Link href="/forms/new">
-            <PlusCircle className="mr-2 h-5 w-5" /> Create New Form
+            <PlusCircle className="ms-2 h-5 w-5" /> ایجاد فرم جدید
           </Link>
         </Button>
       </div>
@@ -28,13 +28,13 @@ export default function DashboardPage() {
         <Card className="text-center py-12">
           <CardHeader>
             <FileText className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-            <CardTitle>No Forms Yet</CardTitle>
-            <CardDescription>Start creating your first form to collect data.</CardDescription>
+            <CardTitle>هنوز فرمی وجود ندارد</CardTitle>
+            <CardDescription>برای جمع‌آوری داده، اولین فرم خود را ایجاد کنید.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
               <Link href="/forms/new">
-                <PlusCircle className="mr-2 h-5 w-5" /> Create Your First Form
+                <PlusCircle className="ms-2 h-5 w-5" /> اولین فرم خود را ایجاد کنید
               </Link>
             </Button>
           </CardContent>
@@ -47,7 +47,7 @@ export default function DashboardPage() {
                 <Image 
                   src={form.image} 
                   alt={form.name} 
-                  layout="fill" 
+                  fill // layout="fill" is deprecated, use fill
                   objectFit="cover"
                   data-ai-hint={form.imageHint}
                 />
@@ -58,25 +58,25 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground">
-                  Submissions: <span className="font-semibold text-foreground">{form.submissions}</span>
+                  ارسال‌ها: <span className="font-semibold text-foreground">{form.submissions}</span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Created: <span className="font-semibold text-foreground">{form.createdAt}</span>
+                  ایجاد شده در: <span className="font-semibold text-foreground">{form.createdAt}</span>
                 </p>
               </CardContent>
               <CardFooter className="grid grid-cols-3 gap-2 p-4 border-t">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/forms/${form.id}/edit`}>
-                    <Edit className="mr-1 h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Edit</span>
+                    <Edit className="ms-1 h-4 w-4 sm:ms-2" /> <span className="hidden sm:inline">ویرایش</span>
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/forms/${form.id}/preview`}>
-                    <Eye className="mr-1 h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Preview</span>
+                    <Eye className="ms-1 h-4 w-4 sm:ms-2" /> <span className="hidden sm:inline">پیش‌نمایش</span>
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm">
-                  <Download className="mr-1 h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Export</span>
+                  <Download className="ms-1 h-4 w-4 sm:ms-2" /> <span className="hidden sm:inline">خروجی</span>
                 </Button>
               </CardFooter>
             </Card>

@@ -1,31 +1,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { ArrowRight, Eye } from 'lucide-react'; // For "Back to" in RTL, arrow points to the content direction
 
 export default function PreviewFormPage({ params }: { params: { formId: string } }) {
   return (
     <div className="space-y-6">
        <Button variant="outline" asChild>
         <Link href="/dashboard">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
         </Link>
       </Button>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl flex items-center">
-            <Eye className="mr-3 h-7 w-7 text-primary" />
-            Preview Form: {params.formId}
+            <Eye className="ms-3 h-7 w-7 text-primary" />
+            پیش‌نمایش فرم: {params.formId}
           </CardTitle>
           <CardDescription>
-            This is where you would see a live preview of your form. Functionality to be implemented.
+            اینجا جایی است که پیش‌نمایش زنده فرم خود را مشاهده خواهید کرد. قابلیت‌ها پیاده‌سازی خواهند شد.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="p-8 border border-dashed rounded-lg bg-muted/30 min-h-[300px] flex items-center justify-center">
             <p className="text-muted-foreground text-center">
-              Form preview for ID: <strong>{params.formId}</strong> will appear here. <br />
-              This will show how the form looks to end-users on different devices.
+              پیش‌نمایش فرم برای شناسه: <strong>{params.formId}</strong> در اینجا ظاهر می‌شود. <br />
+              این نشان می‌دهد که فرم برای کاربران نهایی در دستگاه‌های مختلف چگونه به نظر می‌رسد.
             </p>
           </div>
         </CardContent>

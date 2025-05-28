@@ -1,25 +1,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowRight } from 'lucide-react'; // For "Back to" in RTL, arrow points to the content direction
 
 export default function EditFormPage({ params }: { params: { formId: string } }) {
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild>
         <Link href="/dashboard">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
         </Link>
       </Button>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Edit Form: {params.formId}</CardTitle>
+          <CardTitle className="text-2xl">ویرایش فرم: {params.formId}</CardTitle>
           <CardDescription>
-            Form editing functionality will be implemented here. Currently, this is a placeholder.
+            قابلیت ویرایش فرم در اینجا پیاده‌سازی خواهد شد. در حال حاضر، این یک جایگزین است.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Imagine a fully featured form editor here, allowing you to modify fields, AI suggestions, and settings for form ID: <strong>{params.formId}</strong>.</p>
+          <p>یک ویرایشگر فرم با امکانات کامل را در اینجا تصور کنید که به شما امکان می‌دهد فیلدها، پیشنهادات هوش مصنوعی و تنظیمات را برای شناسه فرم تغییر دهید: <strong>{params.formId}</strong>.</p>
           {/* Future: <EditFormClient formId={params.formId} /> */}
         </CardContent>
       </Card>

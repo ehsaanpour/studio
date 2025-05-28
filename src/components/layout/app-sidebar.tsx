@@ -13,23 +13,27 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/icons/logo";
-import { Home, PlusSquare, Grid, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { useSidebar } from "@/components/ui/sidebar"; // Import useSidebar
+import { Home, PlusSquare, Grid, Settings, LogOut, ChevronRight, ChevronLeft } from "lucide-react"; // Chevron directions adjusted for RTL context
+import { useSidebar } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
 
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/forms/new", label: "Create Form", icon: PlusSquare },
-  { href: "/templates", label: "Templates", icon: Grid },
+  { href: "/dashboard", label: "داشبورد", icon: Home },
+  { href: "/forms/new", label: "ایجاد فرم", icon: PlusSquare },
+  { href: "/templates", label: "قالب‌ها", icon: Grid },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { open, toggleSidebar, isMobile, state } = useSidebar();
 
+  // For RTL, sidebar is on the right. ChevronRight collapses, ChevronLeft expands.
+  const CollapseIcon = ChevronRight;
+  const ExpandIcon = ChevronLeft;
+
   return (
-    <Sidebar side="left" variant="sidebar" collapsible={isMobile ? "offcanvas" : "icon"}>
+    <Sidebar side="right" variant="sidebar" collapsible={isMobile ? "offcanvas" : "icon"}> {/* Changed side to right */}
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className={cn(
             "flex items-center gap-2 transition-all duration-300",
@@ -40,7 +44,7 @@ export function AppSidebar() {
               "text-2xl font-bold text-sidebar-foreground whitespace-nowrap",
               state === "collapsed" && !isMobile ? "sr-only opacity-0" : "opacity-100"
             )}>
-            FormEase
+            فرم‌ایزی
           </span>
         </div>
       </SidebarHeader>
@@ -65,22 +69,22 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <SidebarMenu>
            <SidebarMenuItem>
-            <SidebarMenuButton className="justify-start" tooltip="Settings">
+            <SidebarMenuButton className="justify-start" tooltip="تنظیمات">
               <Settings className="h-5 w-5" />
-              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>Settings</span>
+              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>تنظیمات</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
            <SidebarMenuItem>
-            <SidebarMenuButton className="justify-start" tooltip="Log out">
+            <SidebarMenuButton className="justify-start" tooltip="خروج">
               <LogOut className="h-5 w-5" />
-              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>Log out</span>
+              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>خروج</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
         {!isMobile && (
            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mt-4 self-center text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-            {open ? <ChevronLeft /> : <ChevronRight />}
-            <span className="sr-only">Toggle Sidebar</span>
+            {open ? <CollapseIcon /> : <ExpandIcon />}
+            <span className="sr-only">باز/بسته کردن نوار کناری</span>
           </Button>
         )}
       </SidebarFooter>

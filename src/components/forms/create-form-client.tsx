@@ -41,17 +41,17 @@ export function CreateFormClient() {
 
   const handleSuggestQuestions = async () => {
     if (!formContext) {
-      toast({ title: 'Error', description: 'Please provide a form context.', variant: 'destructive' });
+      toast({ title: 'خطا', description: 'لطفاً زمینه فرم را ارائه دهید.', variant: 'destructive' });
       return;
     }
     setIsSuggestingQuestions(true);
     try {
       const result = await getAiAssistedQuestionSuggestions({ formContext });
       setSuggestedQuestions(result.suggestedQuestionTypes);
-      toast({ title: 'AI Suggestions', description: 'Question types suggested successfully!' });
+      toast({ title: 'پیشنهادات هوش مصنوعی', description: 'انواع سوالات با موفقیت پیشنهاد شد!' });
     } catch (error) {
       console.error(error);
-      toast({ title: 'Error', description: 'Failed to get AI suggestions.', variant: 'destructive' });
+      toast({ title: 'خطا', description: 'دریافت پیشنهادات هوش مصنوعی ناموفق بود.', variant: 'destructive' });
     } finally {
       setIsSuggestingQuestions(false);
     }
@@ -59,17 +59,17 @@ export function CreateFormClient() {
 
   const handleGenerateRules = async () => {
     if (!formContext) {
-      toast({ title: 'Error', description: 'Please provide a form context.', variant: 'destructive' });
+      toast({ title: 'خطا', description: 'لطفاً زمینه فرم را ارائه دهید.', variant: 'destructive' });
       return;
     }
     setIsGeneratingRules(true);
     try {
       const result = await getAiGeneratedValidationRules({ formContext });
       setValidationRules(result.validationRules);
-      toast({ title: 'AI Validation Rules', description: 'Validation rules generated successfully!' });
+      toast({ title: 'قوانین اعتبارسنجی هوش مصنوعی', description: 'قوانین اعتبارسنجی با موفقیت تولید شد!' });
     } catch (error) {
       console.error(error);
-      toast({ title: 'Error', description: 'Failed to generate validation rules.', variant: 'destructive' });
+      toast({ title: 'خطا', description: 'تولید قوانین اعتبارسنجی ناموفق بود.', variant: 'destructive' });
     } finally {
       setIsGeneratingRules(false);
     }
@@ -91,20 +91,20 @@ export function CreateFormClient() {
     <div className="space-y-8">
       <div className="space-y-4">
         <div>
-          <Label htmlFor="formName" className="text-lg">Form Name</Label>
+          <Label htmlFor="formName" className="text-lg">نام فرم</Label>
           <Input 
             id="formName" 
-            placeholder="e.g., Customer Satisfaction Survey" 
+            placeholder="مثال: نظرسنجی رضایت مشتری" 
             value={formName}
             onChange={(e) => setFormName(e.target.value)}
             className="mt-1 text-base"
           />
         </div>
         <div>
-          <Label htmlFor="formContext" className="text-lg">Form Context</Label>
+          <Label htmlFor="formContext" className="text-lg">زمینه فرم</Label>
           <Textarea
             id="formContext"
-            placeholder="Describe the purpose of your form, who will fill it out, and what information you need to collect. For example: 'A feedback form for users who have completed a purchase on our e-commerce website. We want to understand their satisfaction with the product and ahipping process.'"
+            placeholder="هدف فرم خود، اینکه چه کسی آن را پر می‌کند و چه اطلاعاتی را باید جمع‌آوری کنید، شرح دهید. برای مثال: 'یک فرم بازخورد برای کاربرانی که خریدی را در وب‌سایت تجارت الکترونیک ما انجام داده‌اند. ما می‌خواهیم رضایت آن‌ها از محصول و فرآیند ارسال را بدانیم.'"
             value={formContext}
             onChange={(e) => setFormContext(e.target.value)}
             rows={5}
@@ -115,23 +115,23 @@ export function CreateFormClient() {
 
       <div className="flex flex-col sm:flex-row gap-4">
         <Button onClick={handleSuggestQuestions} disabled={isSuggestingQuestions || !formContext} className="w-full sm:w-auto">
-          {isSuggestingQuestions ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-          AI Suggest Question Types
+          {isSuggestingQuestions ? <Loader2 className="ms-2 h-4 w-4 animate-spin" /> : <Wand2 className="ms-2 h-4 w-4" />}
+          پیشنهاد هوش مصنوعی برای انواع سوالات
         </Button>
         <Button onClick={handleGenerateRules} disabled={isGeneratingRules || !formContext} className="w-full sm:w-auto">
-          {isGeneratingRules ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ListChecks className="mr-2 h-4 w-4" />}
-          AI Generate Validation Rules
+          {isGeneratingRules ? <Loader2 className="ms-2 h-4 w-4 animate-spin" /> : <ListChecks className="ms-2 h-4 w-4" />}
+          تولید هوش مصنوعی قوانین اعتبارسنجی
         </Button>
       </div>
 
       {suggestedQuestions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl flex items-center"><Wand2 className="mr-2 h-5 w-5 text-primary" /> AI Suggested Question Types</CardTitle>
-            <CardDescription>Consider these types of questions for your form based on the context you provided.</CardDescription>
+            <CardTitle className="text-xl flex items-center"><Wand2 className="ms-2 h-5 w-5 text-primary" /> انواع سوالات پیشنهادی هوش مصنوعی</CardTitle>
+            <CardDescription>این انواع سوالات را برای فرم خود بر اساس زمینه‌ای که ارائه دادید در نظر بگیرید.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ps-5">
               {suggestedQuestions.map((suggestion, index) => (
                 <li key={index}>{suggestion}</li>
               ))}
@@ -143,8 +143,8 @@ export function CreateFormClient() {
       {Object.keys(validationRules).length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" /> AI Generated Validation Rules</CardTitle>
-            <CardDescription>Potential validation rules for fields based on your form context. Apply these to your fields below.</CardDescription>
+            <CardTitle className="text-xl flex items-center"><ListChecks className="ms-2 h-5 w-5 text-primary" /> قوانین اعتبارسنجی تولید شده توسط هوش مصنوعی</CardTitle>
+            <CardDescription>قوانین اعتبارسنجی بالقوه برای فیلدها بر اساس زمینه فرم شما. اینها را در فیلدهای زیر اعمال کنید.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {Object.entries(validationRules).map(([field, rules]) => (
@@ -163,8 +163,8 @@ export function CreateFormClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Form Fields</CardTitle>
-          <CardDescription>Add and configure the fields for your form.</CardDescription>
+          <CardTitle className="text-2xl">فیلدهای فرم</CardTitle>
+          <CardDescription>فیلدهای فرم خود را اضافه و پیکربندی کنید.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {formFields.map((field, index) => {
@@ -174,24 +174,24 @@ export function CreateFormClient() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-2 right-2 opacity-50 group-hover:opacity-100 text-destructive hover:bg-destructive/10"
+                  className="absolute top-2 end-2 opacity-50 group-hover:opacity-100 text-destructive hover:bg-destructive/10"
                   onClick={() => removeField(field.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                   <div>
-                    <Label htmlFor={`field-label-${field.id}`}>Field Label</Label>
+                    <Label htmlFor={`field-label-${field.id}`}>برچسب فیلد</Label>
                     <Input
                       id={`field-label-${field.id}`}
                       value={field.label}
                       onChange={(e) => updateField(field.id, { label: e.target.value })}
-                      placeholder="e.g., Your Name"
+                      placeholder="مثال: نام شما"
                       className="mt-1"
                     />
                   </div>
                   <div>
-                    <Label htmlFor={`field-type-${field.id}`}>Field Type</Label>
+                    <Label htmlFor={`field-type-${field.id}`}>نوع فیلد</Label>
                     <Select
                       value={field.type}
                       onValueChange={(value) => updateField(field.id, { type: value as FormFieldSuggestion['type'] })}
@@ -199,31 +199,31 @@ export function CreateFormClient() {
                       <SelectTrigger id={`field-type-${field.id}`} className="w-full mt-1">
                         <div className="flex items-center gap-2">
                           <FieldIcon className="h-4 w-4 text-muted-foreground" />
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder="انتخاب نوع" />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="text"><TextCursorInput className="h-4 w-4 mr-2 inline-block"/> Text</SelectItem>
-                        <SelectItem value="email"><Mail className="h-4 w-4 mr-2 inline-block"/> Email</SelectItem>
-                        <SelectItem value="number"><Hash className="h-4 w-4 mr-2 inline-block"/> Number</SelectItem>
-                        <SelectItem value="date"><CalendarDays className="h-4 w-4 mr-2 inline-block"/> Date</SelectItem>
-                        <SelectItem value="textarea">Textarea</SelectItem>
-                        <SelectItem value="select">Select</SelectItem>
-                        <SelectItem value="checkbox"><CheckSquare className="h-4 w-4 mr-2 inline-block"/> Checkbox</SelectItem>
+                        <SelectItem value="text"><TextCursorInput className="h-4 w-4 me-2 inline-block"/> متن</SelectItem>
+                        <SelectItem value="email"><Mail className="h-4 w-4 me-2 inline-block"/> ایمیل</SelectItem>
+                        <SelectItem value="number"><Hash className="h-4 w-4 me-2 inline-block"/> عدد</SelectItem>
+                        <SelectItem value="date"><CalendarDays className="h-4 w-4 me-2 inline-block"/> تاریخ</SelectItem>
+                        <SelectItem value="textarea">ناحیه متنی</SelectItem>
+                        <SelectItem value="select">انتخابی</SelectItem>
+                        <SelectItem value="checkbox"><CheckSquare className="h-4 w-4 me-2 inline-block"/> چک‌باکس</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor={`field-placeholder-${field.id}`}>Placeholder (Optional)</Label>
+                    <Label htmlFor={`field-placeholder-${field.id}`}>متن جایگزین (اختیاری)</Label>
                     <Input
                       id={`field-placeholder-${field.id}`}
                       value={field.placeholder || ''}
                       onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
-                      placeholder="e.g., John Doe"
+                      placeholder="مثال: رضا رضایی"
                       className="mt-1"
                     />
                   </div>
-                  <div className="flex items-center space-x-2 md:col-span-2">
+                  <div className="flex items-center space-x-2 md:col-span-2 rtl:space-x-reverse">
                     <input
                       type="checkbox"
                       id={`field-required-${field.id}`}
@@ -232,13 +232,13 @@ export function CreateFormClient() {
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <Label htmlFor={`field-required-${field.id}`} className="text-sm font-medium">
-                      Required
+                      ضروری
                     </Label>
                   </div>
                 </div>
                  {validationRules[field.label] && (
                   <div className="mt-3">
-                    <p className="text-xs text-muted-foreground mb-1">AI Suggested Validations for "{field.label}":</p>
+                    <p className="text-xs text-muted-foreground mb-1">اعتبارسنجی‌های پیشنهادی هوش مصنوعی برای "{field.label}":</p>
                     <div className="flex flex-wrap gap-1">
                       {validationRules[field.label].map((rule, idx) => (
                         <Badge key={idx} variant="outline">{rule}</Badge>
@@ -250,14 +250,14 @@ export function CreateFormClient() {
             )
           })}
           <Button variant="outline" onClick={addField} className="w-full border-dashed hover:border-solid">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Field
+            <PlusCircle className="ms-2 h-4 w-4" /> افزودن فیلد
           </Button>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end space-x-3 mt-8">
-        <Button variant="outline">Save Draft</Button>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Create Form</Button>
+      <div className="flex justify-end space-x-3 mt-8 rtl:space-x-reverse">
+        <Button variant="outline">ذخیره پیش‌نویس</Button>
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">ایجاد فرم</Button>
       </div>
     </div>
   );

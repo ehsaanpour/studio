@@ -3,18 +3,29 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, CircleUser } from "lucide-react";
-import { AppSidebar } from "./app-sidebar"; // Re-use for mobile
+// AppSidebar is not directly used here for mobile sheet content to simplify, navItems are duplicated.
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { AppLogo } from "@/components/icons/logo";
+import { Home, PlusSquare, Grid } from "lucide-react";
+
 
 const getPageTitle = (pathname: string): string => {
-  if (pathname.startsWith("/dashboard")) return "Dashboard";
-  if (pathname.startsWith("/forms/new")) return "Create New Form";
-  if (pathname.startsWith("/forms")) return "Manage Form"; // Catch-all for edit/preview
-  if (pathname.startsWith("/templates")) return "Form Templates";
-  return "FormEase";
+  if (pathname.startsWith("/dashboard")) return "داشبورد";
+  if (pathname.startsWith("/forms/new")) return "ایجاد فرم جدید";
+  if (pathname.startsWith("/forms")) return "مدیریت فرم"; 
+  if (pathname.startsWith("/templates")) return "قالب‌های فرم";
+  return "فرم‌ایزی";
 };
+
+// Duplicating navItems for AppHeader's mobile sheet context
+const navItems = [
+  { href: "/dashboard", label: "داشبورد", icon: Home },
+  { href: "/forms/new", label: "ایجاد فرم", icon: PlusSquare },
+  { href: "/templates", label: "قالب‌ها", icon: Grid },
+];
 
 
 export function AppHeader() {
@@ -30,16 +41,15 @@ export function AppHeader() {
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="sm:hidden">
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle Menu</span>
+              <span className="sr-only">باز/بسته کردن منو</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="sm:max-w-xs p-0">
-            {/* Embedding AppSidebar logic directly or simplified version for mobile sheet */}
+          <SheetContent side="right" className="sm:max-w-xs p-0"> {/* Changed side to right for RTL */}
             <div className="flex h-full max-h-screen flex-col gap-2">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                   <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
                     <AppLogo className="h-6 w-6" />
-                    <span className="">FormEase</span>
+                    <span className="">فرم‌ایزی</span>
                   </Link>
                 </div>
                 <div className="flex-1 overflow-auto py-2">
@@ -69,20 +79,8 @@ export function AppHeader() {
       </div>
       <Button variant="outline" size="icon" className="rounded-full">
         <CircleUser className="h-5 w-5" />
-        <span className="sr-only">Toggle user menu</span>
+        <span className="sr-only">باز/بسته کردن منوی کاربر</span>
       </Button>
     </header>
   );
 }
-
-// Duplicating for AppHeader context, as AppSidebar might be too complex to directly embed
-// Or ideally refactor navItems to a shared constant.
-import Link from "next/link";
-import { AppLogo } from "@/components/icons/logo";
-import { Home, PlusSquare, Grid } from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/forms/new", label: "Create Form", icon: PlusSquare },
-  { href: "/templates", label: "Templates", icon: Grid },
-];

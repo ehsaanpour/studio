@@ -6,9 +6,9 @@ export default function CreateNewFormPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">Create a New Form</CardTitle>
+          <CardTitle className="text-3xl font-bold">ایجاد فرم جدید</CardTitle>
           <CardDescription>
-            Describe your form's purpose and let AI help you craft the perfect questions and validation rules.
+            هدف فرم خود را شرح دهید و به هوش مصنوعی اجازه دهید به شما در ایجاد سوالات و قوانین اعتبارسنجی عالی کمک کند.
           </CardDescription>
         </CardHeader>
         <CardContent>
