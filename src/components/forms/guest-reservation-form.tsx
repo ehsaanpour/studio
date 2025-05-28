@@ -141,6 +141,9 @@ export function GuestReservationForm() {
                 <FormControl>
                   <Input placeholder="مثال: شرکت آوای هنر / علی رضایی" {...field} />
                 </FormControl>
+                <FormDescription>
+                  نام دقیق قسمت در خواست دهنده استودیو را بنویسید
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
