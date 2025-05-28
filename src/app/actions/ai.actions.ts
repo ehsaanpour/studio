@@ -1,5 +1,7 @@
 'use server';
 
+// FormEase specific AI actions - commented out or to be removed.
+/*
 import { 
   aiAssistedFormCreationQuestionSuggestion,
   type AiAssistedFormCreationQuestionSuggestionInput,
@@ -19,8 +21,6 @@ export async function getAiAssistedQuestionSuggestions(
     return result;
   } catch (error) {
     console.error("Error in getAiAssistedQuestionSuggestions:", error);
-    // It's better to throw a custom error or a more specific error
-    // For now, re-throwing the original error or a generic one.
     throw new Error("Failed to get AI-assisted question suggestions.");
   }
 }
@@ -36,3 +36,8 @@ export async function getAiGeneratedValidationRules(
     throw new Error("Failed to get AI-generated validation rules.");
   }
 }
+*/
+
+// AI actions for Studio Reservation System can be defined here if AI features are added.
+// For example:
+// export async function getStudioAvailabilitySuggestions(input: StudioAvailabilityInput): Promise<StudioAvailabilityOutput> { ... }

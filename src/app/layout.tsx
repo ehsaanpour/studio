@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'فرم‌ایزی - فرم‌ساز مجهز به هوش مصنوعی',
-  description: 'فرم‌های زیبا و هوشمند با کمک هوش مصنوعی بسازید.',
+  title: 'سیستم رزرواسیون استودیو',
+  description: 'رزرو آنلاین استودیوهای فیلمبرداری و صدابرداری.',
 };
 
 export default function RootLayout({
