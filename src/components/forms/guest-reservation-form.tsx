@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; // Assuming a generic textarea for now.
+import { Textarea } from '@/components/ui/textarea'; 
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,7 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
-import { format } from 'date-fns-jalali'; // For Jalali date formatting if needed, or use standard format
+import { format } from 'date-fns-jalali';
+import faIR from 'date-fns-jalali/locale/fa-IR'; // Corrected import for Jalali locale
 import { cn } from '@/lib/utils';
 import type { StudioReservationRequest } from '@/types';
 import React, { useState } from 'react';
@@ -79,7 +81,7 @@ const cateringServiceItems = [
 export function GuestReservationForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0); // 0 for studio2, 1 for studio5, 2 for studio6
+  const [sliderValue, setSliderValue] = useState(0); 
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(guestFormSchema),
@@ -121,7 +123,7 @@ export function GuestReservationForm() {
       ),
     });
     form.reset();
-    setSliderValue(0); // Reset slider display
+    setSliderValue(0); 
   }
 
   return (
@@ -195,7 +197,7 @@ export function GuestReservationForm() {
                         >
                           <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: require('date-fns-jalali/locale/fa') })
+                            format(field.value, 'PPP', { locale: faIR })
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
@@ -207,9 +209,9 @@ export function GuestReservationForm() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))} // Disable past dates
+                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))} 
                         initialFocus
-                        // locale={require('date-fns-jalali/locale/fa')} // For Jalali calendar (requires adapter setup)
+                        locale={faIR} 
                       />
                     </PopoverContent>
                   </Popover>
@@ -433,3 +435,5 @@ export function GuestReservationForm() {
     </Form>
   );
 }
+
+    
