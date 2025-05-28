@@ -171,7 +171,7 @@ export default function AdminPanelPage() {
       {isNew && (
         <CardFooter>
           <Button onClick={() => handleMarkAsRead(request.id)} size="sm" variant="outline">
-            <CheckCircle className="ms-2 h-4 w-4" /> علامت‌گذاری به عنوان خوانده شده
+            علامت‌گذاری به عنوان خوانده شده <CheckCircle className="me-2 h-4 w-4" /> 
           </Button>
         </CardFooter>
       )}
@@ -183,23 +183,22 @@ export default function AdminPanelPage() {
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
         <Link href="/dashboard">
-          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
+          بازگشت به داشبورد <ArrowRight className="me-2 h-4 w-4" />
         </Link>
       </Button>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl font-bold flex items-center">
-            <UserCog className="ms-3 h-8 w-8 text-primary" />
-            پنل مدیریت سیستم رزرواسیون
+            پنل مدیریت سیستم رزرواسیون <UserCog className="me-3 h-8 w-8 text-primary" />
           </CardTitle>
           <CardDescription>مدیریت درخواست‌های رزرو، تهیه‌کنندگان و تنظیمات کلی سیستم.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="requests" className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="requests"><ListChecks className="me-2 h-4 w-4"/> مدیریت درخواست‌ها</TabsTrigger>
-              <TabsTrigger value="producers"><Users className="me-2 h-4 w-4"/> مدیریت تهیه‌کنندگان</TabsTrigger>
-              <TabsTrigger value="add-producer"><PlusSquare className="me-2 h-4 w-4"/> افزودن تهیه‌کننده</TabsTrigger>
+              <TabsTrigger value="requests">مدیریت درخواست‌ها <ListChecks className="me-2 h-4 w-4"/></TabsTrigger>
+              <TabsTrigger value="producers">مدیریت تهیه‌کنندگان <Users className="me-2 h-4 w-4"/></TabsTrigger>
+              <TabsTrigger value="add-producer">افزودن تهیه‌کننده <PlusSquare className="me-2 h-4 w-4"/></TabsTrigger>
             </TabsList>
             
             <TabsContent value="requests">
@@ -212,10 +211,10 @@ export default function AdminPanelPage() {
                   <Tabs defaultValue="new-requests" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-4">
                       <TabsTrigger value="new-requests">
-                        <Inbox className="me-2 h-4 w-4" /> درخواست‌های جدید ({newSystemRequests.length})
+                        درخواست‌های جدید ({newSystemRequests.length}) <Inbox className="me-2 h-4 w-4" />
                       </TabsTrigger>
                       <TabsTrigger value="old-requests">
-                        <MailOpen className="me-2 h-4 w-4" /> درخواست‌های خوانده شده ({oldSystemRequests.length})
+                         درخواست‌های خوانده شده ({oldSystemRequests.length}) <MailOpen className="me-2 h-4 w-4" />
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="new-requests">
@@ -260,10 +259,10 @@ export default function AdminPanelPage() {
                           </CardHeader>
                           <CardFooter className="flex justify-end gap-2">
                             <Button variant="outline" size="sm" disabled>
-                              <Edit3 className="ms-1 h-4 w-4" /> ویرایش
+                              ویرایش <Edit3 className="me-1 h-4 w-4" /> 
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => handleDeleteProducer(producer.id)}>
-                              <Trash2 className="ms-1 h-4 w-4" /> حذف
+                              حذف <Trash2 className="me-1 h-4 w-4" /> 
                             </Button>
                           </CardFooter>
                         </Card>
@@ -331,7 +330,7 @@ export default function AdminPanelPage() {
                       />
                     </div>
                     <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      <PlusSquare className="ms-2 h-4 w-4"/> افزودن تهیه‌کننده
+                      افزودن تهیه‌کننده <PlusSquare className="me-2 h-4 w-4"/>
                     </Button>
                   </form>
                    <p className="mt-4 text-xs text-muted-foreground">
