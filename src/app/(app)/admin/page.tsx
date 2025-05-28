@@ -81,7 +81,7 @@ export default function AdminPanelPage() {
                     </div>
                     <div>
                       <label htmlFor="producerWorkplace" className="block text-sm font-medium text-foreground">محل کار</label>
-                      <input type="text" id="producerWorkplace" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 bg-input" placeholder="نام سازمان یا شرکت"/>
+                      <input type="text" id="producerWorkplace" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 bg-input" placeholder="نام دقیق قسمت در خواست دهنده استودیو را بنویسید"/>
                     </div>
                     <div>
                       <label htmlFor="producerUsername" className="block text-sm font-medium text-foreground">نام کاربری</label>
