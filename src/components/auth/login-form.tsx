@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Uncomment when actual login logic is added
+import { useRouter } from 'next/navigation'; // Uncommented
 
 const loginFormSchema = z.object({
   username: z.string().min(1, { message: 'نام کاربری الزامی است.' }),
@@ -27,7 +27,7 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export function LoginForm() {
   const { toast } = useToast();
-  // const router = useRouter(); // Uncomment when actual login logic is added
+  const router = useRouter(); // Uncommented
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -50,13 +50,13 @@ export function LoginForm() {
         title: 'ورود موفق',
         description: 'شما به عنوان مدیر وارد شدید.',
       });
-      // router.push('/admin'); // Redirect to admin panel
+      router.push('/admin'); // Redirect to admin panel - Uncommented
     } else if (data.username === 'producer' && data.password === 'producer') {
       toast({
         title: 'ورود موفق',
         description: 'شما به عنوان تهیه‌کننده وارد شدید.',
       });
-      // router.push('/producer'); // Redirect to producer panel
+      router.push('/producer'); // Redirect to producer panel - Uncommented
     } else {
       toast({
         title: 'خطا در ورود',
