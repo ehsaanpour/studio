@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; 
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -81,7 +81,7 @@ const cateringServiceItems = [
 export function GuestReservationForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0); 
+  const [sliderValue, setSliderValue] = useState(0);
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(guestFormSchema),
@@ -123,7 +123,7 @@ export function GuestReservationForm() {
       ),
     });
     form.reset();
-    setSliderValue(0); 
+    setSliderValue(0);
   }
 
   return (
@@ -197,7 +197,7 @@ export function GuestReservationForm() {
                         >
                           <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: faIR })
+                            format(field.value, 'PPP', { locale: faIR }) // Using faIR locale for Jalali date formatting
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
@@ -209,9 +209,9 @@ export function GuestReservationForm() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))} 
+                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                         initialFocus
-                        locale={faIR} 
+                        locale={faIR} // This ensures the calendar displays in Jalali (Shamsi)
                       />
                     </PopoverContent>
                   </Popover>
@@ -247,7 +247,7 @@ export function GuestReservationForm() {
             />
           </div>
         </div>
-        
+
         {/* Studio Selection */}
         <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو *</h3>
@@ -435,5 +435,3 @@ export function GuestReservationForm() {
     </Form>
   );
 }
-
-    
