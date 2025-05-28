@@ -4,22 +4,59 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2 } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, Eye, CheckCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from '@/components/ui/input'; // ShadCN Input
-import { Label } from '@/components/ui/label'; // ShadCN Label
-import React, { useState, FormEvent } from 'react';
-import type { Producer } from '@/types';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import React, { useState, FormEvent, useEffect } from 'react';
+import type { Producer, StudioReservationRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { getReservations, subscribe, updateReservationStatus } from '@/lib/reservation-store';
+import { format } from 'date-fns-jalali';
+import faIR from 'date-fns-jalali/locale/fa-IR';
+import { Badge } from '@/components/ui/badge';
+
+// Helper function to get studio label
+const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
+  switch (studioId) {
+    case 'studio2': return 'استودیو ۲ (فرانسه)';
+    case 'studio5': return 'استودیو ۵ (-۳)';
+    case 'studio6': return 'استودیو ۶ (مایا ناصر)';
+    default: return 'نامشخص';
+  }
+};
+
+// Helper function to get service type label
+const getServiceTypeLabel = (serviceType: StudioReservationRequest['studioServices']['serviceType']) => {
+  switch (serviceType) {
+    case 'with_crew': return 'با عوامل';
+    case 'without_crew': return 'بدون عوامل';
+    default: return 'نامشخص';
+  }
+};
+
 
 export default function AdminPanelPage() {
   const { toast } = useToast();
   const [producers, setProducers] = useState<Producer[]>([]);
+  const [allRequests, setAllRequests] = useState<StudioReservationRequest[]>([]);
   
   const [newProducerName, setNewProducerName] = useState('');
   const [newProducerWorkplace, setNewProducerWorkplace] = useState('');
   const [newProducerUsername, setNewProducerUsername] = useState('');
   const [newProducerPassword, setNewProducerPassword] = useState('');
+
+  useEffect(() => {
+    setAllRequests(getReservations());
+    const unsubscribe = subscribe(() => {
+      setAllRequests(getReservations());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const newSystemRequests = allRequests.filter(req => req.status === 'new');
+  const oldSystemRequests = allRequests.filter(req => req.status !== 'new');
+
 
   const handleAddProducer = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,15 +70,13 @@ export default function AdminPanelPage() {
     }
 
     const newProducer: Producer = {
-      id: Date.now().toString(), // Simple ID generation for client-side
+      id: Date.now().toString(),
       name: newProducerName,
       workplace: newProducerWorkplace,
       username: newProducerUsername,
-      // In a real app, password would be hashed and not stored like this
     };
     setProducers(prevProducers => [...prevProducers, newProducer]);
     
-    // Clear form fields
     setNewProducerName('');
     setNewProducerWorkplace('');
     setNewProducerUsername('');
@@ -53,15 +88,64 @@ export default function AdminPanelPage() {
     });
   };
 
-  // Placeholder for delete producer function
   const handleDeleteProducer = (producerId: string) => {
     setProducers(prevProducers => prevProducers.filter(p => p.id !== producerId));
     toast({
       title: "موفقیت",
       description: "تهیه‌کننده با موفقیت حذف شد.",
-      variant: "destructive"
+      variant: "default" // Changed from destructive for less alarm
     });
-  }
+  };
+
+  const handleMarkAsRead = (requestId: string) => {
+    updateReservationStatus(requestId, 'read');
+    // The local state `allRequests` will update via the subscription
+    toast({
+      title: "وضعیت بروز شد",
+      description: "درخواست به عنوان خوانده شده علامت‌گذاری شد.",
+    });
+  };
+
+  const renderRequestCard = (request: StudioReservationRequest, isNew: boolean) => (
+    <Card key={request.id} className="shadow-sm mb-4">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
+            <CardDescription>
+              تاریخ ثبت: {format(request.submittedAt, 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
+            </CardDescription>
+          </div>
+          <Badge variant={request.status === 'new' ? 'destructive' : 'secondary'}>
+            {request.status === 'new' ? 'جدید' : 'خوانده شده'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 text-sm">
+        <p><strong>تاریخ رزرو:</strong> {format(request.dateTime.reservationDate, 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+        <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
+        <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
+        {request.personalInfo && (
+          <>
+            <p><strong>تماس مهمان:</strong> {request.personalInfo.phoneNumber} - {request.personalInfo.emailAddress}</p>
+          </>
+        )}
+        {request.additionalServices && request.additionalServices.length > 0 && (
+          <p><strong>خدمات جانبی:</strong> {request.additionalServices.join(', ')}</p>
+        )}
+        {request.cateringServices && request.cateringServices.length > 0 && (
+           <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.join(', ')}</p>
+        )}
+      </CardContent>
+      <CardFooter>
+        {isNew && (
+          <Button onClick={() => handleMarkAsRead(request.id)} size="sm" variant="outline">
+            <CheckCircle className="ms-2 h-4 w-4" /> علامت‌گذاری به عنوان خوانده شده
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  );
 
 
   return (
@@ -91,19 +175,22 @@ export default function AdminPanelPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>درخواست‌های رزرو</CardTitle>
-                  <CardDescription>مشاهده و مدیریت تمامی درخواست‌های ثبت شده توسط مهمانان و تهیه‌کنندگان.</CardDescription>
+                  <CardDescription>مشاهده و مدیریت تمامی درخواست‌های ثبت شده.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Placeholder for request lists (New/Old) */}
-                  <div className="p-6 border border-dashed rounded-lg bg-muted/30 min-h-[200px] flex items-center justify-center">
-                    <p className="text-muted-foreground text-center">
-                      لیست درخواست‌های جدید و خوانده شده در اینجا نمایش داده می‌شود. <br/>
-                      امکان علامت‌گذاری به عنوان خوانده شده نیز فراهم خواهد شد.
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    درخواست‌های جدید بر اساس جدیدترین ابتدا مرتب می‌شوند. هر درخواست شامل تمامی اطلاعات فرم خواهد بود.
-                  </p>
+                  <h3 className="text-xl font-semibold border-b pb-2 mb-3">درخواست‌های جدید ({newSystemRequests.length})</h3>
+                  {newSystemRequests.length === 0 ? (
+                    <p className="text-muted-foreground">هیچ درخواست جدیدی وجود ندارد.</p>
+                  ) : (
+                    newSystemRequests.map(req => renderRequestCard(req, true))
+                  )}
+
+                  <h3 className="text-xl font-semibold border-b pb-2 mt-6 mb-3">درخواست‌های خوانده شده ({oldSystemRequests.length})</h3>
+                  {oldSystemRequests.length === 0 ? (
+                     <p className="text-muted-foreground">هیچ درخواست خوانده شده‌ای وجود ندارد.</p>
+                  ) : (
+                    oldSystemRequests.map(req => renderRequestCard(req, false))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

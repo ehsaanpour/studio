@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,20 +15,21 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+// import { Textarea } from '@/components/ui/textarea'; // Not used
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Slider } from '@/components/ui/slider';
+// import { Slider } from '@/components/ui/slider'; // Not used
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns-jalali';
-import faIR from 'date-fns-jalali/locale/fa-IR'; // Corrected import for Jalali locale
+import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
-import type { StudioReservationRequest } from '@/types';
+// import type { StudioReservationRequest } from '@/types'; // Store will handle this
 import React, { useState } from 'react';
+import { addReservation } from '@/lib/reservation-store';
 
 const guestFormSchema = z.object({
   personalInfoName: z.string().min(1, 'نام موسسه یا نام و نام خانوادگی الزامی است.'),
@@ -45,7 +46,7 @@ const guestFormSchema = z.object({
   cateringServices: z.array(z.string()).optional(),
 });
 
-type GuestFormValues = z.infer<typeof guestFormSchema>;
+export type GuestFormValues = z.infer<typeof guestFormSchema>;
 
 const studioOptions = [
   { id: 'studio2', label: 'استودیو ۲ (فرانسه)' },
@@ -81,7 +82,6 @@ const cateringServiceItems = [
 export function GuestReservationForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0); // This was unused, removing for now unless needed for studio slider display
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(guestFormSchema),
@@ -101,17 +101,13 @@ export function GuestReservationForm() {
     },
   });
 
-  // This function was defined but not used. If studio selection slider needs manual sync, it can be used.
-  // function handleSliderChange(value: number[]) {
-  //   setSliderValue(value[0]);
-  //   form.setValue('studioSelection', studioOptions[value[0]].id as 'studio2' | 'studio5' | 'studio6');
-  // }
-
   async function onSubmit(data: GuestFormValues) {
     setIsLoading(true);
-    // Simulate API call for submission
-    console.log('Guest Reservation Data:', data);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    console.log('Guest Reservation Data Submitted:', data);
+    
+    addReservation(data, 'guest');
+
+    await new Promise(resolve => setTimeout(resolve, 500)); // Shorter delay
     setIsLoading(false);
     toast({
       title: 'درخواست شما ثبت شد',
@@ -124,7 +120,6 @@ export function GuestReservationForm() {
       ),
     });
     form.reset();
-    // setSliderValue(0); // Reset slider if it visually represents a form value
   }
 
   return (
@@ -378,7 +373,7 @@ export function GuestReservationForm() {
                     }}
                   />
                 ))}
-                <FormMessage />
+                <FormMessage /> {/* This FormMessage might be misplaced if it's for the whole group */}
               </FormItem>
             )}
           />
@@ -425,7 +420,7 @@ export function GuestReservationForm() {
                     }}
                   />
                 ))}
-                <FormMessage />
+                <FormMessage /> {/* This FormMessage might be misplaced */}
               </FormItem>
             )}
           />

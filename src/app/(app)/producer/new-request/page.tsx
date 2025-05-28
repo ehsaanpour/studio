@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, PlusCircle } from 'lucide-react';
 import { ProducerReservationForm } from '@/components/forms/producer-reservation-form';
-import React from 'react'; // Added React import
+import React from 'react';
 
 export default function NewProducerRequestPage() {
   // Mock producer name, in a real app this would come from auth context
@@ -28,12 +28,9 @@ export default function NewProducerRequestPage() {
           <CardDescription>تهیه‌کننده گرامی، {producerName}، لطفاً فرم زیر را برای ثبت درخواست خود تکمیل نمایید.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProducerReservationForm />
-          {/* The submit button is now part of ProducerReservationForm */}
+          <ProducerReservationForm producerName={producerName} />
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    

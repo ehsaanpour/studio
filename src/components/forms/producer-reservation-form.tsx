@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
+  // FormDescription, // Not used
   FormField,
   FormItem,
   FormLabel,
@@ -21,13 +21,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, CheckCircle, Loader2, PlusCircle } from 'lucide-react';
+import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react'; // PlusCircle not used here
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
+import { addReservation } from '@/lib/reservation-store';
 
-const producerFormSchema = z.object({
+// Make sure this is defined or imported if needed by the store
+export const producerFormSchema = z.object({
   reservationDate: z.date({ required_error: 'تاریخ رزرو الزامی است.' }),
   reservationStartTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت شروع نامعتبر است (HH:MM).'),
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
@@ -38,7 +40,7 @@ const producerFormSchema = z.object({
   additionalServices: z.array(z.string()).optional(),
 });
 
-type ProducerFormValues = z.infer<typeof producerFormSchema>;
+export type ProducerFormValues = z.infer<typeof producerFormSchema>;
 
 const studioOptions = [
   { id: 'studio2', label: 'استودیو ۲ (فرانسه)' },
@@ -62,7 +64,11 @@ const additionalServiceItems = [
   { id: 'service_staff', label: 'نیروی خدمات' },
 ];
 
-export function ProducerReservationForm() {
+interface ProducerReservationFormProps {
+  producerName: string; // To identify the producer
+}
+
+export function ProducerReservationForm({ producerName }: ProducerReservationFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,10 +88,11 @@ export function ProducerReservationForm() {
 
   async function onSubmit(data: ProducerFormValues) {
     setIsLoading(true);
-    // Simulate API call for submission
-    console.log('Producer Reservation Data:', data);
-    // In a real app, this data would be sent to the backend (Admin Panel)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    console.log('Producer Reservation Data Submitted:', data, 'by', producerName);
+    
+    addReservation(data, 'producer', producerName);
+
+    await new Promise(resolve => setTimeout(resolve, 500)); // Shorter delay
     setIsLoading(false);
     toast({
       title: 'درخواست شما ثبت شد',
@@ -301,7 +308,7 @@ export function ProducerReservationForm() {
                     }}
                   />
                 ))}
-                <FormMessage />
+                <FormMessage /> {/* This FormMessage might be misplaced */}
               </FormItem>
             )}
           />
@@ -315,5 +322,3 @@ export function ProducerReservationForm() {
     </Form>
   );
 }
-
-    
