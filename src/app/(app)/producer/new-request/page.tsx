@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, PlusCircle } from 'lucide-react';
-// We might reuse or adapt GuestReservationForm or create a new ProducerReservationForm
-// import { ProducerReservationForm } from '@/components/forms/producer-reservation-form'; 
+import { ProducerReservationForm } from '@/components/forms/producer-reservation-form';
+import React from 'react'; // Added React import
 
 export default function NewProducerRequestPage() {
   // Mock producer name, in a real app this would come from auth context
-  const producerName = "جناب آقای رضایی"; 
+  const producerName = "جناب آقای رضایی"; // Example, replace with actual producer data
 
   return (
     <div className="space-y-6">
@@ -28,24 +28,12 @@ export default function NewProducerRequestPage() {
           <CardDescription>تهیه‌کننده گرامی، {producerName}، لطفاً فرم زیر را برای ثبت درخواست خود تکمیل نمایید.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Placeholder for ProducerReservationForm */}
-          <div className="p-8 border border-dashed rounded-lg bg-muted/30 min-h-[400px] flex items-center justify-center">
-            <p className="text-muted-foreground text-center">
-              فرم رزرو اختصاصی تهیه‌کننده در اینجا قرار خواهد گرفت.
-              <br />
-              این فرم شامل تاریخ، ساعت، انتخاب استودیو، خدمات استودیو و خدمات جانبی خواهد بود.
-              <br />
-              اطلاعات شخصی شما (مانند نام) به صورت خودکار در نظر گرفته می‌شود.
-            </p>
-          </div>
-          {/* Example: <ProducerReservationForm /> */}
-          <div className="mt-6 flex justify-end">
-            <Button disabled type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <PlusCircle className="ms-2 h-4 w-4"/> ارسال درخواست
-            </Button>
-          </div>
+          <ProducerReservationForm />
+          {/* The submit button is now part of ProducerReservationForm */}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    
