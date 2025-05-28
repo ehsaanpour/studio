@@ -81,7 +81,7 @@ const cateringServiceItems = [
 export function GuestReservationForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0);
+  const [sliderValue, setSliderValue] = useState(0); // This was unused, removing for now unless needed for studio slider display
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(guestFormSchema),
@@ -101,10 +101,11 @@ export function GuestReservationForm() {
     },
   });
 
-  function handleSliderChange(value: number[]) {
-    setSliderValue(value[0]);
-    form.setValue('studioSelection', studioOptions[value[0]].id as 'studio2' | 'studio5' | 'studio6');
-  }
+  // This function was defined but not used. If studio selection slider needs manual sync, it can be used.
+  // function handleSliderChange(value: number[]) {
+  //   setSliderValue(value[0]);
+  //   form.setValue('studioSelection', studioOptions[value[0]].id as 'studio2' | 'studio5' | 'studio6');
+  // }
 
   async function onSubmit(data: GuestFormValues) {
     setIsLoading(true);
@@ -123,7 +124,7 @@ export function GuestReservationForm() {
       ),
     });
     form.reset();
-    setSliderValue(0);
+    // setSliderValue(0); // Reset slider if it visually represents a form value
   }
 
   return (
@@ -200,7 +201,7 @@ export function GuestReservationForm() {
                         >
                           <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: faIR }) // Using faIR locale for Jalali date formatting
+                            format(field.value, 'PPP', { locale: faIR }) 
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
@@ -214,7 +215,7 @@ export function GuestReservationForm() {
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                         initialFocus
-                        locale={faIR} // This ensures the calendar displays in Jalali (Shamsi)
+                        locale={faIR} // This ensures the calendar displays in Jalali (Shamsi) and uses Jalali month/year names
                       />
                     </PopoverContent>
                   </Popover>
