@@ -26,18 +26,19 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Use a normalized date (start of day) for "today" to avoid timezone/time-related discrepancies
+  // Use a normalized date (start of day) for "today"
   const todayDate = new Date(new Date().setHours(0, 0, 0, 0));
 
   return (
     <DayPicker
+      locale={faIR}
+      today={todayDate} // Let DayPicker handle "today" with the locale
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 rtl:space-x-reverse",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        // caption_label is managed by CustomCaptionLabel now
         nav: "space-x-1 rtl:space-x-reverse flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -58,9 +59,9 @@ function Calendar({
         day_range_end: "day-range-end",
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        // day_today styling is now handled by modifiersClassNames
+        day_today: "bg-accent text-accent-foreground", // Standard way to style "today"
         day_outside:
-          "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
@@ -75,12 +76,6 @@ function Calendar({
         IconRight: ({ className: iconClassName, ...iconProps }) => ( 
           <ChevronLeft className={cn("h-4 w-4", iconClassName)} {...iconProps} /> 
         ),
-      }}
-      locale={faIR}
-      // defaultMonth={todayDate} // Removed this prop
-      modifiers={{ today: todayDate }} 
-      modifiersClassNames={{
-        today: "bg-accent text-accent-foreground", 
       }}
       {...props}
     />
