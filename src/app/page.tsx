@@ -20,13 +20,15 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-grow">
-        {/* Updated Hero Section with Solid Background */}
+        {/* Updated Hero Section with Background Image and Overlay */}
         <section
-          className="relative py-16 md:py-24 lg:py-32 bg-slate-700" 
+          className="relative py-20 md:py-28 lg:py-36 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
+          data-ai-hint="control room mixer"
         >
-          {/* Removed overlay div */}
-          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center"> {/* Centered text content */}
+          <div className="absolute inset-0 bg-black/60"></div> {/* Dark overlay */}
+          <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
                 استودیوی خود را به راحتی رزرو کنید
               </h1>
@@ -39,7 +41,7 @@ export default function LandingPage() {
                     رزرو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" asChild className="bg-gray-300 text-white hover:bg-gray-400 focus-visible:ring-gray-500">
+                <Button size="lg" asChild className="bg-gray-300 text-gray-800 hover:bg-gray-400 focus-visible:ring-gray-500">
                   <Link href="/login">
                     ورود تهیه‌کننده / مدیر <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
