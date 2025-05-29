@@ -26,6 +26,8 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const currentDate = new Date(); // Define "today" to pass to DayPicker
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -55,7 +57,7 @@ function Calendar({
         day_range_end: "day-range-end",
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
+        day_today: "bg-accent text-accent-foreground", // This class styles "today"
         day_outside:
           "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
@@ -66,13 +68,15 @@ function Calendar({
       }}
       components={{
         CaptionLabel: CustomCaptionLabel,
-        IconLeft: ({ className: iconClassName, ...iconProps }) => ( // Renamed className to iconClassName to avoid conflict
-          <ChevronRight className={cn("h-4 w-4", iconClassName)} {...iconProps} /> // Flipped for RTL
+        IconLeft: ({ className: iconClassName, ...iconProps }) => ( 
+          <ChevronRight className={cn("h-4 w-4", iconClassName)} {...iconProps} /> 
         ),
-        IconRight: ({ className: iconClassName, ...iconProps }) => ( // Renamed className to iconClassName
-          <ChevronLeft className={cn("h-4 w-4", iconClassName)} {...iconProps} /> // Flipped for RTL
+        IconRight: ({ className: iconClassName, ...iconProps }) => ( 
+          <ChevronLeft className={cn("h-4 w-4", iconClassName)} {...iconProps} /> 
         ),
       }}
+      locale={faIR}
+      today={currentDate} // Explicitly pass today's date
       {...props}
     />
   )

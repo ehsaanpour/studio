@@ -23,8 +23,8 @@ export default function LandingPage() {
         {/* Updated Hero Section with Background Image and Overlay */}
         <section
           className="relative py-20 md:py-28 lg:py-36 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
-          data-ai-hint="control room mixer"
+          style={{}}
+          style={{ backgroundImage: "url('https://assets.bwbx.io/images/users/iqjWHBFdfxIU/i4E__Y7vjGmg/v1/1200x801.jpg')" }}
         >
           <div className="absolute inset-0 bg-black/60"></div> {/* Dark overlay */}
           <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
