@@ -76,7 +76,8 @@ function Calendar({
         ),
       }}
       locale={faIR}
-      today={currentDate} // Explicitly pass today's date
+      today={currentDate} // Explicitly pass today's date for highlighting
+      defaultMonth={currentDate} // Ensure the calendar opens to the current month
       {...props}
     />
   )
