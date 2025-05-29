@@ -51,7 +51,7 @@ export default function LandingPage() {
                   width={600}
                   height={400}
                   className="rounded-xl shadow-2xl"
-                  data-ai-hint="studio film"
+                  data-ai-hint="control room"
                   priority
                 />
               </div>
