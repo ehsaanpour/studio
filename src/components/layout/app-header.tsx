@@ -1,8 +1,9 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, CircleUser, LogIn, UserPlus, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { Menu, CircleUser, LogIn, UserPlus, ShieldCheck, LayoutDashboard, Home } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -13,16 +14,18 @@ const getPageTitle = (pathname: string): string => {
   if (pathname === "/login") return "ورود به سیستم";
   if (pathname === "/guest") return "فرم رزرو مهمان";
   if (pathname === "/producer") return "پنل تهیه‌کننده";
+  if (pathname.startsWith("/producer/new-request")) return "ثبت درخواست جدید تهیه‌کننده";
   if (pathname === "/admin") return "پنل مدیریت";
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard")) return "داشبورد اصلی"; // Generic dashboard
+  if (pathname === "/settings") return "تنظیمات سیستم";
+  if (pathname === "/profile") return "پروفایل کاربر";
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard")) return "داشبورد اصلی";
   return "سیستم رزرواسیون استودیو";
 };
 
-// Updated navItems for Studio Reservation System
 const navItems = [
-  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard }, // General dashboard
-  { href: "/guest", label: "رزرو مهمان", icon: UserPlus },
-  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn }, // Assuming login leads here or admin
+  { href: "/", label: "صفحه اصلی", icon: Home },
+  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
+  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn },
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
 ];
 
@@ -32,8 +35,7 @@ export function AppHeader() {
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
 
-  // Hide header for login and guest pages if they are standalone full-page experiences
-  if (pathname === "/login" /* || pathname === "/guest" */) { // Guest page now has its own minimal header
+  if (pathname === "/login" || pathname === "/guest") {
     return null;
   }
 
@@ -80,9 +82,11 @@ export function AppHeader() {
       <div className="flex-1">
         <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
       </div>
-      <Button variant="outline" size="icon" className="rounded-full">
-        <CircleUser className="h-5 w-5" />
-        <span className="sr-only">باز/بسته کردن منوی کاربر</span>
+      <Button variant="outline" size="icon" className="rounded-full" asChild>
+        <Link href="/profile">
+          <CircleUser className="h-5 w-5" />
+          <span className="sr-only">باز/بسته کردن منوی کاربر</span>
+        </Link>
       </Button>
     </header>
   );
