@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -20,7 +21,7 @@ import { cn } from "@/lib/utils";
 // Updated navItems for Studio Reservation System
 const navItems = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard }, // This can be the main entry after login
-  { href: "/guest", label: "رزرو مهمان", icon: UserPlus }, // Or keep this accessible if needed
+  // { href: "/guest", label: "رزرو مهمان", icon: UserPlus }, // Or keep this accessible if needed
   { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn }, // Link to producer panel
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck }, // Link to admin panel
 ];
@@ -88,16 +89,27 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <SidebarMenu>
            <SidebarMenuItem>
-            <SidebarMenuButton className="justify-start" tooltip="تنظیمات">
-              <Settings className="h-5 w-5" />
-              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>تنظیمات</span>
-            </SidebarMenuButton>
+            <Link href="/settings" legacyBehavior passHref>
+              <SidebarMenuButton 
+                isActive={pathname === "/settings"}
+                className="justify-start" 
+                tooltip="تنظیمات"
+              >
+                <Settings className="h-5 w-5" />
+                <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>تنظیمات</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
            <SidebarMenuItem>
-            <SidebarMenuButton className="justify-start" tooltip="خروج">
-              <LogOut className="h-5 w-5" />
-              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>خروج</span>
-            </SidebarMenuButton>
+            <Link href="/login" legacyBehavior passHref>
+              <SidebarMenuButton 
+                className="justify-start" 
+                tooltip="خروج"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>خروج</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
         {!isMobile && (
