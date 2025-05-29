@@ -77,10 +77,10 @@ function Calendar({
         ),
       }}
       locale={faIR}
-      defaultMonth={todayDate} // Ensure calendar opens to the current month
-      modifiers={{ today: todayDate }} // Explicitly define 'today' modifier
+      // defaultMonth={todayDate} // Removed this prop
+      modifiers={{ today: todayDate }} 
       modifiersClassNames={{
-        today: "bg-accent text-accent-foreground", // Apply 'today' styling
+        today: "bg-accent text-accent-foreground", 
       }}
       {...props}
     />
