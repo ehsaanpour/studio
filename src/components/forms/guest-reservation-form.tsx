@@ -209,7 +209,6 @@ export function GuestReservationForm() {
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                        initialFocus
                         locale={faIR} // This ensures the calendar displays in Jalali (Shamsi) and uses Jalali month/year names
                       />
                     </PopoverContent>
@@ -434,3 +433,5 @@ export function GuestReservationForm() {
     </Form>
   );
 }
+
+    

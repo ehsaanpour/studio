@@ -145,7 +145,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                        initialFocus
                         locale={faIR}
                       />
                     </PopoverContent>
@@ -322,3 +321,5 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
+
+    
