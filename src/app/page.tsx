@@ -25,7 +25,7 @@ export default function LandingPage() {
         <section
           className="relative py-16 md:py-24 lg:py-32 bg-cover bg-center"
           style={{ backgroundImage: "url('https://placehold.co/1200x800.png')" }}
-          data-ai-hint="control room background" // Hint for the type of background image
+          data-ai-hint="control room background" // Updated hint
         >
           <div className="absolute inset-0 bg-black/60"></div> {/* Dark overlay for text readability */}
           <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
