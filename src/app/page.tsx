@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Film, CalendarCheck, UserCog } from 'lucide-react';
 import { AppLogo } from '@/components/icons/logo';
-// Removed import for next/image as it's no longer used in this section
 
 export default function LandingPage() {
   return (
@@ -21,14 +20,12 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-grow">
-        {/* Updated Hero Section with Background Image */}
+        {/* Updated Hero Section with Solid Background */}
         <section
-          className="relative py-16 md:py-24 lg:py-32 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://placehold.co/1200x800.png')" }}
-          data-ai-hint="control room background" // Updated hint
+          className="relative py-16 md:py-24 lg:py-32 bg-slate-700" 
         >
-          <div className="absolute inset-0 bg-black/60"></div> {/* Dark overlay for text readability */}
-          <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Removed overlay div */}
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center"> {/* Centered text content */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
                 استودیوی خود را به راحتی رزرو کنید
@@ -42,7 +39,7 @@ export default function LandingPage() {
                     رزرو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="border-gray-300 text-white hover:bg-white/10 hover:text-white focus:ring-gray-300">
+                <Button size="lg" asChild className="bg-gray-300 text-white hover:bg-gray-400 focus-visible:ring-gray-500">
                   <Link href="/login">
                     ورود تهیه‌کننده / مدیر <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
