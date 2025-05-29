@@ -1,7 +1,9 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Film, CalendarCheck, UserCog } from 'lucide-react';
 import { AppLogo } from '@/components/icons/logo';
+import Image from 'next/image';
 
 export default function LandingPage() {
   return (
@@ -20,24 +22,39 @@ export default function LandingPage() {
 
       <main className="flex-grow">
         <section className="py-16 md:py-24 lg:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/10">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-              استودیوی خود را به راحتی رزرو کنید
-            </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground">
-              به سادگی استودیوهای مجهز ما را برای پروژه‌های فیلمبرداری و صدابرداری خود انتخاب و رزرو نمایید. دسترسی سریع برای مهمانان و تهیه‌کنندگان.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Link href="/guest">
-                  رزرو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/login">
-                  ورود تهیه‌کننده / مدیر <ArrowLeft className="ms-2 h-5 w-5" />
-                </Link>
-              </Button>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="text-center md:text-right">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
+                  استودیوی خود را به راحتی رزرو کنید
+                </h1>
+                <p className="mt-6 max-w-2xl mx-auto md:mx-0 md:ms-auto text-lg sm:text-xl text-muted-foreground">
+                  به سادگی استودیوهای مجهز ما را برای پروژه‌های فیلمبرداری و صدابرداری خود انتخاب و رزرو نمایید. دسترسی سریع برای مهمانان و تهیه‌کنندگان.
+                </p>
+                <div className="mt-10 flex flex-col sm:flex-row justify-center md:justify-end gap-4">
+                  <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Link href="/guest">
+                      رزرو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild>
+                    <Link href="/login">
+                      ورود تهیه‌کننده / مدیر <ArrowLeft className="ms-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-10 md:mt-0 flex justify-center md:justify-start">
+                <Image
+                  src="https://placehold.co/600x400.png"
+                  alt="تصویر نمایشی استودیو فیلمبرداری"
+                  width={600}
+                  height={400}
+                  className="rounded-xl shadow-2xl"
+                  data-ai-hint="studio film"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </section>
