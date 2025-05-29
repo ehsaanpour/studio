@@ -32,7 +32,8 @@ function Calendar({
   return (
     <DayPicker
       locale={faIR}
-      today={todayDate} // Let DayPicker handle "today" with the locale
+      today={todayDate} // For highlighting "today"
+      defaultMonth={todayDate} // To open to the current month
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
