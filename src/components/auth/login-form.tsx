@@ -108,11 +108,15 @@ export function LoginForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>نام کاربری</FormLabel>
+              <FormLabel className="text-gray-300">نام کاربری</FormLabel>
               <FormControl>
-                <Input placeholder="نام کاربری خود را وارد کنید" {...field} />
+                <Input
+                  placeholder="نام کاربری خود را وارد کنید"
+                  {...field}
+                  className="bg-[#334155] border-gray-700 text-white placeholder-gray-500 focus:border-blue-500"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
@@ -121,15 +125,24 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>رمز عبور</FormLabel>
+              <FormLabel className="text-gray-300">رمز عبور</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="رمز عبور خود را وارد کنید" {...field} />
+                <Input
+                  type="password"
+                  placeholder="رمز عبور خود را وارد کنید"
+                  {...field}
+                  className="bg-[#334155] border-gray-700 text-white placeholder-gray-500 focus:border-blue-500"
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          disabled={isLoading}
+        >
           {isLoading && <Loader2 className="ms-2 h-4 w-4 animate-spin" />}
           ورود
         </Button>
