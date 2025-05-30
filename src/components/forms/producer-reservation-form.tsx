@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  // FormDescription, // Not used
   FormField,
   FormItem,
   FormLabel,
@@ -18,17 +17,16 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react'; // PlusCircle not used here
-import { format } from 'date-fns-jalali';
+import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react'; 
+import { format as formatDateFnsJalali } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 import { addReservation } from '@/lib/reservation-store';
+import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
 
-// Make sure this is defined or imported if needed by the store
 export const producerFormSchema = z.object({
   reservationDate: z.date({ required_error: 'تاریخ رزرو الزامی است.' }),
   reservationStartTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت شروع نامعتبر است (HH:MM).'),
@@ -65,17 +63,18 @@ const additionalServiceItems = [
 ];
 
 interface ProducerReservationFormProps {
-  producerName: string; // To identify the producer
+  producerName: string; 
 }
 
 export function ProducerReservationForm({ producerName }: ProducerReservationFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: {
-      reservationDate: undefined,
+      reservationDate: new Date(), // Default to today
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
       studioSelection: undefined,
@@ -92,7 +91,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     
     addReservation(data, 'producer', producerName);
 
-    await new Promise(resolve => setTimeout(resolve, 500)); // Shorter delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     setIsLoading(false);
     toast({
       title: 'درخواست شما ثبت شد',
@@ -104,7 +103,16 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         </div>
       ),
     });
-    form.reset();
+    form.reset({ // Reset form to default values
+      reservationDate: new Date(),
+      reservationStartTime: '09:00',
+      reservationEndTime: '17:00',
+      studioSelection: undefined,
+      studioServiceType: undefined,
+      studioServiceDays: 1,
+      studioServiceHoursPerDay: 8,
+      additionalServices: [],
+    });
   }
 
   return (
@@ -120,7 +128,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>تاریخ رزرو *</FormLabel>
-                  <Popover>
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -132,7 +140,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         >
                           <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: faIR })
+                            formatDateFnsJalali(field.value, 'PPP', { locale: faIR })
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
@@ -140,12 +148,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                      <PersianDatePicker
+                        value={field.value}
+                        onChange={(date) => {
+                           field.onChange(date);
+                           setIsDatePickerOpen(false); // Close popover on date select
+                        }}
                         disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                        locale={faIR}
                       />
                     </PopoverContent>
                   </Popover>
@@ -307,7 +316,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                     }}
                   />
                 ))}
-                <FormMessage /> {/* This FormMessage might be misplaced */}
+                <FormMessage /> 
               </FormItem>
             )}
           />
@@ -321,5 +330,3 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
-
-    

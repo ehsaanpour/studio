@@ -15,21 +15,18 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-// import { Textarea } from '@/components/ui/textarea'; // Not used
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-// import { Slider } from '@/components/ui/slider'; // Not used
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
-import { format } from 'date-fns-jalali';
+import { format as formatDateFnsJalali } from 'date-fns-jalali'; 
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
-// import type { StudioReservationRequest } from '@/types'; // Store will handle this
 import React, { useState } from 'react';
 import { addReservation } from '@/lib/reservation-store';
+import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
 
 const guestFormSchema = z.object({
   personalInfoName: z.string().min(1, 'نام موسسه یا نام و نام خانوادگی الزامی است.'),
@@ -82,6 +79,8 @@ const cateringServiceItems = [
 export function GuestReservationForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(guestFormSchema),
@@ -89,7 +88,7 @@ export function GuestReservationForm() {
       personalInfoName: '',
       personalInfoPhone: '',
       personalInfoEmail: '',
-      reservationDate: undefined,
+      reservationDate: new Date(), // Default to today
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
       studioSelection: undefined,
@@ -107,7 +106,7 @@ export function GuestReservationForm() {
     
     addReservation(data, 'guest');
 
-    await new Promise(resolve => setTimeout(resolve, 500)); // Shorter delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     setIsLoading(false);
     toast({
       title: 'درخواست شما ثبت شد',
@@ -119,7 +118,20 @@ export function GuestReservationForm() {
         </div>
       ),
     });
-    form.reset();
+    form.reset({ // Reset form to default values, ensuring date is also reset
+      personalInfoName: '',
+      personalInfoPhone: '',
+      personalInfoEmail: '',
+      reservationDate: new Date(),
+      reservationStartTime: '09:00',
+      reservationEndTime: '17:00',
+      studioSelection: undefined,
+      studioServiceType: undefined,
+      studioServiceDays: 1,
+      studioServiceHoursPerDay: 8,
+      additionalServices: [],
+      cateringServices: [],
+    });
   }
 
   return (
@@ -138,7 +150,7 @@ export function GuestReservationForm() {
                   <Input placeholder="مثال: شرکت آوای هنر / علی رضایی" {...field} />
                 </FormControl>
                 <FormDescription>
-                  نام دقیق قسمت در خواست دهنده استودیو را بنویسید
+                 نام دقیق قسمت در خواست دهنده استودیو را بنویسید
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -184,7 +196,7 @@ export function GuestReservationForm() {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>تاریخ رزرو *</FormLabel>
-                  <Popover>
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -196,7 +208,7 @@ export function GuestReservationForm() {
                         >
                           <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: faIR }) 
+                            formatDateFnsJalali(field.value, 'PPP', { locale: faIR }) 
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
@@ -204,12 +216,13 @@ export function GuestReservationForm() {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                      <PersianDatePicker
+                        value={field.value}
+                        onChange={(date) => {
+                           field.onChange(date);
+                           setIsDatePickerOpen(false); // Close popover on date select
+                        }}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                        locale={faIR} // This ensures the calendar displays in Jalali (Shamsi) and uses Jalali month/year names
                       />
                     </PopoverContent>
                   </Popover>
@@ -372,7 +385,7 @@ export function GuestReservationForm() {
                     }}
                   />
                 ))}
-                <FormMessage /> {/* This FormMessage might be misplaced if it's for the whole group */}
+                <FormMessage /> 
               </FormItem>
             )}
           />
@@ -419,7 +432,7 @@ export function GuestReservationForm() {
                     }}
                   />
                 ))}
-                <FormMessage /> {/* This FormMessage might be misplaced */}
+                <FormMessage /> 
               </FormItem>
             )}
           />
@@ -433,5 +446,3 @@ export function GuestReservationForm() {
     </Form>
   );
 }
-
-    
