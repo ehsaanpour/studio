@@ -16,7 +16,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Uncommented
+import { useRouter } from 'next/navigation';
+import { getProducerByUsername } from '@/lib/producer-store';
 
 const loginFormSchema = z.object({
   username: z.string().min(1, { message: 'نام کاربری الزامی است.' }),
@@ -27,7 +28,7 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export function LoginForm() {
   const { toast } = useToast();
-  const router = useRouter(); // Uncommented
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -40,29 +41,44 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+      // Check if it's an admin login
+      if (data.username === 'admin' && data.password === 'admin') {
+        toast({
+          title: 'ورود موفق',
+          description: 'شما به عنوان مدیر وارد شدید.',
+        });
+        router.push('/admin');
+        return;
+      }
 
-    // Replace with actual login logic
-    if (data.username === 'admin' && data.password === 'admin') {
-      toast({
-        title: 'ورود موفق',
-        description: 'شما به عنوان مدیر وارد شدید.',
-      });
-      router.push('/admin'); // Redirect to admin panel - Uncommented
-    } else if (data.username === 'producer' && data.password === 'producer') {
-      toast({
-        title: 'ورود موفق',
-        description: 'شما به عنوان تهیه‌کننده وارد شدید.',
-      });
-      router.push('/producer'); // Redirect to producer panel - Uncommented
-    } else {
+      // Try to find the producer
+      const producer = await getProducerByUsername(data.username);
+      
+      if (!producer) {
+        throw new Error('Producer not found');
+      }
+
+      // For now, we'll use a simple password check
+      // In a real application, you should use proper password hashing
+      if (data.password === 'producer') {
+        toast({
+          title: 'ورود موفق',
+          description: 'شما به عنوان تهیه‌کننده وارد شدید.',
+        });
+        router.push('/producer');
+      } else {
+        throw new Error('Invalid password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'خطا در ورود',
         description: 'نام کاربری یا رمز عبور نامعتبر است.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 

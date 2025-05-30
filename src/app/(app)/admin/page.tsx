@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,6 +14,7 @@ import { getReservations, subscribe, updateReservationStatus } from '@/lib/reser
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
+import { addProducer, getAllProducers, deleteProducer } from '@/lib/producer-store';
 
 // Helper function to get studio label
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
@@ -99,18 +99,39 @@ export default function AdminPanelPage() {
   const [newProducerPassword, setNewProducerPassword] = useState('');
 
   useEffect(() => {
-    setAllRequests(getReservations());
+    async function loadRequests() {
+      const requests = await getReservations();
+      setAllRequests(requests);
+    }
+    loadRequests();
     const unsubscribe = subscribe(() => {
-      setAllRequests(getReservations());
+      loadRequests();
     });
-    return () => unsubscribe();
-  }, []);
+
+    // Load producers from Firestore
+    const loadProducers = async () => {
+      try {
+        const producersList = await getAllProducers();
+        setProducers(producersList);
+      } catch (error) {
+        console.error('Error loading producers:', error);
+        toast({
+          title: "خطا",
+          description: "خطا در بارگذاری لیست تهیه‌کنندگان.",
+          variant: "destructive",
+        });
+      }
+    };
+    loadProducers();
+
+    return () => { unsubscribe(); };
+  }, [toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
   const oldSystemRequests = allRequests.filter(req => req.status === 'confirmed' || req.status === 'cancelled');
 
 
-  const handleAddProducer = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!newProducerName || !newProducerWorkplace || !newProducerUsername || !newProducerPassword) {
       toast({
@@ -121,32 +142,55 @@ export default function AdminPanelPage() {
       return;
     }
 
-    const newProducer: Producer = {
-      id: Date.now().toString(),
-      name: newProducerName,
-      workplace: newProducerWorkplace,
-      username: newProducerUsername,
-    };
-    setProducers(prevProducers => [...prevProducers, newProducer]);
-    
-    setNewProducerName('');
-    setNewProducerWorkplace('');
-    setNewProducerUsername('');
-    setNewProducerPassword('');
+    try {
+      const newProducer: Omit<Producer, 'id'> = {
+        name: newProducerName,
+        workplace: newProducerWorkplace,
+        username: newProducerUsername,
+      };
+      
+      await addProducer(newProducer);
+      
+      // Refresh the producers list
+      const updatedProducers = await getAllProducers();
+      setProducers(updatedProducers);
+      
+      setNewProducerName('');
+      setNewProducerWorkplace('');
+      setNewProducerUsername('');
+      setNewProducerPassword('');
 
-    toast({
-      title: "موفقیت",
-      description: `تهیه‌کننده "${newProducer.name}" با موفقیت اضافه شد.`,
-    });
+      toast({
+        title: "موفقیت",
+        description: `تهیه‌کننده "${newProducer.name}" با موفقیت اضافه شد.`,
+      });
+    } catch (error) {
+      console.error('Error adding producer:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در افزودن تهیه‌کننده. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteProducer = (producerId: string) => {
-    setProducers(prevProducers => prevProducers.filter(p => p.id !== producerId));
-    toast({
-      title: "موفقیت",
-      description: "تهیه‌کننده با موفقیت حذف شد.",
-      variant: "default" 
-    });
+  const handleDeleteProducer = async (producerId: string) => {
+    try {
+      await deleteProducer(producerId);
+      const updatedProducers = await getAllProducers();
+      setProducers(updatedProducers);
+      toast({
+        title: "موفقیت",
+        description: "تهیه‌کننده با موفقیت حذف شد.",
+      });
+    } catch (error) {
+      console.error('Error deleting producer:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در حذف تهیه‌کننده. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUpdateRequestStatus = (requestId: string, status: StudioReservationRequest['status']) => {

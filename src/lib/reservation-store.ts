@@ -1,29 +1,43 @@
-
 'use client';
 
 import type { StudioReservationRequest, PersonalInformation, ReservationDateTime, StudioSelection, StudioServicesInfo, AdditionalService, CateringService } from '@/types';
-import type { GuestFormValues } from '@/components/forms/guest-reservation-form'; // Will create this type if not exported
-import type { ProducerFormValues } from '@/components/forms/producer-reservation-form'; // Will create this type if not exported
+import type { GuestFormValues } from '@/components/forms/guest-reservation-form';
+import type { ProducerFormValues } from '@/components/forms/producer-reservation-form';
+import { readJsonFile, writeJsonFile } from './fs-utils';
 
-
-let reservations: StudioReservationRequest[] = [];
-const listeners: Set<() => void> = new Set();
-
-export function getReservations(): StudioReservationRequest[] {
-  return [...reservations].sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime()); // Return a copy, sorted newest first
+interface ReservationsData {
+  reservations: StudioReservationRequest[];
 }
 
-export function addReservation(
+const RESERVATIONS_FILE = 'reservations.json';
+const listeners: Set<() => void> = new Set();
+
+// Helper function to get reservations from JSON file
+async function getStoredReservations(): Promise<StudioReservationRequest[]> {
+  const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
+  return data?.reservations || [];
+}
+
+// Helper function to save reservations to JSON file
+async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
+  await writeJsonFile<ReservationsData>(RESERVATIONS_FILE, { reservations });
+}
+
+export async function getReservations(): Promise<StudioReservationRequest[]> {
+  const reservations = await getStoredReservations();
+  return [...reservations].sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
+}
+
+export async function addReservation(
   formData: GuestFormValues | ProducerFormValues,
   type: 'guest' | 'producer',
   producerName?: string
-) {
+): Promise<void> {
   const newId = Date.now().toString();
   let requestDetailsBase: Omit<StudioReservationRequest, 'id' | 'type' | 'requesterName' | 'personalInfo' | 'cateringServices' | 'submittedAt' | 'status' | 'updatedAt'>;
   let personalInfo: PersonalInformation | undefined;
   let cateringServices: CateringService[] | undefined;
   let requester: string | undefined;
-
 
   if (type === 'guest') {
     const guestData = formData as GuestFormValues;
@@ -33,7 +47,7 @@ export function addReservation(
       phoneNumber: guestData.personalInfoPhone,
       emailAddress: guestData.personalInfoEmail,
     };
-    cateringServices = guestData.cateringServices;
+    cateringServices = guestData.cateringServices as CateringService[];
     requestDetailsBase = {
       dateTime: {
         reservationDate: guestData.reservationDate,
@@ -46,12 +60,11 @@ export function addReservation(
         numberOfDays: guestData.studioServiceDays,
         hoursPerDay: guestData.studioServiceHoursPerDay,
       },
-      additionalServices: guestData.additionalServices,
+      additionalServices: guestData.additionalServices as AdditionalService[],
     };
-  } else { // producer
+  } else {
     const producerData = formData as ProducerFormValues;
     requester = producerName;
-    // personalInfo and cateringServices are not submitted by producer
     requestDetailsBase = {
       dateTime: {
         reservationDate: producerData.reservationDate,
@@ -64,7 +77,7 @@ export function addReservation(
         numberOfDays: producerData.studioServiceDays,
         hoursPerDay: producerData.studioServiceHoursPerDay,
       },
-      additionalServices: producerData.additionalServices,
+      additionalServices: producerData.additionalServices as AdditionalService[],
     };
   }
 
@@ -79,23 +92,30 @@ export function addReservation(
     status: 'new',
   };
 
-  reservations = [newRequest, ...reservations]; // Add to the beginning
+  const reservations = await getStoredReservations();
+  reservations.unshift(newRequest);
+  await saveReservations(reservations);
   notifyListeners();
 }
 
-export function updateReservationStatus(id: string, status: 'new' | 'read' | 'confirmed' | 'cancelled') {
-    const requestIndex = reservations.findIndex(req => req.id === id);
-    if (requestIndex > -1) {
-        reservations[requestIndex].status = status;
-        reservations[requestIndex].updatedAt = new Date();
-        notifyListeners();
-        console.log(`Reservation ${id} status updated to ${status}`, reservations);
-    }
+export async function updateReservationStatus(requestId: string, newStatus: StudioReservationRequest['status']): Promise<void> {
+  const reservations = await getStoredReservations();
+  const requestIndex = reservations.findIndex(req => req.id === requestId);
+  
+  if (requestIndex !== -1) {
+    reservations[requestIndex] = {
+      ...reservations[requestIndex],
+      status: newStatus,
+      updatedAt: new Date(),
+    };
+    await saveReservations(reservations);
+    notifyListeners();
+  }
 }
 
-export function subscribe(listener: () => void): () => void {
+export function subscribe(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener); // Unsubscribe function
+  return () => listeners.delete(listener);
 }
 
 function notifyListeners() {
@@ -103,7 +123,7 @@ function notifyListeners() {
 }
 
 // Function to clear reservations for testing or reset (optional)
-export function clearAllReservations_DEV_ONLY() {
-    reservations = [];
-    notifyListeners();
+export async function clearAllReservations_DEV_ONLY(): Promise<void> {
+  await saveReservations([]);
+  notifyListeners();
 }

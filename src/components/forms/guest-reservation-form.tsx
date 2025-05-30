@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +26,7 @@ import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 import { addReservation } from '@/lib/reservation-store';
 import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
+import type { AdditionalService, CateringService } from '@/types';
 
 const guestFormSchema = z.object({
   personalInfoName: z.string().min(1, 'نام موسسه یا نام و نام خانوادگی الزامی است.'),
@@ -39,8 +39,8 @@ const guestFormSchema = z.object({
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
   studioServiceDays: z.number().min(1, 'تعداد روز باید حداقل ۱ باشد.'),
   studioServiceHoursPerDay: z.number().min(1, 'تعداد ساعت در روز باید حداقل ۱ باشد.'),
-  additionalServices: z.array(z.string()).optional(),
-  cateringServices: z.array(z.string()).optional(),
+  additionalServices: z.array(z.enum(['videowall', 'led_monitor', 'xdcam', 'stream_iranian', 'stream_foreign', 'stream_server', 'zoom', 'google_meet', 'ms_teams', 'lobby', 'crane', 'makeup_artist', 'service_staff'])).optional(),
+  cateringServices: z.array(z.enum(['drinks', 'breakfast', 'snack', 'lunch', 'dinner'])).optional(),
 });
 
 export type GuestFormValues = z.infer<typeof guestFormSchema>;
