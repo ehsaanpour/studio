@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, Inbox, MailOpen } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, XCircle, Inbox, MailOpen, Check, ShieldCheck, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,6 +67,26 @@ const getCateringServiceLabel = (serviceId: CateringService): string => {
   return cateringServiceItemsMap[serviceId] || serviceId;
 };
 
+const getStatusLabel = (status: StudioReservationRequest['status']): string => {
+  switch (status) {
+    case 'new': return 'جدید';
+    case 'read': return 'خوانده شده';
+    case 'confirmed': return 'تایید شده';
+    case 'cancelled': return 'لغو شده';
+    default: return status;
+  }
+};
+
+const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "default" | "secondary" | "destructive" | "outline" => {
+  switch (status) {
+    case 'new': return 'destructive';
+    case 'read': return 'secondary';
+    case 'confirmed': return 'default'; // Uses primary color, good for positive
+    case 'cancelled': return 'outline';
+    default: return 'secondary';
+  }
+};
+
 
 export default function AdminPanelPage() {
   const { toast } = useToast();
@@ -86,8 +106,8 @@ export default function AdminPanelPage() {
     return () => unsubscribe();
   }, []);
 
-  const newSystemRequests = allRequests.filter(req => req.status === 'new');
-  const oldSystemRequests = allRequests.filter(req => req.status !== 'new');
+  const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
+  const oldSystemRequests = allRequests.filter(req => req.status === 'confirmed' || req.status === 'cancelled');
 
 
   const handleAddProducer = (event: FormEvent<HTMLFormElement>) => {
@@ -129,15 +149,15 @@ export default function AdminPanelPage() {
     });
   };
 
-  const handleMarkAsRead = (requestId: string) => {
-    updateReservationStatus(requestId, 'read');
+  const handleUpdateRequestStatus = (requestId: string, status: StudioReservationRequest['status']) => {
+    updateReservationStatus(requestId, status);
     toast({
       title: "وضعیت بروز شد",
-      description: "درخواست به عنوان خوانده شده علامت‌گذاری شد.",
+      description: `درخواست به عنوان "${getStatusLabel(status)}" علامت‌گذاری شد.`,
     });
   };
 
-  const renderRequestCard = (request: StudioReservationRequest, isNew: boolean) => (
+  const renderRequestCard = (request: StudioReservationRequest) => (
     <Card key={request.id} className="shadow-sm mb-4">
       <CardHeader>
         <div className="flex justify-between items-start">
@@ -147,8 +167,8 @@ export default function AdminPanelPage() {
               تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
             </CardDescription>
           </div>
-          <Badge variant={request.status === 'new' ? 'destructive' : 'secondary'}>
-            {request.status === 'new' ? 'جدید' : request.status === 'read' ? 'خوانده شده' : request.status}
+          <Badge variant={getStatusBadgeVariant(request.status)}>
+            {getStatusLabel(request.status)}
           </Badge>
         </div>
       </CardHeader>
@@ -168,11 +188,19 @@ export default function AdminPanelPage() {
            <p><strong>خدمات پذیرایی:</strong> {request.cateringServices.map(getCateringServiceLabel).join('، ')}</p>
         )}
       </CardContent>
-      {isNew && (
-        <CardFooter>
-          <Button onClick={() => handleMarkAsRead(request.id)} size="sm" variant="outline">
-            علامت‌گذاری به عنوان خوانده شده <CheckCircle className="me-2 h-4 w-4" /> 
+      {(request.status === 'new' || request.status === 'read') && (
+        <CardFooter className="flex justify-end gap-2">
+          <Button onClick={() => handleUpdateRequestStatus(request.id, 'confirmed')} size="sm" variant="default" className="bg-green-600 hover:bg-green-700 text-white">
+            تایید <ThumbsUp className="me-2 h-4 w-4" /> 
           </Button>
+          <Button onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')} size="sm" variant="destructive">
+            رد کردن <ThumbsDown className="me-2 h-4 w-4" /> 
+          </Button>
+          {request.status === 'new' && (
+             <Button onClick={() => handleUpdateRequestStatus(request.id, 'read')} size="sm" variant="outline">
+                علامت‌گذاری به عنوان خوانده شده <CheckCircle className="me-2 h-4 w-4" /> 
+            </Button>
+          )}
         </CardFooter>
       )}
     </Card>
@@ -183,13 +211,13 @@ export default function AdminPanelPage() {
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
         <Link href="/dashboard">
-          بازگشت به داشبورد <ArrowRight className="me-2 h-4 w-4" />
+          <ArrowRight className="me-2 h-4 w-4" /> بازگشت به داشبورد 
         </Link>
       </Button>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl font-bold flex items-center">
-            پنل مدیریت سیستم رزرواسیون <UserCog className="me-3 h-8 w-8 text-primary" />
+            <UserCog className="me-3 h-8 w-8 text-primary" /> پنل مدیریت سیستم رزرواسیون 
           </CardTitle>
           <CardDescription>مدیریت درخواست‌های رزرو، تهیه‌کنندگان و تنظیمات کلی سیستم.</CardDescription>
         </CardHeader>
@@ -211,24 +239,24 @@ export default function AdminPanelPage() {
                   <Tabs defaultValue="new-requests" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-4">
                       <TabsTrigger value="new-requests">
-                        درخواست‌های جدید ({newSystemRequests.length}) <Inbox className="me-2 h-4 w-4" />
+                        درخواست‌های در انتظار بررسی ({newSystemRequests.length}) <Inbox className="me-2 h-4 w-4" />
                       </TabsTrigger>
                       <TabsTrigger value="old-requests">
-                         درخواست‌های خوانده شده ({oldSystemRequests.length}) <MailOpen className="me-2 h-4 w-4" />
+                         درخواست‌های نهایی شده ({oldSystemRequests.length}) <ShieldCheck className="me-2 h-4 w-4" />
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="new-requests">
                       {newSystemRequests.length === 0 ? (
-                        <p className="text-muted-foreground py-4 text-center">هیچ درخواست جدیدی وجود ندارد.</p>
+                        <p className="text-muted-foreground py-4 text-center">هیچ درخواست در انتظار بررسی وجود ندارد.</p>
                       ) : (
-                        newSystemRequests.map(req => renderRequestCard(req, true))
+                        newSystemRequests.map(req => renderRequestCard(req))
                       )}
                     </TabsContent>
                     <TabsContent value="old-requests">
                       {oldSystemRequests.length === 0 ? (
-                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست خوانده شده‌ای وجود ندارد.</p>
+                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست نهایی شده‌ای وجود ندارد.</p>
                       ) : (
-                        oldSystemRequests.map(req => renderRequestCard(req, false))
+                        oldSystemRequests.map(req => renderRequestCard(req))
                       )}
                     </TabsContent>
                   </Tabs>
@@ -345,4 +373,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
