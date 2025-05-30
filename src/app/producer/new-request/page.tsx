@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +6,13 @@ import Link from 'next/link';
 import { ArrowRight, PlusCircle } from 'lucide-react';
 import { ProducerReservationForm } from '@/components/forms/producer-reservation-form';
 import React from 'react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function NewProducerRequestPage() {
-  // Mock producer name, in a real app this would come from auth context
-  const producerName = "جناب آقای رضایی"; // Example, replace with actual producer data
+  const { user } = useAuth();
+
+  // Use the actual producer name from auth context
+  const producerName = user?.name || "تهیه‌کننده";
 
   return (
     <div className="space-y-6">
@@ -33,4 +35,4 @@ export default function NewProducerRequestPage() {
       </Card>
     </div>
   );
-}
+} 

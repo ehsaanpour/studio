@@ -17,7 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getProducerByUsername } from '@/lib/producer-store';
+import { getProducerByUsername, verifyProducerPassword } from '@/lib/producer-store';
+import { useAuth } from '@/lib/auth-context';
 
 const loginFormSchema = z.object({
   username: z.string().min(1, { message: 'نام کاربری الزامی است.' }),
@@ -30,6 +31,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -44,11 +46,14 @@ export function LoginForm() {
     try {
       // Check if it's an admin login
       if (data.username === 'admin' && data.password === 'admin') {
-        toast({
-          title: 'ورود موفق',
-          description: 'شما به عنوان مدیر وارد شدید.',
-        });
-        router.push('/admin');
+        const success = await login(data.username, data.password);
+        if (success) {
+          toast({
+            title: 'ورود موفق',
+            description: 'شما به عنوان مدیر وارد شدید.',
+          });
+          router.push('/admin');
+        }
         return;
       }
 
@@ -56,25 +61,38 @@ export function LoginForm() {
       const producer = await getProducerByUsername(data.username);
       
       if (!producer) {
-        throw new Error('Producer not found');
+        toast({
+          title: 'خطا در ورود',
+          description: 'کاربری با این نام کاربری یافت نشد.',
+          variant: 'destructive',
+        });
+        return;
       }
 
-      // For now, we'll use a simple password check
-      // In a real application, you should use proper password hashing
-      if (data.password === 'producer') {
-        toast({
-          title: 'ورود موفق',
-          description: 'شما به عنوان تهیه‌کننده وارد شدید.',
-        });
-        router.push('/producer');
+      // Verify the password using bcrypt
+      const isValidPassword = await verifyProducerPassword(data.username, data.password);
+      
+      if (isValidPassword) {
+        const success = await login(data.username, data.password);
+        if (success) {
+          toast({
+            title: 'ورود موفق',
+            description: 'شما به عنوان تهیه‌کننده وارد شدید.',
+          });
+          router.push('/producer');
+        }
       } else {
-        throw new Error('Invalid password');
+        toast({
+          title: 'خطا در ورود',
+          description: 'رمز عبور اشتباه است.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
       toast({
         title: 'خطا در ورود',
-        description: 'نام کاربری یا رمز عبور نامعتبر است.',
+        description: 'خطایی در سیستم رخ داده است. لطفا دوباره تلاش کنید.',
         variant: 'destructive',
       });
     } finally {

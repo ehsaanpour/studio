@@ -15,6 +15,8 @@ import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
 import { addProducer, getAllProducers, deleteProducer } from '@/lib/producer-store';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
 
 // Helper function to get studio label
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
@@ -87,8 +89,9 @@ const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "def
   }
 };
 
-
 export default function AdminPanelPage() {
+  const { user, isAdmin } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
   const [producers, setProducers] = useState<Producer[]>([]);
   const [allRequests, setAllRequests] = useState<StudioReservationRequest[]>([]);
@@ -97,8 +100,14 @@ export default function AdminPanelPage() {
   const [newProducerWorkplace, setNewProducerWorkplace] = useState('');
   const [newProducerUsername, setNewProducerUsername] = useState('');
   const [newProducerPassword, setNewProducerPassword] = useState('');
+  const [newProducerEmail, setNewProducerEmail] = useState('');
+  const [newProducerPhone, setNewProducerPhone] = useState('');
 
   useEffect(() => {
+    if (!isAdmin) {
+      router.push('/dashboard');
+      return;
+    }
     async function loadRequests() {
       const requests = await getReservations();
       setAllRequests(requests);
@@ -125,7 +134,7 @@ export default function AdminPanelPage() {
     loadProducers();
 
     return () => { unsubscribe(); };
-  }, [toast]);
+  }, [isAdmin, router, toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
   const oldSystemRequests = allRequests.filter(req => req.status === 'confirmed' || req.status === 'cancelled');
@@ -133,7 +142,7 @@ export default function AdminPanelPage() {
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newProducerName || !newProducerWorkplace || !newProducerUsername || !newProducerPassword) {
+    if (!newProducerName || !newProducerUsername || !newProducerPassword || !newProducerEmail || !newProducerPhone) {
       toast({
         title: "خطا",
         description: "لطفاً تمامی فیلدها را تکمیل کنید.",
@@ -143,27 +152,30 @@ export default function AdminPanelPage() {
     }
 
     try {
-      const newProducer: Omit<Producer, 'id'> = {
+      await addProducer({
         name: newProducerName,
-        workplace: newProducerWorkplace,
         username: newProducerUsername,
-      };
+        password: newProducerPassword,
+        email: newProducerEmail,
+        phone: newProducerPhone,
+        isAdmin: false,
+      });
       
-      await addProducer(newProducer);
-      
-      // Refresh the producers list
-      const updatedProducers = await getAllProducers();
-      setProducers(updatedProducers);
-      
-      setNewProducerName('');
-      setNewProducerWorkplace('');
-      setNewProducerUsername('');
-      setNewProducerPassword('');
-
       toast({
         title: "موفقیت",
-        description: `تهیه‌کننده "${newProducer.name}" با موفقیت اضافه شد.`,
+        description: `تهیه‌کننده "${newProducerName}" با موفقیت اضافه شد.`,
       });
+      
+      // Clear form
+      setNewProducerName('');
+      setNewProducerUsername('');
+      setNewProducerPassword('');
+      setNewProducerEmail('');
+      setNewProducerPhone('');
+      
+      // Reload producers
+      const updatedProducers = await getAllProducers();
+      setProducers(updatedProducers);
     } catch (error) {
       console.error('Error adding producer:', error);
       toast({
@@ -250,12 +262,15 @@ export default function AdminPanelPage() {
     </Card>
   );
 
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
-        <Link href="/dashboard">
-          <ArrowRight className="me-2 h-4 w-4" /> بازگشت به داشبورد 
+        <Link href="/dashboard" className="flex items-center">
+          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
         </Link>
       </Button>
       <Card className="shadow-lg">
@@ -374,6 +389,30 @@ export default function AdminPanelPage() {
                         onChange={(e) => setNewProducerWorkplace(e.target.value)}
                         className="mt-1" 
                         placeholder="نام دقیق قسمت در خواست دهنده استودیو را بنویسید"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="producerEmail">ایمیل *</Label>
+                      <Input 
+                        type="email" 
+                        id="producerEmail" 
+                        value={newProducerEmail}
+                        onChange={(e) => setNewProducerEmail(e.target.value)}
+                        className="mt-1" 
+                        placeholder="example@domain.com"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="producerPhone">شماره تماس *</Label>
+                      <Input 
+                        type="tel" 
+                        id="producerPhone" 
+                        value={newProducerPhone}
+                        onChange={(e) => setNewProducerPhone(e.target.value)}
+                        className="mt-1" 
+                        placeholder="شماره تماس"
                         required
                       />
                     </div>

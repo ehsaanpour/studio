@@ -1,11 +1,13 @@
 import type { Producer } from '@/types';
 import { readJsonFile, writeJsonFile } from './fs-utils';
+import bcrypt from 'bcryptjs';
 
 interface ProducersData {
   producers: Producer[];
 }
 
 const PRODUCERS_FILE = 'producers.json';
+const SALT_ROUNDS = 10;
 
 // Helper function to get producers from JSON file
 async function getStoredProducers(): Promise<Producer[]> {
@@ -20,11 +22,30 @@ async function saveProducers(producers: Producer[]): Promise<void> {
 
 export async function addProducer(producer: Omit<Producer, 'id'>): Promise<string> {
   try {
+    // Validate required fields
+    if (!producer.username || !producer.password || !producer.name || !producer.email || !producer.phone) {
+      throw new Error('All fields are required');
+    }
+
     const producers = await getStoredProducers();
+    
+    // Check if username already exists
+    if (producers.some(p => p.username === producer.username)) {
+      throw new Error('Username already exists');
+    }
+
+    // Ensure password is a string
+    const password = String(producer.password);
+    
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    
     const newProducer: Producer = {
       id: Date.now().toString(),
-      ...producer
+      ...producer,
+      password: hashedPassword
     };
+    
     producers.push(newProducer);
     await saveProducers(producers);
     return newProducer.id;
@@ -41,6 +62,24 @@ export async function getProducerByUsername(username: string): Promise<Producer 
   } catch (error) {
     console.error('Error getting producer:', error);
     throw error;
+  }
+}
+
+export async function verifyProducerPassword(username: string, password: string): Promise<boolean> {
+  try {
+    if (!username || !password) {
+      return false;
+    }
+
+    const producer = await getProducerByUsername(username);
+    if (!producer || !producer.password) {
+      return false;
+    }
+    
+    return await bcrypt.compare(password, producer.password);
+  } catch (error) {
+    console.error('Error verifying password:', error);
+    return false;
   }
 }
 

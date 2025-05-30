@@ -1,4 +1,3 @@
-
 // FormEase specific types (can be removed or commented out)
 /*
 export interface FormFieldSuggestion {
@@ -87,9 +86,11 @@ export interface StudioReservationRequest {
 
 export interface Producer {
   id: string;
-  name: string;
-  workplace: string;
   username: string;
-  // passwordHash: string; // Not stored on client
+  password: string;
+  name: string;
+  email: string;
+  phone: string;
+  isAdmin?: boolean;
 }
 

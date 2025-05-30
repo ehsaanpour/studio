@@ -1,8 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarHeader,
@@ -14,27 +13,44 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/icons/logo";
-import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home } from "lucide-react";
+import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home, User } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { useEffect, useState } from "react";
 
 // Updated navItems for Studio Reservation System
 const navItems = [
-  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard }, // This can be the main entry after login
-  // { href: "/guest", label: "رزرو مهمان", icon: UserPlus }, // Or keep this accessible if needed
-  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn }, // Link to producer panel
-  { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck }, // Link to admin panel
+  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
+  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn },
+  { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { open, toggleSidebar, isMobile, state } = useSidebar();
+  const { user, isAdmin, logout } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
   const CollapseIcon = ChevronRight;
   const ExpandIcon = ChevronLeft;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Hide sidebar for login and guest pages if they are standalone full-page experiences
   if (pathname === "/login" || pathname === "/guest") {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
+  if (!mounted) {
     return null;
   }
 
@@ -59,11 +75,11 @@ export function AppSidebar() {
       <SidebarContent className="flex-1 p-2">
         <SidebarMenu>
            <SidebarMenuItem>
-              <Link href="/" legacyBehavior passHref>
+              <Link href="/" className="w-full">
                 <SidebarMenuButton
                   isActive={pathname === "/"}
                   tooltip="صفحه اصلی"
-                  className="justify-start"
+                  className="justify-start w-full"
                 >
                   <Home className="h-5 w-5" />
                   <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>صفحه اصلی</span>
@@ -72,11 +88,11 @@ export function AppSidebar() {
             </SidebarMenuItem>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href} className="w-full">
                 <SidebarMenuButton
                   isActive={pathname.startsWith(item.href) && (item.href === "/" || item.href === "/dashboard" ? pathname === item.href : true) }
                   tooltip={item.label}
-                  className="justify-start"
+                  className="justify-start w-full"
                 >
                   <item.icon className="h-5 w-5" />
                   <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>{item.label}</span>
@@ -88,11 +104,27 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <SidebarMenu>
+          {user && (
+            <SidebarMenuItem>
+              <Link href={isAdmin ? "/admin" : "/profile"} className="w-full">
+                <SidebarMenuButton 
+                  isActive={pathname === (isAdmin ? "/admin" : "/profile")}
+                  className="justify-start w-full" 
+                  tooltip={isAdmin ? "پنل مدیریت" : "پروفایل"}
+                >
+                  <User className="h-5 w-5" />
+                  <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>
+                    {isAdmin ? "پنل مدیریت" : "پروفایل"}
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          )}
            <SidebarMenuItem>
-            <Link href="/settings" legacyBehavior passHref>
+            <Link href="/settings" className="w-full">
               <SidebarMenuButton 
                 isActive={pathname === "/settings"}
-                className="justify-start" 
+                className="justify-start w-full" 
                 tooltip="تنظیمات"
               >
                 <Settings className="h-5 w-5" />
@@ -101,15 +133,14 @@ export function AppSidebar() {
             </Link>
           </SidebarMenuItem>
            <SidebarMenuItem>
-            <Link href="/login" legacyBehavior passHref>
-              <SidebarMenuButton 
-                className="justify-start" 
-                tooltip="خروج"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>خروج</span>
-              </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton 
+              onClick={handleLogout}
+              className="justify-start w-full" 
+              tooltip="خروج"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>خروج</span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
         {!isMobile && (

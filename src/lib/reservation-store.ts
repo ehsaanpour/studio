@@ -25,7 +25,12 @@ async function saveReservations(reservations: StudioReservationRequest[]): Promi
 
 export async function getReservations(): Promise<StudioReservationRequest[]> {
   const reservations = await getStoredReservations();
-  return [...reservations].sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
+  // Convert submittedAt string to Date object for sorting
+  const reservationsWithDates = reservations.map(reservation => ({
+    ...reservation,
+    submittedAt: new Date(reservation.submittedAt) // Ensure submittedAt is a Date object
+  }));
+  return reservationsWithDates.sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
 }
 
 export async function addReservation(
@@ -88,7 +93,7 @@ export async function addReservation(
     personalInfo: personalInfo,
     ...requestDetailsBase,
     cateringServices: cateringServices,
-    submittedAt: new Date(),
+    submittedAt: new Date(), // Save as Date object
     status: 'new',
   };
 
