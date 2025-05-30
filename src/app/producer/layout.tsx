@@ -11,9 +11,16 @@ export default function ProducerLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background overflow-auto">
-        {children}
-      </main>
+      <div className="flex flex-1">
+        <div className="w-64 bg-black" />
+        <main className="flex-1 bg-background overflow-auto">
+          <div className="flex justify-center w-full">
+            <div className="w-full max-w-[1200px] px-4">
+              {children}
+            </div>
+          </div>
+        </main>
+      </div>
       <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border bg-background">
         <p>
           تمامی حقوق این نرم افزار برای <a href="https://ehsaanpour.github.io/Me/index.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">احسان احسانپور</a> محفوظ است

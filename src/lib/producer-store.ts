@@ -101,4 +101,35 @@ export async function deleteProducer(producerId: string): Promise<void> {
     console.error('Error deleting producer:', error);
     throw error;
   }
+}
+
+export async function updateProducer(id: string, updates: Partial<Omit<Producer, 'id'>>): Promise<void> {
+  try {
+    const producers = await getStoredProducers();
+    const index = producers.findIndex(p => p.id === id);
+    
+    if (index === -1) {
+      throw new Error('Producer not found');
+    }
+
+    const updatedProducer = { ...producers[index] };
+    
+    // Update fields if provided
+    if (updates.name) updatedProducer.name = updates.name;
+    if (updates.username) updatedProducer.username = updates.username;
+    if (updates.email) updatedProducer.email = updates.email;
+    if (updates.phone) updatedProducer.phone = updates.phone;
+    if (updates.workplace) updatedProducer.workplace = updates.workplace;
+    
+    // Only hash and update password if a new one is provided
+    if (updates.password) {
+      updatedProducer.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
+    }
+
+    producers[index] = updatedProducer;
+    await saveProducers(producers);
+  } catch (error) {
+    console.error('Error updating producer:', error);
+    throw error;
+  }
 } 

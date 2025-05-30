@@ -91,6 +91,7 @@ export interface Producer {
   name: string;
   email: string;
   phone: string;
+  workplace?: string;
   isAdmin?: boolean;
 }
 

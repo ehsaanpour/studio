@@ -14,7 +14,7 @@ import { getReservations, subscribe, updateReservationStatus } from '@/lib/reser
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
-import { addProducer, getAllProducers, deleteProducer } from '@/lib/producer-store';
+import { addProducer, getAllProducers, deleteProducer, updateProducer } from '@/lib/producer-store';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
@@ -103,6 +103,13 @@ export default function AdminPanelPage() {
   const [newProducerEmail, setNewProducerEmail] = useState('');
   const [newProducerPhone, setNewProducerPhone] = useState('');
 
+  // Add state for editing
+  const [editingProducer, setEditingProducer] = useState<Producer | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Add state for active tab
+  const [activeTab, setActiveTab] = useState('requests');
+
   useEffect(() => {
     if (!isAdmin) {
       router.push('/dashboard');
@@ -166,12 +173,16 @@ export default function AdminPanelPage() {
         description: `تهیه‌کننده "${newProducerName}" با موفقیت اضافه شد.`,
       });
       
-      // Clear form
+      // Clear form and editing state
       setNewProducerName('');
       setNewProducerUsername('');
       setNewProducerPassword('');
       setNewProducerEmail('');
       setNewProducerPhone('');
+      setNewProducerWorkplace('');
+
+      // Optionally switch back to producers list after adding
+      setActiveTab('producers');
       
       // Reload producers
       const updatedProducers = await getAllProducers();
@@ -211,6 +222,72 @@ export default function AdminPanelPage() {
       title: "وضعیت بروز شد",
       description: `درخواست به عنوان "${getStatusLabel(status)}" علامت‌گذاری شد.`,
     });
+  };
+
+  const handleEditProducer = (producer: Producer) => {
+    setEditingProducer(producer);
+    setNewProducerName(producer.name);
+    setNewProducerWorkplace(producer.workplace || '');
+    setNewProducerUsername(producer.username);
+    setNewProducerPassword(''); // Clear password for security
+    setNewProducerEmail(producer.email || '');
+    setNewProducerPhone(producer.phone || '');
+    setIsEditing(true);
+    // Switch to the add-producer tab
+    setActiveTab('add-producer');
+  };
+
+  const handleUpdateProducer = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingProducer || !newProducerName || !newProducerUsername || !newProducerEmail || !newProducerPhone) {
+      toast({
+        title: "خطا",
+        description: "لطفاً تمامی فیلدها را تکمیل کنید.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await updateProducer(editingProducer.id, {
+        name: newProducerName,
+        username: newProducerUsername,
+        email: newProducerEmail,
+        phone: newProducerPhone,
+        workplace: newProducerWorkplace,
+        // Only update password if a new one is provided
+        ...(newProducerPassword ? { password: newProducerPassword } : {}),
+      });
+      
+      toast({
+        title: "موفقیت",
+        description: `تهیه‌کننده "${newProducerName}" با موفقیت بروزرسانی شد.`,
+      });
+      
+      // Clear form and editing state
+      setEditingProducer(null);
+      setIsEditing(false);
+      setNewProducerName('');
+      setNewProducerUsername('');
+      setNewProducerPassword('');
+      setNewProducerEmail('');
+      setNewProducerPhone('');
+      setNewProducerWorkplace('');
+      
+      // Switch back to producers list after updating
+      setActiveTab('producers');
+      
+      // Reload producers
+      const updatedProducers = await getAllProducers();
+      setProducers(updatedProducers);
+    } catch (error) {
+      console.error('Error updating producer:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در بروزرسانی تهیه‌کننده. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderRequestCard = (request: StudioReservationRequest) => (
@@ -281,7 +358,7 @@ export default function AdminPanelPage() {
           <CardDescription>مدیریت درخواست‌های رزرو، تهیه‌کنندگان و تنظیمات کلی سیستم.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="requests" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="requests">مدیریت درخواست‌ها <ListChecks className="me-2 h-4 w-4"/></TabsTrigger>
               <TabsTrigger value="producers">مدیریت تهیه‌کنندگان <Users className="me-2 h-4 w-4"/></TabsTrigger>
@@ -342,13 +419,25 @@ export default function AdminPanelPage() {
                         <Card key={producer.id} className="shadow-sm">
                           <CardHeader>
                             <CardTitle className="text-lg">{producer.name}</CardTitle>
-                            <CardDescription>{producer.workplace} (نام کاربری: {producer.username})</CardDescription>
+                            <CardDescription>
+                              {producer.workplace} (نام کاربری: {producer.username})
+                              <br />
+                              ایمیل: {producer.email} | تلفن: {producer.phone}
+                            </CardDescription>
                           </CardHeader>
                           <CardFooter className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm" disabled>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleEditProducer(producer)}
+                            >
                               ویرایش <Edit3 className="me-1 h-4 w-4" /> 
                             </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDeleteProducer(producer.id)}>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={() => handleDeleteProducer(producer.id)}
+                            >
                               حذف <Trash2 className="me-1 h-4 w-4" /> 
                             </Button>
                           </CardFooter>
@@ -363,11 +452,15 @@ export default function AdminPanelPage() {
             <TabsContent value="add-producer">
               <Card>
                 <CardHeader>
-                  <CardTitle>افزودن تهیه‌کننده جدید</CardTitle>
-                  <CardDescription>برای افزودن یک تهیه‌کننده جدید به سیستم، فرم زیر را تکمیل کنید.</CardDescription>
+                  <CardTitle>{isEditing ? 'ویرایش تهیه‌کننده' : 'افزودن تهیه‌کننده جدید'}</CardTitle>
+                  <CardDescription>
+                    {isEditing 
+                      ? 'برای ویرایش اطلاعات تهیه‌کننده، فرم زیر را تکمیل کنید.'
+                      : 'برای افزودن یک تهیه‌کننده جدید به سیستم، فرم زیر را تکمیل کنید.'}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleAddProducer} className="space-y-4">
+                  <form onSubmit={isEditing ? handleUpdateProducer : handleAddProducer} className="space-y-4">
                     <div>
                       <Label htmlFor="producerName">نام *</Label>
                       <Input 
@@ -440,9 +533,30 @@ export default function AdminPanelPage() {
                         required
                       />
                     </div>
-                    <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      افزودن تهیه‌کننده <PlusSquare className="me-2 h-4 w-4"/>
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        {isEditing ? 'بروزرسانی تهیه‌کننده' : 'افزودن تهیه‌کننده'} 
+                        {isEditing ? <Edit3 className="me-2 h-4 w-4"/> : <PlusSquare className="me-2 h-4 w-4"/>}
+                      </Button>
+                      {isEditing && (
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditingProducer(null);
+                            setNewProducerName('');
+                            setNewProducerUsername('');
+                            setNewProducerPassword('');
+                            setNewProducerEmail('');
+                            setNewProducerPhone('');
+                            setNewProducerWorkplace('');
+                          }}
+                        >
+                          انصراف
+                        </Button>
+                      )}
+                    </div>
                   </form>
                    <p className="mt-4 text-xs text-muted-foreground">
                     این بخش برای افزودن تهیه‌کنندگان طراحی شده و قابلیت توسعه برای تنظیمات بیشتر را دارد.
