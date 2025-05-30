@@ -23,7 +23,6 @@ export default function LandingPage() {
         {/* Updated Hero Section with Background Image and Overlay */}
         <section
           className="relative py-20 md:py-28 lg:py-36 bg-cover bg-center"
-          style={{}}
           style={{ backgroundImage: "url('https://assets.bwbx.io/images/users/iqjWHBFdfxIU/i4E__Y7vjGmg/v1/1200x801.jpg')" }}
         >
           <div className="absolute inset-0 bg-black/60"></div> {/* Dark overlay */}
@@ -38,7 +37,7 @@ export default function LandingPage() {
               <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
                 <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link href="/guest">
-                    رزرو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
+                    رزرو استودیو به عنوان مهمان <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button size="lg" asChild className="bg-gray-300 text-gray-800 hover:bg-gray-400 focus-visible:ring-gray-500">
