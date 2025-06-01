@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea'; // New Import
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,6 +29,7 @@ import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New 
 import type { AdditionalService } from '@/types';
 
 export const producerFormSchema = z.object({
+  programName: z.string().min(1, 'نام برنامه الزامی است.'), // New field
   reservationDate: z.date({ required_error: 'تاریخ رزرو الزامی است.' }),
   reservationStartTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت شروع نامعتبر است (HH:MM).'),
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
@@ -36,6 +38,7 @@ export const producerFormSchema = z.object({
   studioServiceDays: z.number().min(1, 'تعداد روز باید حداقل ۱ باشد.'),
   studioServiceHoursPerDay: z.number().min(1, 'تعداد ساعت در روز باید حداقل ۱ باشد.'),
   additionalServices: z.array(z.enum(['videowall', 'led_monitor', 'xdcam', 'stream_iranian', 'stream_foreign', 'stream_server', 'zoom', 'google_meet', 'ms_teams', 'lobby', 'crane', 'makeup_artist', 'service_staff'])).optional(),
+  details: z.string().optional(), // New field
 });
 
 export type ProducerFormValues = z.infer<typeof producerFormSchema>;
@@ -74,6 +77,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: {
+      programName: '', // Default value for new field
       reservationDate: new Date(), // Default to today
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
@@ -82,6 +86,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       studioServiceDays: 1,
       studioServiceHoursPerDay: 8,
       additionalServices: [],
+      details: '', // Default value for new field
     },
   });
 
@@ -104,6 +109,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       ),
     });
     form.reset({ // Reset form to default values
+      programName: '', // Reset new field
       reservationDate: new Date(),
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
@@ -112,12 +118,31 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       studioServiceDays: 1,
       studioServiceHoursPerDay: 8,
       additionalServices: [],
+      details: '', // Reset new field
     });
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Program Name */}
+        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
+          <FormField
+            control={form.control}
+            name="programName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>اسم برنامه *</FormLabel>
+                <FormControl>
+                  <Input placeholder="نام برنامه خود را وارد کنید" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         {/* Reservation Date and Time */}
         <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">تاریخ و ساعت رزرو</h3>
@@ -154,7 +179,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                            field.onChange(date);
                            setIsDatePickerOpen(false); // Close popover on date select
                         }}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        disabled={(date) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const tomorrow = new Date(today);
+                          tomorrow.setDate(today.getDate() + 1);
+                          return date < tomorrow;
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
@@ -167,7 +198,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
               name="reservationStartTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ساعت شروع رزرو *</FormLabel>
+                  <FormLabel>ساعت شروع برنامه *</FormLabel> {/* Updated label */}
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -180,7 +211,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
               name="reservationEndTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ساعت پایان رزرو *</FormLabel>
+                  <FormLabel>ساعت پایان برنامه *</FormLabel> {/* Updated label */}
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -317,6 +348,28 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                   />
                 ))}
                 <FormMessage /> 
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Details */}
+        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">توضیحات</h3>
+          <FormField
+            control={form.control}
+            name="details"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>توضیحات</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="جزئیات یا نکات اضافی درباره برنامه را اینجا وارد کنید..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />

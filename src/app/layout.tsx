@@ -21,15 +21,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body className={cn(vazirmatn.className, 'min-h-screen bg-background')} suppressHydrationWarning>
-        <ThemeProvider defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <SidebarProvider>
-              {children}
-              <Toaster />
-            </SidebarProvider>
-          </AuthProvider>
-        </ThemeProvider>
+      <body className={cn(vazirmatn.className, 'bg-background')} suppressHydrationWarning>
+        <div className="min-h-screen w-full flex items-center justify-center p-4">
+          <ThemeProvider defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <SidebarProvider>
+                {children}
+                <Toaster />
+              </SidebarProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );
