@@ -94,4 +94,5 @@ export interface Producer {
   phone: string;
   workplace?: string;
   isAdmin?: boolean;
+  profilePictureUrl?: string; // New field for profile picture URL
 }

@@ -13,7 +13,7 @@ export function ProfilePictureUpload() {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) { // 2MB limit
@@ -25,29 +25,60 @@ export function ProfilePictureUpload() {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setIsLoading(true);
-        // Simulate upload delay
-        setTimeout(() => {
-          if (updateProfile) {
-            updateProfile({ profilePictureUrl: base64String });
-            toast({
-              title: 'تصویر پروفایل به‌روزرسانی شد',
-              description: 'تصویر پروفایل شما با موفقیت آپلود شد.',
-            });
-          }
-          setIsLoading(false);
-        }, 1000);
-      };
-      reader.readAsDataURL(file);
+      setIsLoading(true);
+      const formData = new FormData();
+      formData.append('profilePic', file);
+
+      try {
+        const response = await fetch('/api/upload-profile-pic', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to upload image');
+        }
+
+        const data = await response.json();
+        if (updateProfile) {
+          updateProfile({ profilePictureUrl: data.url });
+          toast({
+            title: 'تصویر پروفایل به‌روزرسانی شد',
+            description: 'تصویر پروفایل شما با موفقیت آپلود شد.',
+          });
+        }
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        toast({
+          title: 'خطا در آپلود',
+          description: error.message || 'خطا در آپلود تصویر پروفایل.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleRemovePicture = () => {
+  const handleRemovePicture = async () => {
+    if (!user?.profilePictureUrl) return;
+
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/upload-profile-pic', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: user.profilePictureUrl }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete image');
+      }
+
       if (updateProfile) {
         updateProfile({ profilePictureUrl: undefined });
         toast({
@@ -55,8 +86,16 @@ export function ProfilePictureUpload() {
           description: 'تصویر پروفایل شما با موفقیت حذف شد.',
         });
       }
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'خطا در حذف',
+        description: error.message || 'خطا در حذف تصویر پروفایل.',
+        variant: 'destructive',
+      });
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const triggerFileInput = () => {
