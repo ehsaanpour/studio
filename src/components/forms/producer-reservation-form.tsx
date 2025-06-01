@@ -27,7 +27,7 @@ import React, { useState, useEffect } from 'react';
 import { addReservation } from '@/lib/reservation-store';
 import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
 import type { AdditionalService } from '@/types';
-import { getProgramNames, subscribe as subscribeToProgramNames } from '@/lib/program-name-store';
+import { getProgramNames } from '@/lib/program-name-store';
 
 export const producerFormSchema = z.object({
   programName: z.string().min(1, 'نام برنامه الزامی است.'), // New field
@@ -38,7 +38,15 @@ export const producerFormSchema = z.object({
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
   studioServiceDays: z.number().min(1, 'تعداد روز باید حداقل ۱ باشد.'),
   studioServiceHoursPerDay: z.number().min(1, 'تعداد ساعت در روز باید حداقل ۱ باشد.'),
-  additionalServices: z.array(z.enum(['videowall', 'xdcam', 'crane', 'makeup_artist', 'service_staff', 'live_communication', 'stream'])).optional(),
+  additionalServices: z.array(z.enum([
+    'videowall',
+    'xdcam',
+    'crane',
+    'makeup_artist',
+    'service_staff',
+    'live_communication',
+    'stream',
+  ])).optional(),
   details: z.string().optional(), // New field
 });
 
@@ -56,8 +64,8 @@ const additionalServiceItems: { id: AdditionalService; label: string }[] = [
   { id: 'crane', label: 'کرین' },
   { id: 'makeup_artist', label: 'گریمور' },
   { id: 'service_staff', label: 'نیروی خدمات' },
-  { id: 'live_communication', label: 'ارتباط زنده' }, // New
-  { id: 'stream', label: 'استریم' }, // New
+  { id: 'live_communication', label: 'ارتباط زنده' },
+  { id: 'stream', label: 'استریم' },
 ];
 
 interface ProducerReservationFormProps {
@@ -85,15 +93,8 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     };
 
     fetchAndSetProgramNames(); // Initial fetch
-    const unsubscribe = subscribeToProgramNames(() => {
-      if (isSubscribed) {
-        fetchAndSetProgramNames();
-      }
-    });
-
     return () => {
       isSubscribed = false;
-      unsubscribe();
     };
   }, []);
 

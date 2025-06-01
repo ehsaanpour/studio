@@ -39,18 +39,12 @@ const getServiceTypeLabel = (serviceType: StudioReservationRequest['studioServic
 
 const additionalServiceItemsMap: Record<AdditionalService, string> = {
   videowall: 'ویدئووال',
-  led_monitor: 'LED Monitor',
   xdcam: 'XDCAM',
-  stream_iranian: 'استریم روی سرویس‌های ایرانی',
-  stream_foreign: 'استریم روی سرویس‌های خارجی',
-  stream_server: 'راه‌اندازی سرور استریم شخصی',
-  zoom: 'ZOOM',
-  google_meet: 'Google Meet',
-  ms_teams: 'Microsoft Teams',
-  lobby: 'لابی پذیرایی مهمان',
   crane: 'کرین',
   makeup_artist: 'گریمور',
   service_staff: 'نیروی خدمات',
+  live_communication: 'ارتباط زنده',
+  stream: 'استریم',
 };
 
 const getAdditionalServiceLabel = (serviceId: AdditionalService): string => {

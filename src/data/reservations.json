@@ -1,3 +1,28 @@
 {
-  "reservations": []
-} 
+  "reservations": [
+    {
+      "id": "1748788961338",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "آفریقا",
+      "dateTime": {
+        "reservationDate": "2025-06-01T20:30:00.000Z",
+        "startTime": "10:00",
+        "endTime": "13:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "videowall",
+        "led_monitor",
+        "xdcam"
+      ],
+      "submittedAt": "2025-06-01T14:42:41.338Z",
+      "status": "new"
+    }
+  ]
+}
