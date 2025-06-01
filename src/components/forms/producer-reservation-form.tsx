@@ -23,10 +23,11 @@ import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
 import { format as formatDateFnsJalali } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { addReservation } from '@/lib/reservation-store';
 import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
 import type { AdditionalService } from '@/types';
+import { getProgramNames, subscribe as subscribeToProgramNames } from '@/lib/program-name-store';
 
 export const producerFormSchema = z.object({
   programName: z.string().min(1, 'نام برنامه الزامی است.'), // New field
@@ -37,7 +38,7 @@ export const producerFormSchema = z.object({
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
   studioServiceDays: z.number().min(1, 'تعداد روز باید حداقل ۱ باشد.'),
   studioServiceHoursPerDay: z.number().min(1, 'تعداد ساعت در روز باید حداقل ۱ باشد.'),
-  additionalServices: z.array(z.enum(['videowall', 'led_monitor', 'xdcam', 'stream_iranian', 'stream_foreign', 'stream_server', 'zoom', 'google_meet', 'ms_teams', 'lobby', 'crane', 'makeup_artist', 'service_staff'])).optional(),
+  additionalServices: z.array(z.enum(['videowall', 'xdcam', 'crane', 'makeup_artist', 'service_staff', 'live_communication', 'stream'])).optional(),
   details: z.string().optional(), // New field
 });
 
@@ -49,20 +50,14 @@ const studioOptions = [
   { id: 'studio6', label: 'استودیو ۶ (مایا ناصر)' },
 ];
 
-const additionalServiceItems = [
+const additionalServiceItems: { id: AdditionalService; label: string }[] = [
   { id: 'videowall', label: 'ویدئووال' },
-  { id: 'led_monitor', label: 'LED Monitor' },
   { id: 'xdcam', label: 'XDCAM' },
-  { id: 'stream_iranian', label: 'استریم روی سرویس‌های ایرانی' },
-  { id: 'stream_foreign', label: 'استریم روی سرویس‌های خارجی' },
-  { id: 'stream_server', label: 'راه‌اندازی سرور استریم شخصی' },
-  { id: 'zoom', label: 'ZOOM' },
-  { id: 'google_meet', label: 'Google Meet' },
-  { id: 'ms_teams', label: 'Microsoft Teams' },
-  { id: 'lobby', label: 'لابی پذیرایی مهمان' },
   { id: 'crane', label: 'کرین' },
   { id: 'makeup_artist', label: 'گریمور' },
   { id: 'service_staff', label: 'نیروی خدمات' },
+  { id: 'live_communication', label: 'ارتباط زنده' }, // New
+  { id: 'stream', label: 'استریم' }, // New
 ];
 
 interface ProducerReservationFormProps {
@@ -73,12 +68,40 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [programNames, setProgramNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isSubscribed = true;
+
+    const fetchAndSetProgramNames = async () => {
+      try {
+        const names = await getProgramNames();
+        if (isSubscribed) {
+          setProgramNames(names);
+        }
+      } catch (error) {
+        console.error('Error fetching program names:', error);
+      }
+    };
+
+    fetchAndSetProgramNames(); // Initial fetch
+    const unsubscribe = subscribeToProgramNames(() => {
+      if (isSubscribed) {
+        fetchAndSetProgramNames();
+      }
+    });
+
+    return () => {
+      isSubscribed = false;
+      unsubscribe();
+    };
+  }, []);
 
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: {
-      programName: '', // Default value for new field
-      reservationDate: new Date(), // Default to today
+      programName: '', 
+      reservationDate: new Date(), 
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
       studioSelection: undefined,
@@ -86,7 +109,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       studioServiceDays: 1,
       studioServiceHoursPerDay: 8,
       additionalServices: [],
-      details: '', // Default value for new field
+      details: '', 
     },
   });
 
@@ -133,10 +156,27 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
             name="programName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>اسم برنامه *</FormLabel>
-                <FormControl>
-                  <Input placeholder="نام برنامه خود را وارد کنید" {...field} />
-                </FormControl>
+                <FormLabel>نام برنامه *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="یک برنامه را انتخاب کنید" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {programNames.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-muted-foreground">
+                        ابتدا در پنل تهیه‌کننده نام برنامه اضافه کنید.
+                      </div>
+                    ) : (
+                      programNames.map((name) => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

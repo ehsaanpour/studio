@@ -12,8 +12,8 @@ export default function ProducerLayout({
     <div className="flex min-h-screen flex-col">
       <AppHeader />
       <div className="flex flex-1">
-        <div className="w-64 bg-black" />
-        <main className="flex-1 bg-background overflow-auto">
+        {/* Removed the fixed-width black sidebar */}
+        <main className="flex-1 bg-background overflow-auto w-full"> {/* Added w-full */}
           <div className="flex justify-center w-full">
             <div className="w-full max-w-[1200px] px-4">
               {children}
@@ -28,4 +28,4 @@ export default function ProducerLayout({
       </footer>
     </div>
   );
-} 
+}

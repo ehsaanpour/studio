@@ -46,18 +46,12 @@ export interface StudioServicesInfo {
 
 export type AdditionalService =
   | 'videowall'
-  | 'led_monitor'
   | 'xdcam'
-  | 'stream_iranian'
-  | 'stream_foreign'
-  | 'stream_server'
-  | 'zoom'
-  | 'google_meet'
-  | 'ms_teams'
-  | 'lobby'
   | 'crane'
   | 'makeup_artist'
-  | 'service_staff';
+  | 'service_staff'
+  | 'live_communication' // New
+  | 'stream'; // New
 
 export type CateringService =
   | 'drinks'
@@ -70,6 +64,7 @@ export interface StudioReservationRequest {
   id: string; // Auto-generated or from backend
   type: 'guest' | 'producer';
   requesterName?: string; // For producer, derived from their login
+  programName: string; // New field for program name
   
   personalInfo?: PersonalInformation; // Required for guest, optional/excluded for producer
   
@@ -94,4 +89,3 @@ export interface Producer {
   workplace?: string;
   isAdmin?: boolean;
 }
-

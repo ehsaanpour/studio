@@ -9,7 +9,9 @@ interface User {
   username: string;
   email: string;
   phone: string;
+  workplace?: string; // Added workplace
   isAdmin?: boolean;
+  profilePictureUrl?: string; // New: Profile picture URL
 }
 
 interface AuthContextType {
@@ -17,6 +19,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAdmin: boolean;
+  updateProfile: (updatedUser: Partial<User>) => void; // Added updateProfile
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,10 +83,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.remove('user');
   };
 
+  const updateProfile = (updatedUser: Partial<User>) => {
+    setUser(prevUser => {
+      if (prevUser) {
+        const newUser = { ...prevUser, ...updatedUser };
+        Cookies.set('user', JSON.stringify(newUser), { expires: 1 });
+        return newUser;
+      }
+      return null;
+    });
+  };
+
   const isAdmin = user?.isAdmin || false;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, login, logout, isAdmin, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
@@ -95,4 +109,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}

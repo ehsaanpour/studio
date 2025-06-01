@@ -7,19 +7,26 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { ProfilePictureUpload } from '@/components/profile/profile-picture-upload';
 
 export default function ProfilePage() {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) {
       router.push('/login');
       return;
     }
-  }, [user, router]);
+    if (!isAdmin) { // If user is not admin, redirect to producer panel
+      router.push('/producer');
+      return;
+    }
+  }, [user, isAdmin, router]);
 
-  if (!user) {
+  if (!user || !isAdmin) { // Also return null if not admin, as they will be redirected
     return null;
   }
 
@@ -42,6 +49,7 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
+            <ProfilePictureUpload /> {/* Add profile picture upload component */}
             <div className="space-y-4">
               <div className="grid gap-2">
                 <h3 className="text-lg font-semibold">اطلاعات شخصی</h3>
@@ -62,6 +70,12 @@ export default function ProfilePage() {
                     <span className="font-medium">شماره تماس:</span>
                     <span>{user.phone}</span>
                   </div>
+                  {user?.workplace && ( // Display workplace if available
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">محل کار:</span>
+                      <span>{user.workplace}</span>
+                    </div>
+                  )}
                   {isAdmin && (
                     <div className="flex items-center gap-2">
                       <span className="font-medium">نقش:</span>
@@ -75,11 +89,15 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">تنظیمات حساب کاربری</h3>
               <div className="grid gap-4">
-                <Button variant="outline" className="justify-start">
-                  تغییر رمز عبور
+                <Button variant="outline" asChild className="justify-start">
+                  <Link href="/profile/change-password">
+                    تغییر رمز عبور
+                  </Link>
                 </Button>
-                <Button variant="outline" className="justify-start">
-                  ویرایش اطلاعات شخصی
+                <Button variant="outline" asChild className="justify-start">
+                  <Link href="/profile/edit-profile">
+                    ویرایش اطلاعات شخصی
+                  </Link>
                 </Button>
                 {isAdmin && (
                   <Button variant="outline" className="justify-start">
@@ -110,6 +128,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
-    
