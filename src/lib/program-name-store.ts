@@ -43,3 +43,17 @@ export async function addProgramName(programName: ProgramName): Promise<void> {
     console.error('Error adding program name:', error);
   }
 }
+
+export async function removeProgramName(programName: ProgramName): Promise<void> {
+  try {
+    let programNames = await getProgramNames();
+    const initialLength = programNames.length;
+    programNames = programNames.filter(name => name !== programName);
+    if (programNames.length < initialLength) {
+      await writeJsonFile(PROGRAM_NAMES_FILE, programNames);
+      notifyListeners(); // Notify listeners after successful write
+    }
+  } catch (error) {
+    console.error('Error removing program name:', error);
+  }
+}

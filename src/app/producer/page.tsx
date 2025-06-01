@@ -3,11 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Film, PlusCircle } from 'lucide-react';
+import { Film, PlusCircle, XCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
 import { getReservations, subscribe } from '@/lib/reservation-store';
-import { getProgramNames, subscribe as subscribeToProgramNames } from '@/lib/program-name-store';
+import { getProgramNames, subscribe as subscribeToProgramNames, removeProgramName } from '@/lib/program-name-store';
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
@@ -104,6 +104,23 @@ export default function ProducerPanelPage() {
       unsubscribeProgramNames();
     };
   }, [user?.name]);
+
+  const handleRemoveProgramName = async (nameToRemove: string) => {
+    try {
+      await removeProgramName(nameToRemove);
+      toast({
+        title: 'نام برنامه حذف شد',
+        description: `برنامه "${nameToRemove}" با موفقیت حذف شد.`,
+      });
+    } catch (error) {
+      console.error('Error removing program name:', error);
+      toast({
+        title: 'خطا در حذف',
+        description: `خطا در حذف برنامه "${nameToRemove}".`,
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -216,14 +233,24 @@ export default function ProducerPanelPage() {
               <CardContent>
                 <AddProgramNameForm />
                 <Separator className="my-4" />
-                <h4 className="text-md font-semibold mb-2">برنامه‌های ثبت شده:</h4>
+                <h4 className="text-md font-semibold mb-2 text-right">برنامه‌های ثبت شده:</h4>
                 {programNames.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">هنوز هیچ نام برنامه‌ای ثبت نشده است.</p>
+                  <p className="text-muted-foreground text-sm text-right">هنوز هیچ نام برنامه‌ای ثبت نشده است.</p>
                 ) : (
                   <ScrollArea className="h-32 w-full rounded-md border p-4">
-                    <ul className="list-disc list-inside space-y-1">
+                    <ul className="space-y-1" dir="rtl">
                       {programNames.map((name, index) => (
-                        <li key={index} className="text-sm">{name}</li>
+                        <li key={index} className="flex items-center justify-between text-sm">
+                          <span className="flex-grow text-right">{name}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveProgramName(name)}
+                            className="ms-2"
+                          >
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </li>
                       ))}
                     </ul>
                   </ScrollArea>
@@ -244,7 +271,7 @@ export default function ProducerPanelPage() {
                   </div>
                 ) : (
                   <ScrollArea className="h-[300px] w-full pr-4">
-                    <div className="space-y-4">
+                    <div className="space-y-4" dir="rtl">
                       {myRequests.map(request => (
                         <Card key={request.id} className="shadow-sm">
                           <CardHeader>
