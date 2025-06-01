@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
 import type { Producer, StudioReservationRequest, AdditionalService, CateringService } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { getReservations, subscribe, updateReservationStatus } from '@/lib/reservation-store';
+import { getReservations, updateReservationStatus } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
@@ -120,9 +120,6 @@ export default function AdminPanelPage() {
       setAllRequests(requests);
     }
     loadRequests();
-    const unsubscribe = subscribe(() => {
-      loadRequests();
-    });
 
     // Load producers from Firestore
     const loadProducers = async () => {
@@ -140,7 +137,7 @@ export default function AdminPanelPage() {
     };
     loadProducers();
 
-    return () => { unsubscribe(); };
+    return () => {}; // No longer need to unsubscribe from a non-existent subscription
   }, [isAdmin, router, toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');

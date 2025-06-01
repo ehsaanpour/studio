@@ -46,12 +46,18 @@ export interface StudioServicesInfo {
 
 export type AdditionalService =
   | 'videowall'
+  | 'led_monitor'
   | 'xdcam'
+  | 'stream_iranian'
+  | 'stream_foreign'
+  | 'stream_server'
+  | 'zoom'
+  | 'google_meet'
+  | 'ms_teams'
+  | 'lobby'
   | 'crane'
   | 'makeup_artist'
-  | 'service_staff'
-  | 'live_communication' // New
-  | 'stream'; // New
+  | 'service_staff';
 
 export type CateringService =
   | 'drinks'

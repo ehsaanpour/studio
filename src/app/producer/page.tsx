@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { Film, PlusCircle, XCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
-import { getReservations, subscribe } from '@/lib/reservation-store';
-import { getProgramNames, subscribe as subscribeToProgramNames, removeProgramName } from '@/lib/program-name-store';
+import { getReservations } from '@/lib/reservation-store'; // Removed subscribe
+import { getProgramNames, removeProgramName } from '@/lib/program-name-store'; // Removed subscribeToProgramNames
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
@@ -55,55 +55,31 @@ export default function ProducerPanelPage() {
   const { user, isAdmin } = useAuth(); // Get isAdmin from useAuth
   const { toast } = useToast(); // Initialize useToast
 
+  const fetchAndSetRequests = async () => {
+    try {
+      const allRequests = await getReservations();
+      const filteredRequests = allRequests.filter(req => 
+        req.type === 'producer' && req.requesterName === user?.name
+      );
+      setMyRequests(filteredRequests);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
+
+  const fetchAndSetProgramNames = async () => {
+    try {
+      const names = await getProgramNames();
+      setProgramNames(names);
+    } catch (error) {
+      console.error('Error fetching program names:', error);
+    }
+  };
+
   useEffect(() => {
-    let isSubscribed = true;
-
-    const fetchAndSetRequests = async () => {
-      try {
-        const allRequests = await getReservations();
-        if (isSubscribed) {
-          const filteredRequests = allRequests.filter(req => 
-            req.type === 'producer' && req.requesterName === user?.name
-          );
-          setMyRequests(filteredRequests);
-        }
-      } catch (error) {
-        console.error('Error fetching requests:', error);
-      }
-    };
-
-    const fetchAndSetProgramNames = async () => {
-      try {
-        const names = await getProgramNames();
-        if (isSubscribed) {
-          setProgramNames(names);
-        }
-      } catch (error) {
-        console.error('Error fetching program names:', error);
-      }
-    };
-
     fetchAndSetRequests(); // Initial fetch for requests
     fetchAndSetProgramNames(); // Initial fetch for program names
-
-    const unsubscribeRequests = subscribe(() => {
-      if (isSubscribed) {
-        fetchAndSetRequests();
-      }
-    });
-
-    const unsubscribeProgramNames = subscribeToProgramNames(() => {
-      if (isSubscribed) {
-        fetchAndSetProgramNames();
-      }
-    });
-
-    return () => {
-      isSubscribed = false;
-      unsubscribeRequests();
-      unsubscribeProgramNames();
-    };
-  }, [user?.name]);
+  }, [user?.name]); // Depend on user.name to re-fetch if user changes
 
   const handleRemoveProgramName = async (nameToRemove: string) => {
     try {
@@ -112,6 +88,8 @@ export default function ProducerPanelPage() {
         title: 'نام برنامه حذف شد',
         description: `برنامه "${nameToRemove}" با موفقیت حذف شد.`,
       });
+      // Re-fetch program names after successful removal
+      await fetchAndSetProgramNames();
     } catch (error) {
       console.error('Error removing program name:', error);
       toast({

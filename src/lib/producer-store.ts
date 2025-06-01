@@ -1,3 +1,5 @@
+'use server';
+
 import type { Producer } from '@/types';
 import { readJsonFile, writeJsonFile } from './fs-utils';
 import bcrypt from 'bcryptjs';
@@ -132,4 +134,4 @@ export async function updateProducer(id: string, updates: Partial<Omit<Producer,
     console.error('Error updating producer:', error);
     throw error;
   }
-} 
+}

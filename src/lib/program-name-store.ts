@@ -1,59 +1,74 @@
-import { readJsonFile, writeJsonFile } from './fs-utils';
+// import { readJsonFile, writeJsonFile } from './fs-utils'; // No longer directly used here
 
-const PROGRAM_NAMES_FILE = 'src/data/program-names.json';
+const PROGRAM_NAMES_FILE = 'src/data/program-names.json'; // This constant is now mostly for conceptual pathing, not direct file access
+
+// type Listener = () => void; // No longer needed for client-side reactivity
+// const listeners: Listener[] = []; // No longer needed for client-side reactivity
+
+// function notifyListeners() { // No longer needed for client-side reactivity
+//   listeners.forEach(listener => listener());
+// }
+
+// export function subscribe(listener: Listener) { // No longer needed for client-side reactivity
+//   listeners.push(listener);
+//   return () => {
+//     const index = listeners.indexOf(listener);
+//     if (index > -1) {
+//       listeners.splice(index, 1);
+//     }
+//   };
+// }
 
 export type ProgramName = string;
 
-type Listener = () => void;
-const listeners: Listener[] = [];
-
-function notifyListeners() {
-  listeners.forEach(listener => listener());
-}
-
-export function subscribe(listener: Listener) {
-  listeners.push(listener);
-  return () => {
-    const index = listeners.indexOf(listener);
-    if (index > -1) {
-      listeners.splice(index, 1);
-    }
-  };
-}
-
 export async function getProgramNames(): Promise<ProgramName[]> {
   try {
-    const data = await readJsonFile(PROGRAM_NAMES_FILE);
+    const response = await fetch('/api/program-names');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error('Error reading program names:', error);
+    console.error('Error fetching program names from API:', error);
     return [];
   }
 }
 
 export async function addProgramName(programName: ProgramName): Promise<void> {
   try {
-    const programNames = await getProgramNames();
-    if (!programNames.includes(programName)) {
-      programNames.push(programName);
-      await writeJsonFile(PROGRAM_NAMES_FILE, programNames);
-      notifyListeners(); // Notify listeners after successful write
+    const response = await fetch('/api/program-names', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ programName }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    // No need to notify listeners here, the client-side useEffect will re-fetch
   } catch (error) {
-    console.error('Error adding program name:', error);
+    console.error('Error adding program name via API:', error);
+    throw error; // Re-throw to be caught by the component
   }
 }
 
 export async function removeProgramName(programName: ProgramName): Promise<void> {
   try {
-    let programNames = await getProgramNames();
-    const initialLength = programNames.length;
-    programNames = programNames.filter(name => name !== programName);
-    if (programNames.length < initialLength) {
-      await writeJsonFile(PROGRAM_NAMES_FILE, programNames);
-      notifyListeners(); // Notify listeners after successful write
+    const response = await fetch('/api/program-names', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ programName }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    // No need to notify listeners here, the client-side useEffect will re-fetch
   } catch (error) {
-    console.error('Error removing program name:', error);
+    console.error('Error removing program name via API:', error);
+    throw error; // Re-throw to be caught by the component
   }
 }
