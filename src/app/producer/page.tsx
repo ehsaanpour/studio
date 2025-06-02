@@ -216,7 +216,7 @@ export default function ProducerPanelPage() {
                 {programNames.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-right">هنوز هیچ نام برنامه‌ای ثبت نشده است.</p>
                 ) : (
-                  <ScrollArea className="h-32 w-full rounded-md border p-4">
+                  <ScrollArea className="h-64 lg:h-96 w-full rounded-md border p-4">
                     <ul className="space-y-1" dir="rtl">
                       {programNames.map((name, index) => (
                         <li key={index} className="flex items-center justify-between text-sm">
@@ -249,7 +249,7 @@ export default function ProducerPanelPage() {
                     <p className="text-muted-foreground text-right">شما هنوز هیچ درخواستی ثبت نکرده‌اید.</p>
                   </div>
                 ) : (
-                  <ScrollArea className="h-[300px] w-full pr-4">
+                  <ScrollArea className="h-[400px] lg:h-[700px] w-full pr-4">
                     <div className="space-y-4" dir="rtl">
                       {myRequests.map(request => (
                         <Card key={request.id} className="shadow-sm">
