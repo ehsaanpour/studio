@@ -281,13 +281,17 @@ export default function AdminPanelPage() {
     }
   };
 
+  if (!isAdmin) {
+    return null;
+  }
+
   const renderRequestCard = (request: StudioReservationRequest) => (
-    <Card key={request.id} className="shadow-sm mb-4">
+    <Card key={request.id} className="shadow-sm mb-4" dir="rtl">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
+            <CardDescription className="text-right">
               تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
             </CardDescription>
           </div>
@@ -296,7 +300,7 @@ export default function AdminPanelPage() {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm">
+      <CardContent className="space-y-2 text-sm text-right">
         <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
         <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
@@ -330,10 +334,6 @@ export default function AdminPanelPage() {
     </Card>
   );
 
-  if (!isAdmin) {
-    return null;
-  }
-
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
@@ -359,10 +359,10 @@ export default function AdminPanelPage() {
             <TabsContent value="requests">
               <Card>
                 <CardHeader>
-                  <CardTitle>درخواست‌های رزرو</CardTitle>
-                  <CardDescription>مشاهده و مدیریت تمامی درخواست‌های ثبت شده.</CardDescription>
+                  <CardTitle className="text-right">درخواست‌های رزرو</CardTitle>
+                  <CardDescription className="text-right">مشاهده و مدیریت تمامی درخواست‌های ثبت شده.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4" dir="rtl">
                   <Tabs defaultValue="new-requests" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-4">
                       <TabsTrigger value="new-requests">
@@ -394,23 +394,23 @@ export default function AdminPanelPage() {
             <TabsContent value="producers">
               <Card>
                 <CardHeader>
-                  <CardTitle>لیست تهیه‌کنندگان</CardTitle>
-                  <CardDescription>مشاهده لیست تهیه‌کنندگان موجود و امکان ویرایش یا حذف آن‌ها.</CardDescription>
+                  <CardTitle className="text-right">لیست تهیه‌کنندگان</CardTitle>
+                  <CardDescription className="text-right">مشاهده لیست تهیه‌کنندگان موجود و امکان ویرایش یا حذف آن‌ها.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {producers.length === 0 ? (
-                    <div className="p-6 border border-dashed rounded-lg bg-muted/30 min-h-[150px] flex items-center justify-center">
+                    <div className="p-6 border border-dashed rounded-lg bg-muted/30 min-h-[150px] flex items-center justify-center" dir="rtl">
                       <p className="text-muted-foreground text-center">
                         هیچ تهیه‌کننده‌ای یافت نشد. برای افزودن، به تب "افزودن تهیه‌کننده" بروید.
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-4" dir="rtl">
                       {producers.map(producer => (
                         <Card key={producer.id} className="shadow-sm">
                           <CardHeader>
-                            <CardTitle className="text-lg">{producer.name}</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-lg text-right">{producer.name}</CardTitle>
+                            <CardDescription className="text-right">
                               {producer.workplace} (نام کاربری: {producer.username})
                               <br />
                               ایمیل: {producer.email} | تلفن: {producer.phone}
@@ -443,83 +443,83 @@ export default function AdminPanelPage() {
             <TabsContent value="add-producer">
               <Card>
                 <CardHeader>
-                  <CardTitle>{isEditing ? 'ویرایش تهیه‌کننده' : 'افزودن تهیه‌کننده جدید'}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-right">{isEditing ? 'ویرایش تهیه‌کننده' : 'افزودن تهیه‌کننده جدید'}</CardTitle>
+                  <CardDescription className="text-right">
                     {isEditing 
                       ? 'برای ویرایش اطلاعات تهیه‌کننده، فرم زیر را تکمیل کنید.'
                       : 'برای افزودن یک تهیه‌کننده جدید به سیستم، فرم زیر را تکمیل کنید.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={isEditing ? handleUpdateProducer : handleAddProducer} className="space-y-4">
+                  <form onSubmit={isEditing ? handleUpdateProducer : handleAddProducer} className="space-y-4" dir="rtl">
                     <div>
-                      <Label htmlFor="producerName">نام *</Label>
+                      <Label htmlFor="producerName" className="text-right">نام *</Label>
                       <Input 
                         type="text" 
                         id="producerName" 
                         value={newProducerName}
                         onChange={(e) => setNewProducerName(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="نام کامل تهیه‌کننده"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerWorkplace">محل کار *</Label>
+                      <Label htmlFor="producerWorkplace" className="text-right">محل کار *</Label>
                       <Input 
                         type="text" 
                         id="producerWorkplace" 
                         value={newProducerWorkplace}
                         onChange={(e) => setNewProducerWorkplace(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="نام دقیق قسمت در خواست دهنده استودیو را بنویسید"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerEmail">ایمیل *</Label>
+                      <Label htmlFor="producerEmail" className="text-right">ایمیل *</Label>
                       <Input 
                         type="email" 
                         id="producerEmail" 
                         value={newProducerEmail}
                         onChange={(e) => setNewProducerEmail(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="example@domain.com"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerPhone">شماره تماس *</Label>
+                      <Label htmlFor="producerPhone" className="text-right">شماره تماس *</Label>
                       <Input 
                         type="tel" 
                         id="producerPhone" 
                         value={newProducerPhone}
                         onChange={(e) => setNewProducerPhone(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="شماره تماس"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerUsername">نام کاربری *</Label>
+                      <Label htmlFor="producerUsername" className="text-right">نام کاربری *</Label>
                       <Input 
                         type="text" 
                         id="producerUsername"
                         value={newProducerUsername}
                         onChange={(e) => setNewProducerUsername(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="برای ورود به سیستم"
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerPassword">رمز عبور *</Label>
+                      <Label htmlFor="producerPassword" className="text-right">رمز عبور *</Label>
                       <Input 
                         type="password" 
                         id="producerPassword" 
                         value={newProducerPassword}
                         onChange={(e) => setNewProducerPassword(e.target.value)}
-                        className="mt-1" 
+                        className="mt-1 text-right" 
                         placeholder="یک رمز عبور قوی انتخاب کنید"
                         required
                       />
@@ -549,9 +549,6 @@ export default function AdminPanelPage() {
                       )}
                     </div>
                   </form>
-                   <p className="mt-4 text-xs text-muted-foreground">
-                    این بخش برای افزودن تهیه‌کنندگان طراحی شده و قابلیت توسعه برای تنظیمات بیشتر را دارد.
-                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

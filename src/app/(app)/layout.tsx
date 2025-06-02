@@ -24,7 +24,7 @@ export default function AppLayout({
               <div className="flex flex-1 flex-col">
                 <AppHeader />
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background overflow-auto">
-                  <div className="container mx-auto max-w-7xl h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center">
                     {children}
                   </div>
                 </main>
@@ -44,7 +44,7 @@ export default function AppLayout({
             <div className="flex flex-1 flex-col w-full"> {/* Added w-full here */}
               <AppHeader />
               <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background overflow-auto">
-                <div className="container mx-auto max-w-7xl h-full flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
                   {children}
                 </div>
               </main>
