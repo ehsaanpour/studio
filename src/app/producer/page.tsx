@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 import { ProfilePictureUpload } from '@/components/profile/profile-picture-upload'; // Import ProfilePictureUpload
 import { ArrowRight } from 'lucide-react'; // Import ArrowRight for navigation buttons
+import { WeeklyScheduleCalendar } from '@/components/weekly-schedule-calendar'; // Import WeeklyScheduleCalendar
 
 // Helper function to get studio label (can be moved to a shared util later)
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
@@ -276,6 +277,10 @@ export default function ProducerPanelPage() {
                 )}
               </CardContent>
             </Card>
+          </div>
+          {/* Weekly Schedule Calendar Section */}
+          <div className="mt-6">
+            <WeeklyScheduleCalendar />
           </div>
         </CardContent>
       </Card>
