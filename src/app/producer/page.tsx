@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 import { ProfilePictureUpload } from '@/components/profile/profile-picture-upload'; // Import ProfilePictureUpload
 import { ArrowRight } from 'lucide-react'; // Import ArrowRight for navigation buttons
-import { WeeklyScheduleCalendar } from '@/components/weekly-schedule-calendar'; // Import WeeklyScheduleCalendar
+// import { WeeklyScheduleCalendar } from '@/components/weekly-schedule-calendar'; // Import WeeklyScheduleCalendar
 
 // Helper function to get studio label (can be moved to a shared util later)
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
@@ -125,14 +125,14 @@ export default function ProducerPanelPage() {
             از این پنل می‌توانید درخواست‌های رزرو جدید ثبت کرده و درخواست‌های قبلی خود را مشاهده و مدیریت نمایید.
           </p>
           
-          <div className="grid lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {/* Profile Section (New) */}
             <Card className="shadow-sm lg:col-span-1 xl:col-span-1">
               <CardHeader>
                 <CardTitle className="text-xl">پروفایل کاربری</CardTitle>
                 <CardDescription>اطلاعات شخصی و تنظیمات حساب کاربری شما.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 text-center">
                 <ProfilePictureUpload />
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">اطلاعات شخصی</h3>
@@ -209,7 +209,7 @@ export default function ProducerPanelPage() {
                 <CardTitle className="text-xl">افزودن نام برنامه جدید</CardTitle>
                 <CardDescription>نام برنامه‌هایی که قصد دارید در آینده رزرو کنید را اینجا اضافه کنید.</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-center">
                 <AddProgramNameForm />
                 <Separator className="my-4" />
                 <h4 className="text-md font-semibold mb-2 text-right">برنامه‌های ثبت شده:</h4>
@@ -278,9 +278,16 @@ export default function ProducerPanelPage() {
               </CardContent>
             </Card>
           </div>
-          {/* Weekly Schedule Calendar Section */}
-          <div className="mt-6">
+          {/* Weekly Schedule Calendar Section (Temporarily removed as per user request) */}
+          {/* <div className="mt-6">
             <WeeklyScheduleCalendar />
+          </div> */}
+          <div className="mt-6 flex justify-end">
+            <Button asChild>
+              <Link href="/weekly-schedule">
+                برنامه هفتگی <ArrowRight className="me-2 h-5 w-5" />
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
