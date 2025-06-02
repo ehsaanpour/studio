@@ -10,6 +10,7 @@ import { getReservations } from '@/lib/reservation-store'; // Removed subscribe
 import { getProgramNames, removeProgramName } from '@/lib/program-name-store'; // Removed subscribeToProgramNames
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
+import { isPast, isToday, parseISO } from 'date-fns'; // Import date-fns functions
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import { AddProgramNameForm } from '@/components/forms/add-program-name-form';
@@ -53,6 +54,8 @@ const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "def
 export default function ProducerPanelPage() {
   const [myRequests, setMyRequests] = useState<StudioReservationRequest[]>([]);
   const [programNames, setProgramNames] = useState<string[]>([]);
+  const [activeReservationsCount, setActiveReservationsCount] = useState(0);
+  const [pastReservationsCount, setPastReservationsCount] = useState(0);
   const { user, isAdmin } = useAuth(); // Get isAdmin from useAuth
   const { toast } = useToast(); // Initialize useToast
 
@@ -81,6 +84,41 @@ export default function ProducerPanelPage() {
     fetchAndSetRequests(); // Initial fetch for requests
     fetchAndSetProgramNames(); // Initial fetch for program names
   }, [user?.name]); // Depend on user.name to re-fetch if user changes
+
+  useEffect(() => {
+    if (myRequests.length > 0) {
+      let activeCount = 0;
+      let pastCount = 0;
+      const now = new Date(); // Declare 'now' only once here
+
+      myRequests.forEach(request => {
+        // Ensure reservationDate is a Date object, as it might be a string from JSON
+        const reservationDate = new Date(request.dateTime.reservationDate); 
+        const [hours, minutes] = request.dateTime.endTime.split(':').map(Number);
+        
+        // Create a Date object for the end time of the reservation
+        const reservationEndDateTime = new Date(
+          reservationDate.getFullYear(),
+          reservationDate.getMonth(),
+          reservationDate.getDate(),
+          hours,
+          minutes
+        );
+
+        if (isPast(reservationEndDateTime)) { // Use isPast directly, remove additionalDigits
+          pastCount++;
+        } else {
+          activeCount++;
+        }
+      });
+
+      setActiveReservationsCount(activeCount);
+      setPastReservationsCount(pastCount);
+    } else {
+      setActiveReservationsCount(0);
+      setPastReservationsCount(0);
+    }
+  }, [myRequests]); // Recalculate when myRequests changes
 
   const handleRemoveProgramName = async (nameToRemove: string) => {
     try {
@@ -191,11 +229,11 @@ export default function ProducerPanelPage() {
                     <div className="grid gap-2">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">تعداد رزروهای فعال:</span>
-                        <span>0</span>
+                        <span>{activeReservationsCount}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">تعداد رزروهای گذشته:</span>
-                        <span>0</span>
+                        <span>{pastReservationsCount}</span>
                       </div>
                     </div>
                   </div>
