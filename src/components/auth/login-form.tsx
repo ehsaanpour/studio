@@ -44,47 +44,29 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      // Check if it's an admin login
-      if (data.username === 'admin' && data.password === 'admin') {
-        const success = await login(data.username, data.password);
-        if (success) {
-          toast({
-            title: 'ورود موفق',
-            description: 'شما به عنوان مدیر وارد شدید.',
-          });
-          router.push('/admin');
-        }
-        return;
-      }
-
-      // Try to find the producer
-      const producer = await getProducerByUsername(data.username);
+      const success = await login(data.username, data.password);
       
-      if (!producer) {
+      if (success) {
         toast({
-          title: 'خطا در ورود',
-          description: 'کاربری با این نام کاربری یافت نشد.',
-          variant: 'destructive',
+          title: 'ورود موفق',
+          description: 'شما با موفقیت وارد شدید.',
         });
-        return;
-      }
-
-      // Verify the password using bcrypt
-      const isValidPassword = await verifyProducerPassword(data.username, data.password);
-      
-      if (isValidPassword) {
-        const success = await login(data.username, data.password);
-        if (success) {
-          toast({
-            title: 'ورود موفق',
-            description: 'شما به عنوان تهیه‌کننده وارد شدید.',
-          });
-          router.push('/producer');
+        // Determine redirection based on user type (admin or producer)
+        // The useAuth context should handle setting isAdmin flag
+        // For simplicity, we'll redirect to /admin if admin, otherwise /producer or /dashboard
+        // This logic can be refined based on actual user roles after login
+        if (data.username === 'admin') { // Assuming 'admin' username implies admin role for redirection
+          router.push('/admin');
+        } else {
+          router.push('/producer'); // Or '/dashboard' if producers have a dashboard
         }
       } else {
+        // If login failed, check if it's due to username not found or incorrect password
+        // The auth-context's login function should ideally provide more specific error messages
+        // For now, a generic error for failed login
         toast({
           title: 'خطا در ورود',
-          description: 'رمز عبور اشتباه است.',
+          description: 'نام کاربری یا رمز عبور اشتباه است.',
           variant: 'destructive',
         });
       }

@@ -41,23 +41,48 @@ export function ChangePasswordForm() {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    setIsLoading(false);
+    try {
+      const response = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
+      });
 
-    // In a real application, you would send data.currentPassword and data.newPassword to your backend.
-    // For now, we'll just show a success toast.
-    toast({
-      title: 'رمز عبور با موفقیت تغییر یافت',
-      description: 'رمز عبور شما با موفقیت به‌روزرسانی شد.',
-      action: (
-        <div className="flex items-center text-green-500">
-          <CheckCircle className="ms-2 h-5 w-5" />
-          <span>موفق</span>
-        </div>
-      ),
-    });
-    form.reset();
+      if (response.ok) {
+        toast({
+          title: 'رمز عبور با موفقیت تغییر یافت',
+          description: 'رمز عبور شما با موفقیت به‌روزرسانی شد.',
+          action: (
+            <div className="flex items-center text-green-500">
+              <CheckCircle className="ms-2 h-5 w-5" />
+              <span>موفق</span>
+            </div>
+          ),
+        });
+        form.reset();
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: 'خطا در تغییر رمز عبور',
+          description: errorData.message || 'مشکلی در تغییر رمز عبور پیش آمد.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: 'خطا',
+        description: 'ارتباط با سرور برقرار نشد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

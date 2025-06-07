@@ -2,17 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getProducerByUsername, verifyProducerPassword } from './producer-store';
+import { getAdminByUsername, verifyAdminPassword } from './admin-store'; // New import
 import Cookies from 'js-cookie';
-
-interface User {
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  workplace?: string; // Added workplace
-  isAdmin?: boolean;
-  profilePictureUrl?: string; // New: Profile picture URL
-}
+import type { User } from '@/types'; // Import User from types
 
 interface AuthContextType {
   user: User | null;
@@ -37,23 +29,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // Special case for admin login
-      if (username === 'admin' && password === 'admin') {
-        const userData = {
-          name: 'مدیر سیستم',
-          username: 'admin',
-          email: 'admin@example.com',
-          phone: '0000000000',
-          isAdmin: true,
-        };
-        setUser(userData);
-        Cookies.set('user', JSON.stringify(userData), { expires: 1 });
-        return true;
+      // Handle admin login using admin-store
+      if (username === 'admin') {
+        const isValidAdminPassword = await verifyAdminPassword(username, password);
+        if (isValidAdminPassword) {
+          const adminUser = await getAdminByUsername(username);
+          if (adminUser) {
+            const userData: User = {
+              name: adminUser.name,
+              username: adminUser.username,
+              email: adminUser.email,
+              phone: adminUser.phone,
+              isAdmin: true,
+              profilePictureUrl: adminUser.profilePictureUrl,
+            };
+            setUser(userData);
+            Cookies.set('user', JSON.stringify(userData), { expires: 1 });
+            return true;
+          }
+        }
+        return false; // Admin login failed
       }
 
-      // For producers, verify password using bcrypt
-      const isValidPassword = await verifyProducerPassword(username, password);
-      if (!isValidPassword) {
+      // For producers, verify password
+      const isValidProducerPassword = await verifyProducerPassword(username, password);
+      if (!isValidProducerPassword) {
         return false;
       }
 

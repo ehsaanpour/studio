@@ -79,14 +79,25 @@ export interface StudioReservationRequest {
   updatedAt?: Date;
 }
 
+export interface User {
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  workplace?: string;
+  isAdmin?: boolean;
+  profilePictureUrl?: string;
+  password?: string; // Password is optional for the User interface, as it might not always be loaded
+}
+
 export interface Producer {
   id: string;
   username: string;
-  password: string;
+  password: string; // Password is required for Producer as it's stored
   name: string;
   email: string;
   phone: string;
   workplace?: string;
   isAdmin?: boolean;
-  profilePictureUrl?: string; // New field for profile picture URL
+  profilePictureUrl?: string;
 }

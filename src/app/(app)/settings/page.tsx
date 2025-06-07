@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { ChangePasswordForm } from '@/components/forms/change-password-form';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -18,11 +19,6 @@ export default function SettingsPage() {
   const [newAdminName, setNewAdminName] = useState('');
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
-
-  // State for Change Password form
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const handleAddAdminSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,35 +39,6 @@ export default function SettingsPage() {
     setNewAdminName('');
     setNewAdminUsername('');
     setNewAdminPassword('');
-  };
-
-  const handleChangePasswordSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      toast({
-        title: "خطا",
-        description: "لطفاً تمامی فیلدهای مربوط به تغییر رمز عبور را تکمیل کنید.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      toast({
-        title: "خطا",
-        description: "رمز عبور جدید و تکرار آن مطابقت ندارند.",
-        variant: "destructive",
-      });
-      return;
-    }
-    // Mock changing password
-    console.log('Changing password for current admin.');
-    toast({
-      title: "موفقیت",
-      description: "رمز عبور با موفقیت (به صورت شبیه‌سازی شده) تغییر کرد.",
-    });
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
   };
 
   return (
@@ -159,47 +126,7 @@ export default function SettingsPage() {
                   <CardDescription>برای تغییر رمز عبور فعلی خود، فرم زیر را تکمیل کنید.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="currentPassword">رمز عبور فعلی *</Label>
-                      <Input
-                        type="password"
-                        id="currentPassword"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="mt-1"
-                        placeholder="رمز عبور فعلی خود را وارد کنید"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="newPassword">رمز عبور جدید *</Label>
-                      <Input
-                        type="password"
-                        id="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="mt-1"
-                        placeholder="رمز عبور جدید را وارد کنید"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="confirmNewPassword">تکرار رمز عبور جدید *</Label>
-                      <Input
-                        type="password"
-                        id="confirmNewPassword"
-                        value={confirmNewPassword}
-                        onChange={(e) => setConfirmNewPassword(e.target.value)}
-                        className="mt-1"
-                        placeholder="رمز عبور جدید را مجدداً وارد کنید"
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                      تغییر رمز عبور <KeyRound className="me-2 h-4 w-4" />
-                    </Button>
-                  </form>
+                  <ChangePasswordForm />
                 </CardContent>
               </Card>
             </TabsContent>
