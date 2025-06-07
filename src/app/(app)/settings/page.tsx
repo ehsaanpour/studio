@@ -68,7 +68,7 @@ export default function SettingsPage() {
             </TabsList>
 
             <TabsContent value="add-admin">
-              <Card>
+              <Card dir="rtl"> {/* Added dir="rtl" */}
                 <CardHeader>
                   <CardTitle>افزودن ادمین جدید</CardTitle>
                   <CardDescription>برای افزودن یک ادمین جدید به سیستم، فرم زیر را تکمیل کنید.</CardDescription>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
             </TabsContent>
 
             <TabsContent value="change-password">
-              <Card>
+              <Card dir="rtl"> {/* Added dir="rtl" for RTL */}
                 <CardHeader>
                   <CardTitle>تغییر رمز عبور</CardTitle>
                   <CardDescription>برای تغییر رمز عبور فعلی خود، فرم زیر را تکمیل کنید.</CardDescription>

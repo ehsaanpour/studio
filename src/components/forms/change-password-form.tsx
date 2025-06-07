@@ -87,7 +87,7 @@ export function ChangePasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" dir="rtl"> {/* Added dir="rtl" */}
         <FormField
           control={form.control}
           name="currentPassword"
