@@ -2,14 +2,13 @@
 
 import type { Producer } from '@/types';
 import { readJsonFile, writeJsonFile } from './fs-utils';
-import bcrypt from 'bcryptjs';
+import { hashPassword, comparePassword } from './utils'; // Import hashing utilities
 
 interface ProducersData {
   producers: Producer[];
 }
 
 const PRODUCERS_FILE = 'producers.json';
-const SALT_ROUNDS = 10;
 
 // Helper function to get producers from JSON file
 async function getStoredProducers(): Promise<Producer[]> {
@@ -40,7 +39,7 @@ export async function addProducer(producer: Omit<Producer, 'id'>): Promise<strin
     const password = String(producer.password);
     
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await hashPassword(password);
     
     const newProducer: Producer = {
       id: Date.now().toString(),
@@ -78,7 +77,7 @@ export async function verifyProducerPassword(username: string, password: string)
       return false;
     }
     
-    return await bcrypt.compare(password, producer.password);
+    return await comparePassword(password, producer.password);
   } catch (error) {
     console.error('Error verifying password:', error);
     return false;
@@ -125,7 +124,7 @@ export async function updateProducer(id: string, updates: Partial<Omit<Producer,
     
     // Only hash and update password if a new one is provided
     if (updates.password) {
-      updatedProducer.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
+      updatedProducer.password = await hashPassword(String(updates.password));
     }
 
     producers[index] = updatedProducer;

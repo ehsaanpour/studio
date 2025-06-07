@@ -2,6 +2,7 @@
 
 import type { User } from '@/types'; // Assuming User type is defined in types/index.ts
 import { readJsonFile, writeJsonFile } from './fs-utils';
+import { comparePassword } from './utils'; // Import comparePassword from utils
 
 const USERS_FILE = 'users.json';
 
@@ -45,9 +46,9 @@ export async function verifyAdminPassword(username: string, password: string): P
     }
     
     console.log('verifyAdminPassword: Provided password:', password);
-    console.log('verifyAdminPassword: Stored password:', adminUser.password);
-    const isMatch = password === adminUser.password;
-    console.log('verifyAdminPassword: Password match result:', isMatch);
+    console.log('verifyAdminPassword: Stored hashed password:', adminUser.password);
+    const isMatch = await comparePassword(password, adminUser.password); // Use comparePassword from utils
+    console.log('verifyAdminPassword: Password match result (comparePassword):', isMatch);
     return isMatch;
   } catch (error) {
     console.error('Error verifying admin password:', error);

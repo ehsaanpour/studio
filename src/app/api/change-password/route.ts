@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { hashPassword, comparePassword } from '@/lib/utils'; // Import hashing utilities
 
 export async function POST(request: Request) {
   try {
@@ -23,13 +24,16 @@ export async function POST(request: Request) {
     }
 
     console.log('Current admin password in file:', users[adminUserIndex].password);
-    if (users[adminUserIndex].password !== currentPassword) {
+    const isPasswordCorrect = await comparePassword(currentPassword, users[adminUserIndex].password);
+    if (!isPasswordCorrect) {
       console.log('Incorrect current password provided.');
       return NextResponse.json({ message: 'Incorrect current password' }, { status: 401 });
     }
 
-    users[adminUserIndex].password = newPassword;
-    console.log('New admin password set in memory:', users[adminUserIndex].password);
+    // Hash the new password before saving
+    const hashedPassword = await hashPassword(newPassword);
+    users[adminUserIndex].password = hashedPassword;
+    console.log('New admin password (hashed) set in memory:', users[adminUserIndex].password);
 
     await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
     console.log('Users file written successfully with new password.');
