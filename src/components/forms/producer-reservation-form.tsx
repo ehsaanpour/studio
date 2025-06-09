@@ -44,7 +44,7 @@ export const producerFormSchema = z.object({
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
-  repetitionType: z.enum(['weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
+  repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
   repetitionEndDate: z.date().optional().refine((date) => {
     if (!date) return true;
     const today = new Date();
@@ -135,7 +135,10 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     try {
       let reservationsToCreate = [];
       
-      if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
+      if (data.repetitionType === 'no_repetition') {
+        // Create single reservation
+        reservationsToCreate.push(data);
+      } else if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
         // Calculate number of days between start and end date
         const startDate = new Date(data.reservationDate);
         const endDate = new Date(data.repetitionEndDate);
@@ -438,28 +441,36 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       defaultValue={field.value}
                       className="flex flex-col space-y-1"
                     >
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="no_repetition" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          بدون تکرار
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
                           <RadioGroupItem value="weekly_1month" />
                         </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          هر هفته تا یک ماه
+                        <FormLabel className="font-normal">
+                          هفتگی (یک ماه)
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
                           <RadioGroupItem value="weekly_2months" />
                         </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          هر هفته تا 2 ماه
+                        <FormLabel className="font-normal">
+                          هفتگی (دو ماه)
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
                           <RadioGroupItem value="daily_until_date" />
                         </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          تکرار هر روز تا تاریخ مشخص
+                        <FormLabel className="font-normal">
+                          روزانه تا تاریخ مشخص
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -524,6 +535,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
             name="additionalServices"
             render={() => (
               <FormItem>
+                <div className="mb-4">
+                  <FormLabel className="text-base">سرویس‌های مورد نیاز را انتخاب کنید</FormLabel>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    در صورت انتخاب پخش زنده و استریم، لطفا بستر پخش زنده مانند گوگل میت، زوم، مایکروسافت تیمز و... 
+                    و برای پخش زنده بسترهای آن مثل یوتیوب، اینستاگرام، آپارات و... در قسمت توضیحات به صورت کامل درج شود.
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {additionalServiceItems.map((item) => (
                     <FormField
@@ -534,14 +552,14 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         return (
                           <FormItem
                             key={item.id}
-                            className="flex flex-row items-start space-x-3 space-x-reverse"
+                            className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse p-4 border rounded-lg"
                           >
                             <FormControl>
                               <Checkbox
                                 checked={field.value?.includes(item.id)}
                                 onCheckedChange={(checked) => {
                                   return checked
-                                    ? field.onChange([...field.value || [], item.id])
+                                    ? field.onChange([...(field.value || []), item.id])
                                     : field.onChange(
                                         field.value?.filter(
                                           (value) => value !== item.id
@@ -550,7 +568,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
+                            <FormLabel className="font-normal">
                               {item.label}
                             </FormLabel>
                           </FormItem>
