@@ -163,7 +163,37 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         }
       }
 
-      // Create all reservations
+      // Check availability for all reservations before creating them
+      for (const reservationData of reservationsToCreate) {
+        const response = await fetch('/api/reservations/check-availability', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            dateTime: {
+              reservationDate: reservationData.reservationDate,
+              startTime: reservationData.reservationStartTime,
+              endTime: reservationData.reservationEndTime,
+            },
+            studio: reservationData.studioSelection,
+          }),
+        });
+
+        const { isAvailable, message } = await response.json();
+        
+        if (!isAvailable) {
+          toast({
+            title: 'زمان رزرو در دسترس نیست',
+            description: message,
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Create all reservations if all times are available
       for (const reservationData of reservationsToCreate) {
         await addReservation(reservationData, 'producer', producerName);
       }
