@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/lib/auth-context';
 
 const formSchema = z.object({
   currentPassword: z.string().min(1, 'رمز عبور فعلی الزامی است.'),
@@ -29,6 +30,7 @@ const formSchema = z.object({
 export function ChangePasswordForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,7 +44,10 @@ export function ChangePasswordForm() {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/change-password', {
+      // Determine the API endpoint based on user type
+      const endpoint = user?.isAdmin ? '/api/change-password' : '/api/producer/change-password';
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,6 +55,7 @@ export function ChangePasswordForm() {
         body: JSON.stringify({
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
+          username: user?.username, // Include username for producer password change
         }),
       });
 
@@ -87,7 +93,7 @@ export function ChangePasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" dir="rtl"> {/* Added dir="rtl" */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" dir="rtl">
         <FormField
           control={form.control}
           name="currentPassword"
