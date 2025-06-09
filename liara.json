@@ -4,5 +4,11 @@
   "build": {
     "location": "iran"
   },
-  "disks": []
+  "disks": [
+    {
+      "name": "data",
+      "mountPath": "/app/data",
+      "size": "1Gi"
+    }
+  ]
 }

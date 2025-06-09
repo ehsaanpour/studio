@@ -9,7 +9,11 @@ interface ProgramNamesData {
   programNames: ProgramName[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'src', 'data');
+// Use the same data directory structure as fs-utils
+const DATA_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join(process.cwd(), 'data')  // In production, use /data directory
+  : path.join(process.cwd(), 'src', 'data'); // In development, use /src/data
+
 const PROGRAM_NAMES_FILE = 'program-names.json';
 
 // Helper function to get program names from JSON file
