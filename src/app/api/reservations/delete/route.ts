@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getReservationsServer } from '@/server/lib/reservation-data';
-import { writeJsonFile } from '@/server/lib/fs-utils';
+import { writeJsonFile } from '@/lib/fs-utils';
+import path from 'path';
 
 export async function DELETE(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function DELETE(request: Request) {
     const updatedReservations = reservations.filter(r => r.id !== requestId);
     
     // Save the updated reservations
-    await writeJsonFile('data/reservations.json', { reservations: updatedReservations });
+    await writeJsonFile('reservations.json', { reservations: updatedReservations });
     
     return NextResponse.json({ message: 'Reservation deleted successfully' }, { status: 200 });
   } catch (error) {

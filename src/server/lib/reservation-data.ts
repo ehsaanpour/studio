@@ -1,26 +1,36 @@
 'use server';
 
-import fs from 'fs/promises'; // Re-add fs import
+import fs from 'fs/promises';
 import path from 'path';
-import { readJsonFile, writeJsonFile } from '@/lib/fs-utils'; // Use fs-utils for file operations
+import { readJsonFile, writeJsonFile } from '@/lib/fs-utils';
 import type { StudioReservationRequest } from '@/types';
 
 interface ReservationsData {
   reservations: StudioReservationRequest[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'src', 'data'); // Ensure DATA_DIR is defined for this context
+const DATA_DIR = path.join(process.cwd(), 'src', 'data');
 const RESERVATIONS_FILE = 'reservations.json';
 
 // Helper function to get reservations from JSON file
 async function getStoredReservations(): Promise<StudioReservationRequest[]> {
-  const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
-  return data?.reservations || [];
+  try {
+    const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
+    return data?.reservations || [];
+  } catch (error) {
+    console.error('Error reading reservations file:', error);
+    return [];
+  }
 }
 
 // Helper function to save reservations to JSON file
 async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
-  await writeJsonFile<ReservationsData>(RESERVATIONS_FILE, { reservations });
+  try {
+    await writeJsonFile(RESERVATIONS_FILE, { reservations });
+  } catch (error) {
+    console.error('Error saving reservations:', error);
+    throw error;
+  }
 }
 
 export async function getReservationsServer(): Promise<StudioReservationRequest[]> {
