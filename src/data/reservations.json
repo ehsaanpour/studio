@@ -1,3 +1,73 @@
 {
-  "reservations": []
+  "reservations": [
+    {
+      "id": "1749460441713",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "آفریقا",
+      "dateTime": {
+        "reservationDate": "2025-06-10T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "xdcam",
+        "crane"
+      ],
+      "submittedAt": "2025-06-09T09:14:01.713Z",
+      "status": "new"
+    },
+    {
+      "id": "1749460441815",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "آفریقا",
+      "dateTime": {
+        "reservationDate": "2025-06-11T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "xdcam",
+        "crane"
+      ],
+      "submittedAt": "2025-06-09T09:14:01.815Z",
+      "status": "new"
+    },
+    {
+      "id": "1749460441903",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "آفریقا",
+      "dateTime": {
+        "reservationDate": "2025-06-12T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "xdcam",
+        "crane"
+      ],
+      "submittedAt": "2025-06-09T09:14:01.903Z",
+      "status": "new"
+    }
+  ]
 }

@@ -94,8 +94,8 @@ export async function addReservation(
       studio: producerData.studioSelection,
       studioServices: {
         serviceType: producerData.studioServiceType,
-        numberOfDays: producerData.studioServiceDays,
-        hoursPerDay: producerData.studioServiceHoursPerDay,
+        numberOfDays: 1, // Default to 1 day since we removed this field
+        hoursPerDay: 8, // Default to 8 hours since we removed this field
       },
       additionalServices: producerData.additionalServices as AdditionalService[],
     };

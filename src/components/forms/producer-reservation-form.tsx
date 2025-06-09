@@ -30,7 +30,7 @@ import type { AdditionalService } from '@/types';
 import { getProgramNames } from '@/lib/program-name-store';
 
 export const producerFormSchema = z.object({
-  programName: z.string().min(1, 'نام برنامه الزامی است.'), // New field
+  programName: z.string().min(1, 'نام برنامه الزامی است.'),
   reservationDate: z.date({
     required_error: 'تاریخ رزرو الزامی است.',
   }).refine((date) => {
@@ -44,8 +44,13 @@ export const producerFormSchema = z.object({
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
-  studioServiceDays: z.number().min(1, 'تعداد روز باید حداقل ۱ باشد.'),
-  studioServiceHoursPerDay: z.number().min(1, 'تعداد ساعت در روز باید حداقل ۱ باشد.'),
+  repetitionType: z.enum(['weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
+  repetitionEndDate: z.date().optional().refine((date) => {
+    if (!date) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date >= today;
+  }, 'تاریخ پایان باید از امروز به بعد باشد.'),
   additionalServices: z.array(z.enum([
     'videowall',
     'xdcam',
@@ -55,7 +60,7 @@ export const producerFormSchema = z.object({
     'live_communication',
     'stream',
   ])).optional(),
-  details: z.string().optional(), // New field
+  details: z.string().optional(),
 });
 
 export type ProducerFormValues = z.infer<typeof producerFormSchema>;
@@ -84,6 +89,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [programNames, setProgramNames] = useState<string[]>([]);
 
   useEffect(() => {
@@ -115,8 +121,8 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       reservationEndTime: '17:00',
       studioSelection: undefined,
       studioServiceType: undefined,
-      studioServiceDays: 1,
-      studioServiceHoursPerDay: 8,
+      repetitionType: undefined,
+      repetitionEndDate: undefined,
       additionalServices: [],
       details: '', 
     },
@@ -126,32 +132,74 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     setIsLoading(true);
     console.log('Producer Reservation Data Submitted:', data, 'by', producerName);
     
-    addReservation(data, 'producer', producerName);
+    try {
+      let reservationsToCreate = [];
+      
+      if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
+        // Calculate number of days between start and end date
+        const startDate = new Date(data.reservationDate);
+        const endDate = new Date(data.repetitionEndDate);
+        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Create a reservation for each day
+        for (let i = 0; i <= daysDiff; i++) {
+          const reservationDate = new Date(startDate);
+          reservationDate.setDate(startDate.getDate() + i);
+          reservationsToCreate.push({
+            ...data,
+            reservationDate,
+          });
+        }
+      } else {
+        // Handle weekly repetitions
+        const weeks = data.repetitionType === 'weekly_1month' ? 4 : 8;
+        for (let i = 0; i < weeks; i++) {
+          const reservationDate = new Date(data.reservationDate);
+          reservationDate.setDate(reservationDate.getDate() + (i * 7));
+          reservationsToCreate.push({
+            ...data,
+            reservationDate,
+          });
+        }
+      }
 
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-    setIsLoading(false);
-    toast({
-      title: 'درخواست شما ثبت شد',
-      description: 'درخواست رزرو شما با موفقیت برای بررسی ارسال شد.',
-      action: (
-        <div className="flex items-center text-green-500">
-          <CheckCircle className="ms-2 h-5 w-5" />
-          <span>موفق</span>
-        </div>
-      ),
-    });
-    form.reset({ // Reset form to default values
-      programName: '', // Reset new field
-      reservationDate: new Date(),
-      reservationStartTime: '09:00',
-      reservationEndTime: '17:00',
-      studioSelection: undefined,
-      studioServiceType: undefined,
-      studioServiceDays: 1,
-      studioServiceHoursPerDay: 8,
-      additionalServices: [],
-      details: '', // Reset new field
-    });
+      // Create all reservations
+      for (const reservationData of reservationsToCreate) {
+        await addReservation(reservationData, 'producer', producerName);
+      }
+
+      toast({
+        title: 'درخواست شما ثبت شد',
+        description: `درخواست رزرو شما با موفقیت برای ${reservationsToCreate.length} روز ارسال شد.`,
+        action: (
+          <div className="flex items-center text-green-500">
+            <CheckCircle className="ms-2 h-5 w-5" />
+            <span>موفق</span>
+          </div>
+        ),
+      });
+    } catch (error) {
+      console.error('Error submitting reservation:', error);
+      toast({
+        title: 'خطا در ثبت درخواست',
+        description: 'متأسفانه در ثبت درخواست شما مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+      form.reset({
+        programName: '',
+        reservationDate: new Date(),
+        reservationStartTime: '09:00',
+        reservationEndTime: '17:00',
+        studioSelection: undefined,
+        studioServiceType: undefined,
+        repetitionType: undefined,
+        repetitionEndDate: undefined,
+        additionalServices: [],
+        details: '',
+      });
+    }
   }
 
   return (
@@ -350,42 +398,91 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="studioServiceDays"
+              name="repetitionType"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>تعداد روز *</FormLabel>
+                <FormItem className="space-y-3">
+                  <FormLabel>تکرار برنامه *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      className="w-full text-right"
-                    />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="weekly_1month" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          هر هفته تا یک ماه
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="weekly_2months" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          هر هفته تا 2 ماه
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="daily_until_date" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          تکرار هر روز تا تاریخ مشخص
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="studioServiceHoursPerDay"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>تعداد ساعت در روز *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      className="w-full text-right"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {form.watch('repetitionType') === 'daily_until_date' && (
+              <FormField
+                control={form.control}
+                name="repetitionEndDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>تاریخ پایان تکرار *</FormLabel>
+                    <Popover open={isEndDatePickerOpen} onOpenChange={setIsEndDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-end text-right font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              formatDateFnsJalali(field.value, 'PPP', { locale: faIR })
+                            ) : (
+                              <span>یک تاریخ انتخاب کنید</span>
+                            )}
+                            <CalendarIcon className="me-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <PersianDatePicker
+                          value={field.value}
+                          onChange={(date) => {
+                            field.onChange(date);
+                            setIsEndDatePickerOpen(false);
+                          }}
+                          disabled={(date) => {
+                            const startDate = form.getValues('reservationDate');
+                            return date < startDate;
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
         </div>
 
