@@ -1,7 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const DATA_DIR = path.join(process.cwd(), 'src', 'data');
+// Use a more robust path resolution that works in both development and production
+const DATA_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join(process.cwd(), 'data')  // In production, use /data directory
+  : path.join(process.cwd(), 'src', 'data'); // In development, use /src/data
 
 export async function readJsonFile<T>(filePath: string): Promise<T | null> {
   try {
