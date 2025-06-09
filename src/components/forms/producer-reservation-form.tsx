@@ -156,7 +156,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8" dir="rtl">
         {/* Program Name */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
@@ -168,18 +168,18 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormLabel>نام برنامه *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full text-right">
                       <SelectValue placeholder="یک برنامه را انتخاب کنید" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {programNames.length === 0 ? (
-                      <div className="px-4 py-2 text-sm text-muted-foreground">
+                      <div className="px-4 py-2 text-sm text-muted-foreground text-right">
                         ابتدا در پنل تهیه‌کننده نام برنامه اضافه کنید.
                       </div>
                     ) : (
                       programNames.map((name) => (
-                        <SelectItem key={name} value={name}>
+                        <SelectItem key={name} value={name} className="text-right">
                           {name}
                         </SelectItem>
                       ))
@@ -208,20 +208,20 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full justify-start text-right font-normal",
+                            "w-full justify-end text-right font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          <CalendarIcon className="ms-2 h-4 w-4 opacity-50" />
                           {field.value ? (
                             formatDateFnsJalali(field.value, 'PPP', { locale: faIR })
                           ) : (
                             <span>یک تاریخ انتخاب کنید</span>
                           )}
+                          <CalendarIcon className="me-2 h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0" align="end">
                       <PersianDatePicker
                         value={field.value}
                         onChange={(date) => {
@@ -238,7 +238,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       />
                     </PopoverContent>
                   </Popover>
-                  <p className="text-sm text-muted-foreground mt-1">توجه: امکان رزرو برای روز جاری وجود ندارد. لطفاً از فردا به بعد را انتخاب کنید.</p>
+                  <p className="text-sm text-muted-foreground mt-1 text-right">توجه: امکان رزرو برای روز جاری وجود ندارد. لطفاً از فردا به بعد را انتخاب کنید.</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -250,7 +250,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full" />
+                    <Input type="time" {...field} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -263,7 +263,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full" />
+                    <Input type="time" {...field} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -291,7 +291,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       {studioOptions.map((option) => (
                         <FormItem
                           key={option.id}
-                          className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse"
+                          className="flex items-center space-x-3 space-x-reverse"
                         >
                           <FormControl>
                             <RadioGroupItem value={option.id} />
@@ -319,20 +319,20 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       defaultValue={field.value}
                       className="flex flex-col space-y-1"
                     >
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
                         <FormControl>
                           <RadioGroupItem value="with_crew" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          با کادر فنی
+                          استودیو با عوامل پخش
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
                         <FormControl>
                           <RadioGroupItem value="without_crew" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          بدون کادر فنی
+                          فضای استودی و یک نیروی فنی
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -360,7 +360,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       min="1"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      className="w-full"
+                      className="w-full text-right"
                     />
                   </FormControl>
                   <FormMessage />
@@ -379,7 +379,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       min="1"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      className="w-full"
+                      className="w-full text-right"
                     />
                   </FormControl>
                   <FormMessage />
@@ -407,7 +407,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         return (
                           <FormItem
                             key={item.id}
-                            className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse"
+                            className="flex flex-row items-start space-x-3 space-x-reverse"
                           >
                             <FormControl>
                               <Checkbox
@@ -450,7 +450,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormControl>
                   <Textarea
                     placeholder="توضیحات تکمیلی خود را وارد کنید..."
-                    className="resize-none min-h-[100px]"
+                    className="resize-none min-h-[100px] text-right"
                     {...field}
                   />
                 </FormControl>
@@ -463,8 +463,8 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="ms-2 h-4 w-4 animate-spin" />
-              در حال ثبت...
+              <span>در حال ثبت...</span>
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             </>
           ) : (
             'ثبت درخواست'
