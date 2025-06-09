@@ -31,7 +31,15 @@ import { getProgramNames } from '@/lib/program-name-store';
 
 export const producerFormSchema = z.object({
   programName: z.string().min(1, 'نام برنامه الزامی است.'), // New field
-  reservationDate: z.date({ required_error: 'تاریخ رزرو الزامی است.' }),
+  reservationDate: z.date({
+    required_error: 'تاریخ رزرو الزامی است.',
+  }).refine((date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return date >= tomorrow;
+  }, 'تاریخ رزرو باید حداقل از فردا باشد.'),
   reservationStartTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت شروع نامعتبر است (HH:MM).'),
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
@@ -148,10 +156,10 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
         {/* Program Name */}
-        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
           <FormField
             control={form.control}
             name="programName"
@@ -160,7 +168,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormLabel>نام برنامه *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="یک برنامه را انتخاب کنید" />
                     </SelectTrigger>
                   </FormControl>
@@ -185,9 +193,9 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         </div>
 
         {/* Reservation Date and Time */}
-        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">تاریخ و ساعت رزرو</h3>
-          <div className="grid md:grid-cols-3 gap-4 items-start">
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">تاریخ و ساعت رزرو</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
             <FormField
               control={form.control}
               name="reservationDate"
@@ -218,7 +226,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         value={field.value}
                         onChange={(date) => {
                            field.onChange(date);
-                           setIsDatePickerOpen(false); // Close popover on date select
+                           setIsDatePickerOpen(false);
                         }}
                         disabled={(date) => {
                           const today = new Date();
@@ -230,6 +238,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       />
                     </PopoverContent>
                   </Popover>
+                  <p className="text-sm text-muted-foreground mt-1">توجه: امکان رزرو برای روز جاری وجود ندارد. لطفاً از فردا به بعد را انتخاب کنید.</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -239,9 +248,9 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
               name="reservationStartTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ساعت شروع برنامه *</FormLabel> {/* Updated label */}
+                  <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} />
+                    <Input type="time" {...field} className="w-full" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -252,9 +261,9 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
               name="reservationEndTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ساعت پایان برنامه *</FormLabel> {/* Updated label */}
+                  <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} />
+                    <Input type="time" {...field} className="w-full" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,60 +273,81 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         </div>
 
         {/* Studio Selection */}
-        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو *</h3>
-          <FormField
-            control={form.control}
-            name="studioSelection"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-4 md:rtl:space-x-reverse"
-                  >
-                    {studioOptions.map((option) => (
-                      <FormItem key={option.id} className="flex items-center space-x-2 rtl:space-x-reverse">
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="studioSelection"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>استودیو *</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      {studioOptions.map((option) => (
+                        <FormItem
+                          key={option.id}
+                          className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse"
+                        >
+                          <FormControl>
+                            <RadioGroupItem value={option.id} />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            {option.label}
+                          </FormLabel>
+                        </FormItem>
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="studioServiceType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>نوع سرویس استودیو *</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
-                          <RadioGroupItem value={option.id} />
+                          <RadioGroupItem value="with_crew" />
                         </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">{option.label}</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer">
+                          با کادر فنی
+                        </FormLabel>
                       </FormItem>
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="without_crew" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          بدون کادر فنی
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
-        {/* Studio Services */}
-        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">خدمات استودیو</h3>
-          <FormField
-            control={form.control}
-            name="studioServiceType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>انتخاب سرویس استودیو *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="یک سرویس را انتخاب کنید" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="with_crew">استودیو با عوامل</SelectItem>
-                    <SelectItem value="without_crew">استودیو بدون عوامل و تجهیزات (استودیو و ویدیووال)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid md:grid-cols-2 gap-4">
+        {/* Service Details */}
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">جزئیات سرویس</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="studioServiceDays"
@@ -325,7 +355,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>تعداد روز *</FormLabel>
                   <FormControl>
-                    <Input type="number" min="1" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                    <Input
+                      type="number"
+                      min="1"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -338,7 +374,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>تعداد ساعت در روز *</FormLabel>
                   <FormControl>
-                    <Input type="number" min="1" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                    <Input
+                      type="number"
+                      min="1"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -348,55 +390,57 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         </div>
 
         {/* Additional Services */}
-        <div className="space-y-2 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">خدمات جانبی</h3>
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">سرویس‌های تکمیلی</h3>
           <FormField
             control={form.control}
             name="additionalServices"
             render={() => (
-              <FormItem className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
-                {additionalServiceItems.map((item) => (
-                  <FormField
-                    key={item.id}
-                    control={form.control}
-                    name="additionalServices"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={item.id}
-                          className="flex flex-row items-start space-x-2 rtl:space-x-reverse space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(item.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([...(field.value || []), item.id])
-                                  : field.onChange(
-                                    (field.value || []).filter(
-                                      (value) => value !== item.id
-                                    )
-                                  );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
-                            {item.label}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                ))}
-                <FormMessage /> 
+              <FormItem>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {additionalServiceItems.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name="additionalServices"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={item.id}
+                            className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...field.value || [], item.id])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (value) => value !== item.id
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">
+                              {item.label}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                </div>
+                <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        {/* Details */}
-        <div className="space-y-4 p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-xl font-semibold text-primary border-b pb-2 mb-4">توضیحات</h3>
+        {/* Additional Details */}
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">توضیحات تکمیلی</h3>
           <FormField
             control={form.control}
             name="details"
@@ -405,8 +449,8 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormLabel>توضیحات</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="جزئیات یا نکات اضافی درباره برنامه را اینجا وارد کنید..."
-                    className="min-h-[100px]"
+                    placeholder="توضیحات تکمیلی خود را وارد کنید..."
+                    className="resize-none min-h-[100px]"
                     {...field}
                   />
                 </FormControl>
@@ -416,9 +460,15 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           />
         </div>
 
-        <Button type="submit" className="w-full text-lg py-3" disabled={isLoading}>
-          {isLoading && <Loader2 className="ms-2 h-5 w-5 animate-spin" />}
-          ارسال درخواست
+        <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="ms-2 h-4 w-4 animate-spin" />
+              در حال ثبت...
+            </>
+          ) : (
+            'ثبت درخواست'
+          )}
         </Button>
       </form>
     </Form>
