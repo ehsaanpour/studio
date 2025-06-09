@@ -31,7 +31,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAdmin } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -51,19 +51,13 @@ export function LoginForm() {
           title: 'ورود موفق',
           description: 'شما با موفقیت وارد شدید.',
         });
-        // Determine redirection based on user type (admin or producer)
-        // The useAuth context should handle setting isAdmin flag
-        // For simplicity, we'll redirect to /admin if admin, otherwise /producer or /dashboard
-        // This logic can be refined based on actual user roles after login
-        if (data.username === 'admin') { // Assuming 'admin' username implies admin role for redirection
-          router.push('/admin');
+        // Redirect based on user role
+        if (isAdmin) {
+          router.push('/dashboard');
         } else {
-          router.push('/producer'); // Or '/dashboard' if producers have a dashboard
+          router.push('/producer');
         }
       } else {
-        // If login failed, check if it's due to username not found or incorrect password
-        // The auth-context's login function should ideally provide more specific error messages
-        // For now, a generic error for failed login
         toast({
           title: 'خطا در ورود',
           description: 'نام کاربری یا رمز عبور اشتباه است.',
