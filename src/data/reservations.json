@@ -21,7 +21,8 @@
         "crane"
       ],
       "submittedAt": "2025-06-09T09:14:01.713Z",
-      "status": "new"
+      "status": "confirmed",
+      "updatedAt": "2025-06-09T09:16:51.175Z"
     },
     {
       "id": "1749460441815",
@@ -44,7 +45,8 @@
         "crane"
       ],
       "submittedAt": "2025-06-09T09:14:01.815Z",
-      "status": "new"
+      "status": "confirmed",
+      "updatedAt": "2025-06-09T09:16:50.334Z"
     },
     {
       "id": "1749460441903",
@@ -67,7 +69,8 @@
         "crane"
       ],
       "submittedAt": "2025-06-09T09:14:01.903Z",
-      "status": "new"
+      "status": "confirmed",
+      "updatedAt": "2025-06-09T09:16:49.460Z"
     }
   ]
 }
