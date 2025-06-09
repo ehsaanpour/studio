@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Film, PlusCircle, XCircle } from 'lucide-react';
+import { Film, PlusCircle, XCircle, Trash2 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
 import { getReservations } from '@/lib/reservation-store'; // Removed subscribe
@@ -134,6 +134,69 @@ export default function ProducerPanelPage() {
       toast({
         title: 'خطا در حذف',
         description: `خطا در حذف برنامه "${nameToRemove}".`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    try {
+      const response = await fetch('/api/reservations/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ requestId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete request');
+      }
+
+      // Update the local state
+      setMyRequests(prevRequests => prevRequests.filter(req => req.id !== requestId));
+      
+      toast({
+        title: 'درخواست حذف شد',
+        description: 'درخواست رزرو با موفقیت حذف شد.',
+      });
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      toast({
+        title: 'خطا',
+        description: 'خطا در حذف درخواست. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteAllRequests = async () => {
+    try {
+      // Delete each request one by one
+      const deletePromises = myRequests.map(request => 
+        fetch('/api/reservations/delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ requestId: request.id }),
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      // Clear all requests from local state
+      setMyRequests([]);
+      
+      toast({
+        title: 'تمام درخواست‌ها حذف شدند',
+        description: 'تمام درخواست‌های رزرو با موفقیت حذف شدند.',
+      });
+    } catch (error) {
+      console.error('Error deleting all requests:', error);
+      toast({
+        title: 'خطا',
+        description: 'خطا در حذف درخواست‌ها. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
     }
@@ -278,17 +341,29 @@ export default function ProducerPanelPage() {
             {/* My Requests Section */}
             <Card className="shadow-sm lg:col-span-1 xl:col-span-1">
               <CardHeader>
-                <CardTitle className="text-xl text-right">درخواست‌های رزرو من</CardTitle>
-                <CardDescription className="text-right">لیست درخواست‌های رزرو استودیو شما.</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>درخواست‌های رزرو من</CardTitle>
+                    <CardDescription>لیست تمام درخواست‌های رزرو شما</CardDescription>
+                  </div>
+                  {myRequests.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAllRequests}
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      حذف همه درخواست‌ها
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {myRequests.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground text-right">شما هنوز هیچ درخواستی ثبت نکرده‌اید.</p>
-                  </div>
+                  <p className="text-center text-muted-foreground">هیچ درخواست رزروی ثبت نشده است.</p>
                 ) : (
-                  <ScrollArea className="h-[400px] lg:h-[700px] w-full pr-4">
-                    <div className="space-y-4" dir="rtl">
+                  <ScrollArea className="h-[800px]">
+                    <div className="space-y-4">
                       {myRequests.map(request => (
                         <Card key={request.id} className="shadow-sm">
                           <CardHeader>
@@ -303,9 +378,19 @@ export default function ProducerPanelPage() {
                                   ساعت: {request.dateTime.startTime} تا {request.dateTime.endTime}
                                 </CardDescription>
                               </div>
-                              <Badge variant={getStatusBadgeVariant(request.status)} className="text-sm px-3 py-1 font-semibold">
-                                {getStatusLabel(request.status)}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={getStatusBadgeVariant(request.status)} className="text-sm px-3 py-1 font-semibold">
+                                  {getStatusLabel(request.status)}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteRequest(request.id)}
+                                  className="text-destructive hover:text-destructive/90"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </CardHeader>
                         </Card>

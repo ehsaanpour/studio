@@ -1,0 +1,130 @@
+{
+  "reservations": [
+    {
+      "id": "1748846204272",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "اکونومیک",
+      "dateTime": {
+        "reservationDate": "2025-06-03T07:00:00.000Z",
+        "startTime": "18:00",
+        "endTime": "19:00"
+      },
+      "studio": "studio5",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "videowall",
+        "makeup_artist",
+        "service_staff",
+        "xdcam"
+      ],
+      "submittedAt": "2025-06-02T06:36:44.272Z",
+      "status": "confirmed",
+      "updatedAt": "2025-06-02T06:38:24.805Z"
+    },
+    {
+      "id": "1748846233965",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "ایران تودی",
+      "dateTime": {
+        "reservationDate": "2025-06-05T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "videowall",
+        "makeup_artist",
+        "stream"
+      ],
+      "submittedAt": "2025-06-02T06:37:13.965Z",
+      "status": "confirmed",
+      "updatedAt": "2025-06-02T06:38:21.689Z"
+    },
+    {
+      "id": "1748846268941",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "ویکی",
+      "dateTime": {
+        "reservationDate": "2025-06-06T07:00:00.000Z",
+        "startTime": "14:00",
+        "endTime": "16:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "videowall",
+        "makeup_artist",
+        "service_staff",
+        "xdcam"
+      ],
+      "submittedAt": "2025-06-02T06:37:48.941Z",
+      "status": "confirmed",
+      "updatedAt": "2025-06-02T06:38:20.113Z"
+    },
+    {
+      "id": "1748846592439",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "ایران تودی",
+      "dateTime": {
+        "reservationDate": "2025-06-02T06:37:49.442Z",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "xdcam",
+        "crane",
+        "service_staff"
+      ],
+      "submittedAt": "2025-06-02T06:43:12.439Z",
+      "status": "confirmed",
+      "updatedAt": "2025-06-02T06:44:59.386Z"
+    },
+    {
+      "id": "1748846749278",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "آفریقا",
+      "dateTime": {
+        "reservationDate": "2025-06-07T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "service_staff",
+        "makeup_artist"
+      ],
+      "submittedAt": "2025-06-02T06:45:49.278Z",
+      "status": "confirmed",
+      "updatedAt": "2025-06-02T06:46:03.230Z"
+    }
+  ]
+}
