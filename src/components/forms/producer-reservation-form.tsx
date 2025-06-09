@@ -61,6 +61,14 @@ export const producerFormSchema = z.object({
     'stream',
   ])).optional(),
   details: z.string().optional(),
+}).refine((data) => {
+  if (data.additionalServices?.includes('live_communication') || data.additionalServices?.includes('stream')) {
+    return data.details && data.details.trim().length > 0;
+  }
+  return true;
+}, {
+  message: 'در صورت انتخاب ارتباط زنده یا استریم، توضیحات تکمیلی الزامی است.',
+  path: ['details'],
 });
 
 export type ProducerFormValues = z.infer<typeof producerFormSchema>;
@@ -594,8 +602,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormLabel>توضیحات</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="توضیحات تکمیلی خود را وارد کنید..."
-                    className="resize-none min-h-[100px] text-right"
+                    placeholder={
+                      form.watch('additionalServices')?.includes('live_communication') || 
+                      form.watch('additionalServices')?.includes('stream')
+                        ? "لطفاً بستر پخش زنده و بسترهای آن را مشخص کنید..."
+                        : "توضیحات تکمیلی خود را وارد کنید..."
+                    }
+                    className="resize-none"
                     {...field}
                   />
                 </FormControl>

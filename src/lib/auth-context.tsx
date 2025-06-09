@@ -2,16 +2,16 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getProducerByUsername, verifyProducerPassword } from './producer-store';
-import { getAdminByUsername, verifyAdminPassword } from './admin-store'; // New import
+import { getAdminByUsername, verifyAdminPassword } from './admin-store';
 import Cookies from 'js-cookie';
-import type { User } from '@/types'; // Import User from types
+import type { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAdmin: boolean;
-  updateProfile: (updatedUser: Partial<User>) => void; // Added updateProfile
+  updateProfile: (updatedUser: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,29 +29,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // Handle admin login using admin-store
-      if (username === 'admin') {
-        const isValidAdminPassword = await verifyAdminPassword(username, password);
-        if (isValidAdminPassword) {
-          const adminUser = await getAdminByUsername(username);
-          if (adminUser) {
-            const userData: User = {
-              name: adminUser.name,
-              username: adminUser.username,
-              email: adminUser.email,
-              phone: adminUser.phone,
-              isAdmin: true,
-              profilePictureUrl: adminUser.profilePictureUrl,
-            };
-            setUser(userData);
-            Cookies.set('user', JSON.stringify(userData), { expires: 1 });
-            return true;
-          }
+      // First try to verify if it's an admin account
+      const isValidAdminPassword = await verifyAdminPassword(username, password);
+      if (isValidAdminPassword) {
+        const adminUser = await getAdminByUsername(username);
+        if (adminUser) {
+          const userData: User = {
+            name: adminUser.name || username,
+            username: adminUser.username,
+            email: adminUser.email,
+            phone: adminUser.phone,
+            isAdmin: true,
+            profilePictureUrl: adminUser.profilePictureUrl,
+          };
+          setUser(userData);
+          Cookies.set('user', JSON.stringify(userData), { expires: 1 });
+          return true;
         }
-        return false; // Admin login failed
       }
 
-      // For producers, verify password
+      // If not an admin, try producer login
       const isValidProducerPassword = await verifyProducerPassword(username, password);
       if (!isValidProducerPassword) {
         return false;

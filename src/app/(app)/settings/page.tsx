@@ -1,16 +1,20 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, SettingsIcon, UserPlus, KeyRound, LockKeyhole } from 'lucide-react';
+import { ArrowRight, SettingsIcon, UserPlus, KeyRound, LockKeyhole, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ChangePasswordForm } from '@/components/forms/change-password-form';
+
+interface Admin {
+  name: string;
+  username: string;
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -19,8 +23,31 @@ export default function SettingsPage() {
   const [newAdminName, setNewAdminName] = useState('');
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [admins, setAdmins] = useState<Admin[]>([]);
 
-  const handleAddAdminSubmit = (event: FormEvent<HTMLFormElement>) => {
+  // Load admins on component mount
+  useEffect(() => {
+    loadAdmins();
+  }, []);
+
+  const loadAdmins = async () => {
+    try {
+      const response = await fetch('/api/admin/list');
+      if (response.ok) {
+        const data = await response.json();
+        setAdmins(data);
+      }
+    } catch (error) {
+      console.error('Error loading admins:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در بارگذاری لیست ادمین‌ها.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddAdminSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!newAdminName || !newAdminUsername || !newAdminPassword) {
       toast({
@@ -30,15 +57,79 @@ export default function SettingsPage() {
       });
       return;
     }
-    // Mock adding admin
-    console.log('Adding new admin:', { name: newAdminName, username: newAdminUsername, password: newAdminPassword });
-    toast({
-      title: "موفقیت",
-      description: `ادمین "${newAdminName}" (نام کاربری: ${newAdminUsername}) با موفقیت (به صورت شبیه‌سازی شده) اضافه شد.`,
-    });
-    setNewAdminName('');
-    setNewAdminUsername('');
-    setNewAdminPassword('');
+
+    try {
+      const response = await fetch('/api/admin/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newAdminName,
+          username: newAdminUsername,
+          password: newAdminPassword,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "موفقیت",
+          description: `ادمین "${newAdminName}" با موفقیت اضافه شد.`,
+        });
+        setNewAdminName('');
+        setNewAdminUsername('');
+        setNewAdminPassword('');
+        loadAdmins(); // Reload the admin list
+      } else {
+        const data = await response.json();
+        toast({
+          title: "خطا",
+          description: data.message || "خطا در افزودن ادمین.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error adding admin:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در افزودن ادمین.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveAdmin = async (username: string) => {
+    try {
+      const response = await fetch('/api/admin/remove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "موفقیت",
+          description: "ادمین با موفقیت حذف شد.",
+        });
+        loadAdmins(); // Reload the admin list
+      } else {
+        const data = await response.json();
+        toast({
+          title: "خطا",
+          description: data.message || "خطا در حذف ادمین.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error removing admin:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در حذف ادمین.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -68,59 +159,97 @@ export default function SettingsPage() {
             </TabsList>
 
             <TabsContent value="add-admin">
-              <Card dir="rtl"> {/* Added dir="rtl" */}
-                <CardHeader>
-                  <CardTitle>افزودن ادمین جدید</CardTitle>
-                  <CardDescription>برای افزودن یک ادمین جدید به سیستم، فرم زیر را تکمیل کنید.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleAddAdminSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="newAdminName">نام کامل *</Label>
-                      <Input
-                        type="text"
-                        id="newAdminName"
-                        value={newAdminName}
-                        onChange={(e) => setNewAdminName(e.target.value)}
-                        className="mt-1"
-                        placeholder="نام کامل ادمین"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="newAdminUsername">نام کاربری *</Label>
-                      <Input
-                        type="text"
-                        id="newAdminUsername"
-                        value={newAdminUsername}
-                        onChange={(e) => setNewAdminUsername(e.target.value)}
-                        className="mt-1"
-                        placeholder="برای ورود به سیستم"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="newAdminPassword">رمز عبور *</Label>
-                      <Input
-                        type="password"
-                        id="newAdminPassword"
-                        value={newAdminPassword}
-                        onChange={(e) => setNewAdminPassword(e.target.value)}
-                        className="mt-1"
-                        placeholder="یک رمز عبور قوی انتخاب کنید"
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      افزودن ادمین <UserPlus className="me-2 h-4 w-4" />
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+              <div className="grid gap-6">
+                <Card dir="rtl">
+                  <CardHeader>
+                    <CardTitle>افزودن ادمین جدید</CardTitle>
+                    <CardDescription>برای افزودن یک ادمین جدید به سیستم، فرم زیر را تکمیل کنید.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddAdminSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="newAdminName">نام کامل *</Label>
+                        <Input
+                          type="text"
+                          id="newAdminName"
+                          value={newAdminName}
+                          onChange={(e) => setNewAdminName(e.target.value)}
+                          className="mt-1"
+                          placeholder="نام کامل ادمین"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newAdminUsername">نام کاربری *</Label>
+                        <Input
+                          type="text"
+                          id="newAdminUsername"
+                          value={newAdminUsername}
+                          onChange={(e) => setNewAdminUsername(e.target.value)}
+                          className="mt-1"
+                          placeholder="برای ورود به سیستم"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newAdminPassword">رمز عبور *</Label>
+                        <Input
+                          type="password"
+                          id="newAdminPassword"
+                          value={newAdminPassword}
+                          onChange={(e) => setNewAdminPassword(e.target.value)}
+                          className="mt-1"
+                          placeholder="یک رمز عبور قوی انتخاب کنید"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        افزودن ادمین <UserPlus className="me-2 h-4 w-4" />
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                <Card dir="rtl">
+                  <CardHeader>
+                    <CardTitle>لیست ادمین‌ها</CardTitle>
+                    <CardDescription>مدیریت ادمین‌های سیستم</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {admins.length === 0 ? (
+                      <div className="p-6 border border-dashed rounded-lg bg-muted/30 min-h-[150px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-center">
+                          هیچ ادمینی یافت نشد.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {admins.map((admin) => (
+                          <div key={admin.username} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <p className="font-medium">{admin.name}</p>
+                              <p className="text-sm text-muted-foreground">{admin.username}</p>
+                            </div>
+                            {admin.username !== 'admin' && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleRemoveAdmin(admin.username)}
+                              >
+                                حذف <Trash2 className="me-2 h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="change-password">
-              <Card dir="rtl"> {/* Added dir="rtl" for RTL */}
+              <Card dir="rtl">
                 <CardHeader>
                   <CardTitle>تغییر رمز عبور</CardTitle>
                   <CardDescription>برای تغییر رمز عبور فعلی خود، فرم زیر را تکمیل کنید.</CardDescription>
