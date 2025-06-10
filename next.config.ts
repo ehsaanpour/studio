@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Add static file serving configuration
+  async rewrites() {
+    return [
+      {
+        source: '/data/:path*',
+        destination: '/api/static/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
