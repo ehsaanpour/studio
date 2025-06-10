@@ -7,7 +7,7 @@
   "disks": [
     {
       "name": "data",
-      "mountPath": "/app/data",
+      "mountTo": "/app/data",
       "size": "1Gi"
     }
   ]
