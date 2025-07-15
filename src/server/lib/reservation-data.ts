@@ -69,3 +69,21 @@ export async function updateReservationStatusServer(requestId: string, newStatus
     throw error;
   }
 }
+
+export async function assignEngineerToServer(reservationId: string, engineerId: string): Promise<void> {
+  try {
+    const reservations = await getStoredReservations();
+    const index = reservations.findIndex(r => r.id === reservationId);
+    if (index !== -1) {
+      reservations[index].engineerId = engineerId;
+      reservations[index].updatedAt = new Date(); // Update timestamp
+      await saveReservations(reservations);
+    } else {
+      throw new Error('Reservation not found');
+    }
+  } catch (error) {
+    console.error('Server Error assigning engineer:', error);
+    throw error;
+  }
+}
+

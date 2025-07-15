@@ -77,6 +77,7 @@ export interface StudioReservationRequest {
   status: 'new' | 'read' | 'confirmed' | 'cancelled';
   submittedAt: Date;
   updatedAt?: Date;
+  engineerId?: string;
 }
 
 export interface User {
@@ -101,3 +102,9 @@ export interface Producer {
   isAdmin?: boolean;
   profilePictureUrl?: string;
 }
+
+export interface Engineer {
+  id: string;
+  name: string;
+}
+

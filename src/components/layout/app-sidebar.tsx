@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/icons/logo";
-import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home, User, CalendarDays } from "lucide-react";
+import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home, User, CalendarDays, UserCog } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +24,7 @@ const navItems = [
   { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
   { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn },
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
+  { href: "/engineer-assignment", label: "پنل اختصاص مهندس", icon: UserCog },
   { href: "/weekly-schedule", label: "برنامه هفتگی برنامه‌ها", icon: CalendarDays },
 ];
 
@@ -87,20 +88,26 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <Link href={item.href} className="w-full">
-                <SidebarMenuButton
-                  isActive={pathname.startsWith(item.href) && (item.href === "/" || item.href === "/dashboard" ? pathname === item.href : true) }
-                  tooltip={item.label}
-                  className="justify-start w-full"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
+          {navItems.map((item) => {
+            const isAdminOnly = item.href === "/admin" || item.href === "/engineer-assignment";
+            if (isAdminOnly && !isAdmin) {
+              return null;
+            }
+            return (
+              <SidebarMenuItem key={item.label}>
+                <Link href={item.href} className="w-full">
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith(item.href) && (item.href === "/" || item.href === "/dashboard" ? pathname === item.href : true) }
+                    tooltip={item.label}
+                    className="justify-start w-full"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className={cn(state === "collapsed" && !isMobile ? "sr-only" : "")}>{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
@@ -154,3 +161,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

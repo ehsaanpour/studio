@@ -1,3 +1,29 @@
 {
-  "reservations": []
+  "reservations": [
+    {
+      "id": "1752602540431",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "اکونومیک",
+      "dateTime": {
+        "reservationDate": "2025-07-17T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "23:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 8
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam"
+      ],
+      "submittedAt": "2025-07-15T18:02:20.432Z",
+      "status": "new",
+      "engineerId": "1752603292166",
+      "updatedAt": "2025-07-15T18:21:03.652Z"
+    }
+  ]
 }
