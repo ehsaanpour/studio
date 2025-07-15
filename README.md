@@ -67,4 +67,4 @@ To set up the project locally, follow these steps:
 Contributions are welcome! Please follow standard GitHub flow: fork the repository, create a new branch, make your changes, and submit a pull request.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License
