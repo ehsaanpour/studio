@@ -10,7 +10,16 @@ import { Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export function EngineerAssignmentClient() {
+type ShiftData = {
+  engineerName: string;
+  shifts: {
+    under1Hour: number;
+    between1And2Hours: number;
+    between3And4Hours: number;
+  };
+};
+
+export default function EngineerAssignmentClient() {
   const [engineers, setEngineers] = useState<Engineer[]>([]);
   const [reservations, setReservations] = useState<StudioReservationRequest[]>([]);
   const [newEngineerName, setNewEngineerName] = useState("");
@@ -41,7 +50,7 @@ export function EngineerAssignmentClient() {
     fetchData();
   }, []);
 
-  const shiftData = useMemo(() => {
+  const shiftData: ShiftData[] = useMemo(() => {
     const data = engineers.map(engineer => ({
       engineerName: engineer.name,
       shifts: {
@@ -56,17 +65,17 @@ export function EngineerAssignmentClient() {
 
       const engineerIndex = engineers.findIndex(e => e.id === reservation.engineerId);
       if (engineerIndex === -1) return;
+      
+      const duration = reservation.studioServices?.hoursPerDay || 0;
 
-      const duration = reservation.studioServices.hoursPerDay;
-
-      if (duration < 1) {
+      if (duration > 0 && duration < 1) {
         data[engineerIndex].shifts.under1Hour++;
       } else if (duration >= 1 && duration <= 2) {
         data[engineerIndex].shifts.between1And2Hours++;
       } else if (duration >= 3 && duration <= 4) {
         data[engineerIndex].shifts.between3And4Hours++;
       } else if (duration > 4) {
-        data[engineerIndex].shifts.between3And4Hours += 2; // Counted as two instances
+        data[engineerIndex].shifts.between3And4Hours += 2;
       }
     });
 
@@ -113,14 +122,14 @@ export function EngineerAssignmentClient() {
       if (!response.ok) {
         throw new Error('Failed to assign engineer');
       }
-      fetchData(); // Refresh reservations to show the new assignment
+      fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       <h1 className="text-2xl font-bold">پنل اختصاص مهندس</h1>
 
       <Card>
@@ -170,12 +179,16 @@ export function EngineerAssignmentClient() {
                       <p className="font-semibold">{reservation.programName}</p>
                       <p className="text-sm text-gray-500">تهیه‌کننده: {reservation.requesterName}</p>
                       <p className="text-sm text-gray-500">تاریخ: {new Date(reservation.dateTime.reservationDate).toLocaleDateString('fa-IR')}</p>
-                       {assignedEngineer && <p className="text-sm text-green-600">مهندس: {assignedEngineer.name}</p>}
+                      <p className="text-sm text-gray-500">ساعت شروع: {reservation.dateTime.startTime}</p>
+                      <p className="text-sm text-gray-500">ساعت پایان: {reservation.dateTime.endTime}</p>
+                      <p className="text-sm text-blue-500">مدت زمان: {reservation.studioServices?.hoursPerDay || 0} ساعت</p>
+                      {assignedEngineer && <p className="text-sm text-green-600">مهندس: {assignedEngineer.name}</p>}
                     </div>
                     <div className="w-48">
                       <Select
                         onValueChange={(engineerId) => handleAssignEngineer(reservation.id, engineerId)}
                         value={reservation.engineerId}
+                        dir="rtl"
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="یک مهندس انتخاب کنید" />
@@ -205,19 +218,19 @@ export function EngineerAssignmentClient() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>نام مهندس</TableHead>
-                <TableHead>برنامه‌های زیر ۱ ساعت</TableHead>
-                <TableHead>برنامه‌های بین ۱ و ۲ ساعت</TableHead>
-                <TableHead>برنامه‌های بین ۳ و ۴ ساعت</TableHead>
+                <TableHead className="text-right">نام مهندس</TableHead>
+                <TableHead className="text-right">برنامه‌های زیر ۱ ساعت</TableHead>
+                <TableHead className="text-right">برنامه‌های بین ۱ و ۲ ساعت</TableHead>
+                <TableHead className="text-right">برنامه‌های بین ۳ و ۴ ساعت</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shiftData.map((data, index) => (
+              {shiftData.map((row: ShiftData, index: number) => (
                 <TableRow key={index}>
-                  <TableCell>{data.engineerName}</TableCell>
-                  <TableCell>{data.shifts.under1Hour}</TableCell>
-                  <TableCell>{data.shifts.between1And2Hours}</TableCell>
-                  <TableCell>{data.shifts.between3And4Hours}</TableCell>
+                  <TableCell className="text-right">{row.engineerName}</TableCell>
+                  <TableCell className="text-right">{row.shifts.under1Hour}</TableCell>
+                  <TableCell className="text-right">{row.shifts.between1And2Hours}</TableCell>
+                  <TableCell className="text-right">{row.shifts.between3And4Hours}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

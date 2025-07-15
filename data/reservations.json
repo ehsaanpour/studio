@@ -1,1 +1,23 @@
-[]
+{
+  "reservations": [
+    {
+      "id": "1",
+      "type": "producer",
+      "requesterName": "Test Producer",
+      "programName": "Test Program",
+      "dateTime": {
+        "reservationDate": "2025-07-20T00:00:00.000Z",
+        "startTime": "10:00",
+        "endTime": "11:30"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 1.5
+      },
+      "status": "new",
+      "submittedAt": "2025-07-15T12:00:00.000Z"
+    }
+  ]
+}

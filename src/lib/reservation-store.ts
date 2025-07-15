@@ -3,25 +3,6 @@
 import type { StudioReservationRequest, PersonalInformation, ReservationDateTime, StudioSelection, StudioServicesInfo, AdditionalService, CateringService } from '@/types';
 import type { GuestFormValues } from '@/components/forms/guest-reservation-form';
 import type { ProducerFormValues } from '@/components/forms/producer-reservation-form';
-// import { readJsonFile, writeJsonFile } from './fs-utils'; // No longer directly used here
-
-// interface ReservationsData { // No longer needed
-//   reservations: StudioReservationRequest[];
-// }
-
-// const RESERVATIONS_FILE = 'reservations.json'; // No longer directly used here
-// const listeners: Set<() => void> = new Set(); // No longer needed for client-side reactivity
-
-// Helper function to get reservations from JSON file // No longer needed
-// async function getStoredReservations(): Promise<StudioReservationRequest[]> {
-//   const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
-//   return data?.reservations || [];
-// }
-
-// Helper function to save reservations to JSON file // No longer needed
-// async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
-//   await writeJsonFile<ReservationsData>(RESERVATIONS_FILE, { reservations });
-// }
 
 export async function getReservations(): Promise<StudioReservationRequest[]> {
   try {
@@ -30,10 +11,9 @@ export async function getReservations(): Promise<StudioReservationRequest[]> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    // Convert submittedAt string to Date object for sorting
     const reservationsWithDates = data.map((reservation: StudioReservationRequest) => ({
       ...reservation,
-      submittedAt: new Date(reservation.submittedAt) // Ensure submittedAt is a Date object
+      submittedAt: new Date(reservation.submittedAt)
     }));
     return reservationsWithDates.sort((a: StudioReservationRequest, b: StudioReservationRequest) => b.submittedAt.getTime() - a.submittedAt.getTime());
   } catch (error) {
@@ -47,15 +27,12 @@ export async function addReservation(
   type: 'guest' | 'producer',
   producerName?: string
 ): Promise<void> {
-  // The newId, requestDetailsBase, personalInfo, cateringServices, requester logic
-  // should ideally be moved to the API route or a server action
-  // For now, I'll keep it here and send the constructed object to the API
   const newId = Date.now().toString();
   let requestDetailsBase: Omit<StudioReservationRequest, 'id' | 'type' | 'requesterName' | 'personalInfo' | 'cateringServices' | 'submittedAt' | 'status' | 'updatedAt' | 'programName'>;
   let personalInfo: PersonalInformation | undefined;
   let cateringServices: CateringService[] | undefined;
   let requester: string | undefined;
-  let programName: string; // Declare programName here
+  let programName: string;
 
   if (type === 'guest') {
     const guestData = formData as GuestFormValues;
@@ -66,7 +43,7 @@ export async function addReservation(
       emailAddress: guestData.personalInfoEmail,
     };
     cateringServices = guestData.cateringServices as CateringService[];
-    programName = 'Guest Reservation'; // Default program name for guest
+    programName = 'Guest Reservation';
     requestDetailsBase = {
       dateTime: {
         reservationDate: guestData.reservationDate,
@@ -84,7 +61,7 @@ export async function addReservation(
   } else {
     const producerData = formData as ProducerFormValues;
     requester = producerName;
-    programName = producerData.programName; // Get program name from producer form data
+    programName = producerData.programName;
     requestDetailsBase = {
       dateTime: {
         reservationDate: producerData.reservationDate,
@@ -94,8 +71,8 @@ export async function addReservation(
       studio: producerData.studioSelection,
       studioServices: {
         serviceType: producerData.studioServiceType,
-        numberOfDays: 1, // Default to 1 day since we removed this field
-        hoursPerDay: 8, // Default to 8 hours since we removed this field
+        numberOfDays: 1,
+        hoursPerDay: 0, // Server will calculate this
       },
       additionalServices: producerData.additionalServices as AdditionalService[],
     };
@@ -105,11 +82,11 @@ export async function addReservation(
     id: newId,
     type: type,
     requesterName: requester,
-    programName: programName, // Assign programName here
+    programName: programName,
     personalInfo: personalInfo,
     ...requestDetailsBase,
     cateringServices: cateringServices,
-    submittedAt: new Date(), // Save as Date object
+    submittedAt: new Date(),
     status: 'new',
   };
 
@@ -119,7 +96,7 @@ export async function addReservation(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ formData: newRequest, type, producerName }), // Send the constructed request
+      body: JSON.stringify({ formData: newRequest, type, producerName }),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -148,17 +125,3 @@ export async function updateReservationStatus(requestId: string, newStatus: Stud
   }
 }
 
-// export function subscribe(listener: () => void) { // No longer needed
-//   listeners.add(listener);
-//   return () => listeners.delete(listener);
-// }
-
-// function notifyListeners() { // No longer needed
-//   listeners.forEach(listener => listener());
-// }
-
-// Function to clear reservations for testing or reset (optional) // No longer needed
-// export async function clearAllReservations_DEV_ONLY(): Promise<void> {
-//   await saveReservations([]);
-//   notifyListeners();
-// }

@@ -12,6 +12,16 @@ interface ReservationsData {
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
 const RESERVATIONS_FILE = 'reservations.json';
 
+function calculateDuration(startTime: string, endTime: string): number {
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) {
+        return 0;
+    }
+    const difference = end.getTime() - start.getTime();
+    return difference / (1000 * 60 * 60);
+}
+
 // Helper function to get reservations from JSON file
 async function getStoredReservations(): Promise<StudioReservationRequest[]> {
   try {
@@ -26,7 +36,14 @@ async function getStoredReservations(): Promise<StudioReservationRequest[]> {
 // Helper function to save reservations to JSON file
 async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
   try {
-    await writeJsonFile(RESERVATIONS_FILE, { reservations });
+    // Recalculate duration for all producer reservations before saving to fix any bad data.
+    const correctedReservations = reservations.map(r => {
+        if (r.type === 'producer') {
+            r.studioServices.hoursPerDay = calculateDuration(r.dateTime.startTime, r.dateTime.endTime);
+        }
+        return r;
+    });
+    await writeJsonFile(RESERVATIONS_FILE, { reservations: correctedReservations });
   } catch (error) {
     console.error('Error saving reservations:', error);
     throw error;
