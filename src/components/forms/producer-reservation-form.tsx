@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; // New Import
+import { Textarea } from '@/components/ui/textarea'; 
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +25,7 @@ import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { addReservation } from '@/lib/reservation-store';
-import { PersianDatePicker } from '@/components/ui/persian-date-picker'; // New Import
+import { PersianDatePicker } from '@/components/ui/persian-date-picker'; 
 import type { AdditionalService } from '@/types';
 import { getProgramNames } from '@/lib/program-name-store';
 
@@ -44,6 +44,7 @@ export const producerFormSchema = z.object({
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
+  engineerCount: z.enum(['1', '2'], { required_error: 'تعداد مهندس الزامی است.' }),
   repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
   repetitionEndDate: z.date().optional().refine((date) => {
     if (!date) return true;
@@ -129,6 +130,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       reservationEndTime: '17:00',
       studioSelection: undefined,
       studioServiceType: undefined,
+      engineerCount: '1',
       repetitionType: undefined,
       repetitionEndDate: undefined,
       additionalServices: [],
@@ -144,15 +146,12 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       let reservationsToCreate = [];
       
       if (data.repetitionType === 'no_repetition') {
-        // Create single reservation
         reservationsToCreate.push(data);
       } else if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
-        // Calculate number of days between start and end date
         const startDate = new Date(data.reservationDate);
         const endDate = new Date(data.repetitionEndDate);
         const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
         
-        // Create a reservation for each day
         for (let i = 0; i <= daysDiff; i++) {
           const reservationDate = new Date(startDate);
           reservationDate.setDate(startDate.getDate() + i);
@@ -162,7 +161,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           });
         }
       } else {
-        // Handle weekly repetitions
         const weeks = data.repetitionType === 'weekly_1month' ? 4 : 8;
         for (let i = 0; i < weeks; i++) {
           const reservationDate = new Date(data.reservationDate);
@@ -174,7 +172,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         }
       }
 
-      // Check availability for all reservations before creating them
       for (const reservationData of reservationsToCreate) {
         const response = await fetch('/api/reservations/check-availability', {
           method: 'POST',
@@ -204,7 +201,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         }
       }
 
-      // Create all reservations if all times are available
       for (const reservationData of reservationsToCreate) {
         await addReservation(reservationData, 'producer', producerName);
       }
@@ -235,6 +231,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         reservationEndTime: '17:00',
         studioSelection: undefined,
         studioServiceType: undefined,
+        engineerCount: '1',
         repetitionType: undefined,
         repetitionEndDate: undefined,
         additionalServices: [],
@@ -246,7 +243,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8" dir="rtl">
-        {/* Program Name */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
           <FormField
@@ -281,7 +277,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           />
         </div>
 
-        {/* Reservation Date and Time */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">تاریخ و ساعت رزرو</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
@@ -339,7 +334,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full text-right" />
+                    <Input type="time" {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -352,7 +347,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full text-right" />
+                    <Input type="time" {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -361,10 +356,9 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           </div>
         </div>
 
-        {/* Studio Selection */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو و مهندس</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <FormField
               control={form.control}
               name="studioSelection"
@@ -374,7 +368,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-col space-y-1"
                     >
                       {studioOptions.map((option) => (
@@ -405,7 +399,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-x-reverse">
@@ -430,10 +424,43 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="engineerCount"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>تعداد مهندس *</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="1" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          یک نفر
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-x-reverse">
+                        <FormControl>
+                          <RadioGroupItem value="2" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          دو نفر
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
 
-        {/* Service Details */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">جزئیات سرویس</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -446,7 +473,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
@@ -535,63 +562,52 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           </div>
         </div>
 
-        {/* Additional Services */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">سرویس‌های تکمیلی</h3>
-          <FormField
-            control={form.control}
-            name="additionalServices"
-            render={() => (
-              <FormItem>
-                <div className="mb-4">
-                  <FormLabel className="text-base">سرویس‌های مورد نیاز را انتخاب کنید</FormLabel>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    در صورت انتخاب پخش زنده و استریم، لطفا بستر پخش زنده مانند گوگل میت، زوم، مایکروسافت تیمز و... 
-                    و برای پخش زنده بسترهای آن مثل یوتیوب، اینستاگرام، آپارات و... در قسمت توضیحات به صورت کامل درج شود.
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {additionalServiceItems.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name="additionalServices"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.id}
-                            className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse p-4 border rounded-lg"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...(field.value || []), item.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item.id
-                                        )
+            <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">سرویس‌های تکمیلی</h3>
+            <FormField
+              control={form.control}
+              name="additionalServices"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel className="text-base">سرویس‌های مورد نیاز را انتخاب کنید</FormLabel>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      در صورت انتخاب پخش زنده و استریم، لطفا بستر پخش زنده مانند گوگل میت، زوم، مایکروسافت تیمز و... 
+                      و برای پخش زنده بسترهای آن مثل یوتیوب، اینستاگرام، آپارات و... در قسمت توضیحات به صورت کامل درج شود.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {additionalServiceItems.map((item) => (
+                        <FormItem
+                          key={item.id}
+                          className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse p-4 border rounded-lg"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(item.id)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...(field.value || []), item.id])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== item.id
                                       )
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        )
-                      }}
-                    />
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                                    );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {item.label}
+                          </FormLabel>
+                        </FormItem>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
 
-        {/* Additional Details */}
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
           <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">توضیحات تکمیلی</h3>
           <FormField

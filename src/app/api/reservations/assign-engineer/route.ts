@@ -3,15 +3,15 @@ import { assignEngineerToServer } from '@/server/lib/reservation-data';
 
 export async function POST(req: NextRequest) {
   try {
-    const { reservationId, engineerId } = await req.json();
+    const { reservationId, engineerIds } = await req.json();
 
-    if (!reservationId || !engineerId) {
-      return NextResponse.json({ error: 'Reservation ID and Engineer ID are required' }, { status: 400 });
+    if (!reservationId || !Array.isArray(engineerIds)) {
+      return NextResponse.json({ error: 'Reservation ID and an array of Engineer IDs are required' }, { status: 400 });
     }
 
-    await assignEngineerToServer(reservationId, engineerId);
+    await assignEngineerToServer(reservationId, engineerIds);
 
-    return NextResponse.json({ message: 'Engineer assigned successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Engineers assigned successfully' }, { status: 200 });
   } catch (error) {
     console.error('API Error assigning engineer:', error);
     return NextResponse.json({ error: 'Failed to assign engineer' }, { status: 500 });

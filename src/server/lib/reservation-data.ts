@@ -87,19 +87,46 @@ export async function updateReservationStatusServer(requestId: string, newStatus
   }
 }
 
-export async function assignEngineerToServer(reservationId: string, engineerId: string): Promise<void> {
+export async function assignEngineerToServer(reservationId: string, engineerIds: string[]): Promise<void> {
   try {
     const reservations = await getStoredReservations();
     const index = reservations.findIndex(r => r.id === reservationId);
     if (index !== -1) {
-      reservations[index].engineerId = engineerId;
-      reservations[index].updatedAt = new Date(); // Update timestamp
+      reservations[index].engineers = engineerIds;
+      reservations[index].updatedAt = new Date();
+      // Ensure engineerId is removed if it exists for backward compatibility
+      if ('engineerId' in reservations[index]) {
+        delete (reservations[index] as any).engineerId;
+      }
       await saveReservations(reservations);
     } else {
       throw new Error('Reservation not found');
     }
   } catch (error) {
     console.error('Server Error assigning engineer:', error);
+    throw error;
+  }
+}
+
+export async function deleteReservationServer(id: string): Promise<void> {
+  try {
+    const reservations = await getStoredReservations();
+    const updatedReservations = reservations.filter(r => r.id !== id);
+    if (reservations.length === updatedReservations.length) {
+      throw new Error('Reservation to delete not found');
+    }
+    await saveReservations(updatedReservations);
+  } catch (error) {
+    console.error(`Server Error deleting reservation ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function deleteAllReservationsServer(): Promise<void> {
+  try {
+    await saveReservations([]);
+  } catch (error) {
+    console.error('Server Error deleting all reservations:', error);
     throw error;
   }
 }

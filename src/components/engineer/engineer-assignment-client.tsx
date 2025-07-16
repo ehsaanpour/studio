@@ -25,6 +25,7 @@ export default function EngineerAssignmentClient() {
   const [newEngineerName, setNewEngineerName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEngineers, setSelectedEngineers] = useState<{ [key: string]: string[] }>({});
 
   async function fetchData() {
     try {
@@ -39,6 +40,11 @@ export default function EngineerAssignmentClient() {
       const reservationsData = await reservationsRes.json();
       setEngineers(engineersData);
       setReservations(reservationsData);
+      const initialSelections: { [key: string]: string[] } = {};
+      reservationsData.forEach((res: StudioReservationRequest) => {
+        initialSelections[res.id] = res.engineers || Array(res.engineerCount || 1).fill('');
+      });
+      setSelectedEngineers(initialSelections);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
@@ -61,22 +67,25 @@ export default function EngineerAssignmentClient() {
     }));
 
     reservations.forEach(reservation => {
-      if (!reservation.engineerId) return;
+      if (!reservation.engineers || reservation.engineers.length === 0) return;
 
-      const engineerIndex = engineers.findIndex(e => e.id === reservation.engineerId);
-      if (engineerIndex === -1) return;
-      
-      const duration = reservation.studioServices?.hoursPerDay || 0;
+      reservation.engineers.forEach(engineerId => {
+        if (!engineerId) return;
+        const engineerIndex = engineers.findIndex(e => e.id === engineerId);
+        if (engineerIndex === -1) return;
 
-      if (duration > 0 && duration < 1) {
-        data[engineerIndex].shifts.under1Hour++;
-      } else if (duration >= 1 && duration <= 2) {
-        data[engineerIndex].shifts.between1And2Hours++;
-      } else if (duration >= 3 && duration <= 4) {
-        data[engineerIndex].shifts.between3And4Hours++;
-      } else if (duration > 4) {
-        data[engineerIndex].shifts.between3And4Hours += 2;
-      }
+        const duration = reservation.studioServices?.hoursPerDay || 0;
+
+        if (duration > 0 && duration < 1) {
+          data[engineerIndex].shifts.under1Hour++;
+        } else if (duration >= 1 && duration <= 2) {
+          data[engineerIndex].shifts.between1And2Hours++;
+        } else if (duration >= 3 && duration <= 4) {
+          data[engineerIndex].shifts.between3And4Hours++;
+        } else if (duration > 4) {
+          data[engineerIndex].shifts.between3And4Hours += 2;
+        }
+      });
     });
 
     return data;
@@ -98,6 +107,35 @@ export default function EngineerAssignmentClient() {
     }
   }
 
+  async function handleRemoveReservation(id: string) {
+    if (!confirm('آیا از حذف این برنامه مطمئن هستید؟')) return;
+    try {
+      const response = await fetch(`/api/reservations/delete`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+      if (!response.ok) throw new Error("Failed to remove reservation");
+      fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    }
+  }
+
+  async function handleRemoveAllReservations() {
+    if (!confirm('آیا از حذف تمام برنامه‌ها مطمئن هستید؟ این عمل قابل بازگشت نیست.')) return;
+    try {
+      const response = await fetch(`/api/reservations/delete-all`, { 
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error("Failed to remove all reservations");
+      fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    }
+  }
+
   async function handleRemoveEngineer(id: string) {
     try {
       const response = await fetch("/api/engineer/remove", {
@@ -112,12 +150,12 @@ export default function EngineerAssignmentClient() {
     }
   }
   
-  async function handleAssignEngineer(reservationId: string, engineerId: string) {
+  async function handleAssignEngineers(reservationId: string, engineerIds: string[]) {
     try {
       const response = await fetch('/api/reservations/assign-engineer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId, engineerId }),
+        body: JSON.stringify({ reservationId, engineerIds }),
       });
       if (!response.ok) {
         throw new Error('Failed to assign engineer');
@@ -165,46 +203,72 @@ export default function EngineerAssignmentClient() {
 
       <Card>
         <CardHeader>
+          <div className="flex justify-between items-center">
           <CardTitle>برنامه‌های ثبت شده</CardTitle>
+          <Button variant="destructive" size="sm" onClick={handleRemoveAllReservations}>حذف همه</Button>
+        </div>
         </CardHeader>
         <CardContent>
           {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
           <ul className="space-y-4">
             {reservations.map((reservation) => {
-              const assignedEngineer = engineers.find(e => e.id === reservation.engineerId);
-              return (
-                <li key={reservation.id} className="p-4 border rounded-md">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold">{reservation.programName}</p>
-                      <p className="text-sm text-gray-500">تهیه‌کننده: {reservation.requesterName}</p>
-                      <p className="text-sm text-gray-500">تاریخ: {new Date(reservation.dateTime.reservationDate).toLocaleDateString('fa-IR')}</p>
-                      <p className="text-sm text-gray-500">ساعت شروع: {reservation.dateTime.startTime}</p>
-                      <p className="text-sm text-gray-500">ساعت پایان: {reservation.dateTime.endTime}</p>
-                      <p className="text-sm text-blue-500">مدت زمان: {reservation.studioServices?.hoursPerDay || 0} ساعت</p>
-                      {assignedEngineer && <p className="text-sm text-green-600">مهندس: {assignedEngineer.name}</p>}
-                    </div>
-                    <div className="w-48">
-                      <Select
-                        onValueChange={(engineerId) => handleAssignEngineer(reservation.id, engineerId)}
-                        value={reservation.engineerId}
-                        dir="rtl"
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="یک مهندس انتخاب کنید" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {engineers.map((engineer) => (
-                            <SelectItem key={engineer.id} value={engineer.id}>
-                              {engineer.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </li>
-              );
+                const assignedEngineers = (reservation.engineers || [])
+                    .map(id => engineers.find(e => e.id === id)?.name)
+                    .filter(Boolean);
+
+                return (
+                    <li key={reservation.id} className="p-4 border rounded-md space-y-4 bg-card">
+                        <div className="flex justify-between items-start gap-4">
+                            <div className="flex-grow">
+                                <p className="font-semibold text-lg text-primary">{reservation.programName}</p>
+                                <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
+                                <p className="text-sm text-muted-foreground">تاریخ: {new Date(reservation.dateTime.reservationDate).toLocaleDateString('fa-IR')}</p>
+                                <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
+                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">تعداد مهندس: {reservation.engineerCount || 1}</p>
+                                {assignedEngineers.length > 0 && 
+                                    <p className="text-sm font-medium text-green-600 dark:text-green-400">مهندسین فعلی: {assignedEngineers.join(', ')}</p>
+                                }
+                            </div>
+                            <div className="flex flex-col gap-2 w-56">
+                                {Array.from({ length: reservation.engineerCount || 1 }).map((_, index) => (
+                                    <Select
+                                        key={index}
+                                        onValueChange={(engineerId) => {
+                                            const newSelections = { ...selectedEngineers };
+                                            if (!newSelections[reservation.id]) {
+                                                newSelections[reservation.id] = Array(reservation.engineerCount || 1).fill('');
+                                            }
+                                            newSelections[reservation.id][index] = engineerId;
+                                            setSelectedEngineers(newSelections);
+                                        }}
+                                        value={selectedEngineers[reservation.id]?.[index] || ''}
+                                        dir="rtl"
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={`مهندس ${index + 1}`} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {engineers.map((engineer) => (
+                                                <SelectItem key={engineer.id} value={engineer.id}>
+                                                    {engineer.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ))}
+                                <div className="flex gap-2 mt-2">
+                                    <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [])}>
+                                        ثبت
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={() => handleRemoveReservation(reservation.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">حذف</span>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                );
             })}
           </ul>
         </CardContent>

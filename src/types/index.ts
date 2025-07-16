@@ -77,7 +77,8 @@ export interface StudioReservationRequest {
   status: 'new' | 'read' | 'confirmed' | 'cancelled';
   submittedAt: Date;
   updatedAt?: Date;
-  engineerId?: string;
+  engineers?: string[]; 
+  engineerCount?: 1 | 2;
 }
 
 export interface User {
@@ -107,4 +108,3 @@ export interface Engineer {
   id: string;
   name: string;
 }
-
