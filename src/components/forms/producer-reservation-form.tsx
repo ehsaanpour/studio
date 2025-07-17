@@ -331,7 +331,18 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full text-right" />
+                    <Input
+                      type="time"
+                      {...field}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        const target = e.currentTarget as HTMLInputElement;
+                        if (target.showPicker) {
+                          target.showPicker();
+                        }
+                      }}
+                      className="w-full text-right"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -344,7 +355,18 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                 <FormItem>
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full text-right" />
+                    <Input
+                      type="time"
+                      {...field}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        const target = e.currentTarget as HTMLInputElement;
+                        if (target.showPicker) {
+                          target.showPicker();
+                        }
+                      }}
+                      className="w-full text-right"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -611,4 +633,3 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
-
