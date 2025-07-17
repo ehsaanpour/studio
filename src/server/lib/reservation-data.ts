@@ -87,12 +87,13 @@ export async function updateReservationStatusServer(requestId: string, newStatus
   }
 }
 
-export async function assignEngineerToServer(reservationId: string, engineerIds: string[]): Promise<void> {
+export async function assignEngineerToServer(reservationId: string, engineerIds: string[], engineerCount: number): Promise<void> {
   try {
     const reservations = await getStoredReservations();
     const index = reservations.findIndex(r => r.id === reservationId);
     if (index !== -1) {
       reservations[index].engineers = engineerIds;
+      reservations[index].engineerCount = engineerCount;
       reservations[index].updatedAt = new Date();
       // Ensure engineerId is removed if it exists for backward compatibility
       if ('engineerId' in reservations[index]) {
@@ -130,4 +131,3 @@ export async function deleteAllReservationsServer(): Promise<void> {
     throw error;
   }
 }
-

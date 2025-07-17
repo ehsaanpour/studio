@@ -26,6 +26,7 @@ export default function EngineerAssignmentClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEngineers, setSelectedEngineers] = useState<{ [key: string]: string[] }>({});
+  const [engineerCounts, setEngineerCounts] = useState<{ [key: string]: number }>({});
 
   async function fetchData() {
     try {
@@ -41,9 +42,14 @@ export default function EngineerAssignmentClient() {
       setEngineers(engineersData);
       setReservations(reservationsData);
       const initialSelections: { [key: string]: string[] } = {};
+      const initialCounts: { [key: string]: number } = {};
       reservationsData.forEach((res: StudioReservationRequest) => {
-        initialSelections[res.id] = res.engineers || Array(res.engineerCount || 1).fill('');
+        const count = res.engineerCount || (res.engineers && res.engineers.length > 0 ? res.engineers.length : 1);
+        initialCounts[res.id] = count;
+        const currentEngineers = res.engineers || [];
+        initialSelections[res.id] = [...currentEngineers, ...Array(Math.max(0, count - currentEngineers.length)).fill('')];
       });
+      setEngineerCounts(initialCounts);
       setSelectedEngineers(initialSelections);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
@@ -150,12 +156,12 @@ export default function EngineerAssignmentClient() {
     }
   }
   
-  async function handleAssignEngineers(reservationId: string, engineerIds: string[]) {
+  async function handleAssignEngineers(reservationId: string, engineerIds: string[], engineerCount: number) {
     try {
       const response = await fetch('/api/reservations/assign-engineer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId, engineerIds }),
+        body: JSON.stringify({ reservationId, engineerIds, engineerCount }),
       });
       if (!response.ok) {
         throw new Error('Failed to assign engineer');
@@ -224,19 +230,19 @@ export default function EngineerAssignmentClient() {
                                 <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
                                 <p className="text-sm text-muted-foreground">تاریخ: {new Date(reservation.dateTime.reservationDate).toLocaleDateString('fa-IR')}</p>
                                 <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
-                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">تعداد مهندس: {reservation.engineerCount || 1}</p>
+                                <div className="flex items-center gap-2 mt-2"><Label>تعداد مهندس</Label><Select value={String(engineerCounts[reservation.id] || 1)} onValueChange={(value) => { const count = parseInt(value, 10); setEngineerCounts(prev => ({ ...prev, [reservation.id]: count })); setSelectedEngineers(prev => { const currentSelection = prev[reservation.id] || []; const newSelection = Array(count).fill('').map((_, i) => currentSelection[i] || ''); return { ...prev, [reservation.id]: newSelection }; }); }}><SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(num => (<SelectItem key={num} value={String(num)}>{num}</SelectItem>))}</SelectContent></Select></div>
                                 {assignedEngineers.length > 0 && 
                                     <p className="text-sm font-medium text-green-600 dark:text-green-400">مهندسین فعلی: {assignedEngineers.join(', ')}</p>
                                 }
                             </div>
                             <div className="flex flex-col gap-2 w-56">
-                                {Array.from({ length: reservation.engineerCount || 1 }).map((_, index) => (
+                                {Array.from({ length: engineerCounts[reservation.id] || 1 }).map((_, index) => (
                                     <Select
                                         key={index}
                                         onValueChange={(engineerId) => {
                                             const newSelections = { ...selectedEngineers };
                                             if (!newSelections[reservation.id]) {
-                                                newSelections[reservation.id] = Array(reservation.engineerCount || 1).fill('');
+                                                newSelections[reservation.id] = Array(engineerCounts[reservation.id] || 1).fill('');
                                             }
                                             newSelections[reservation.id][index] = engineerId;
                                             setSelectedEngineers(newSelections);
@@ -257,7 +263,7 @@ export default function EngineerAssignmentClient() {
                                     </Select>
                                 ))}
                                 <div className="flex gap-2 mt-2">
-                                    <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [])}>
+                                    <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [], engineerCounts[reservation.id] || 1)}>
                                         ثبت
                                     </Button>
                                     <Button variant="outline" size="icon" onClick={() => handleRemoveReservation(reservation.id)}>

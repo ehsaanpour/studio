@@ -44,7 +44,6 @@ export const producerFormSchema = z.object({
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
-  engineerCount: z.enum(['1', '2'], { required_error: 'تعداد مهندس الزامی است.' }),
   repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
   repetitionEndDate: z.date().optional().refine((date) => {
     if (!date) return true;
@@ -124,17 +123,16 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: {
-      programName: '', 
-      reservationDate: new Date(), 
+      programName: '',
+      reservationDate: new Date(),
       reservationStartTime: '09:00',
       reservationEndTime: '17:00',
       studioSelection: undefined,
       studioServiceType: undefined,
-      engineerCount: '1',
       repetitionType: undefined,
       repetitionEndDate: undefined,
       additionalServices: [],
-      details: '', 
+      details: '',
     },
   });
 
@@ -231,7 +229,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         reservationEndTime: '17:00',
         studioSelection: undefined,
         studioServiceType: undefined,
-        engineerCount: '1',
         repetitionType: undefined,
         repetitionEndDate: undefined,
         additionalServices: [],
@@ -357,8 +354,8 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
         </div>
 
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو و مهندس</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">انتخاب استودیو و سرویس</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="studioSelection"
@@ -416,40 +413,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
                           فضای استودی و یک نیروی فنی
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="engineerCount"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>تعداد مهندس *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
-                        <FormControl>
-                          <RadioGroupItem value="1" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          یک نفر
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
-                        <FormControl>
-                          <RadioGroupItem value="2" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          دو نفر
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>

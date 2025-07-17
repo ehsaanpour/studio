@@ -43,7 +43,13 @@ interface Reservation {
     endTime: string;
   };
   studio: string;
-  status: string; // Added status field
+  status: string;
+  engineers?: string[];
+}
+
+interface Engineer {
+  id: string;
+  name: string;
 }
 
 interface Program {
@@ -52,6 +58,7 @@ interface Program {
   time: string;
   studio: string; // Display name
   date: Date;
+  engineers: string[];
 }
 
 const WEEK_DAYS_PERSIAN_FULL = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
@@ -67,21 +74,37 @@ export function WeeklyScheduleCalendar() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/reservations');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const [reservationsResponse, engineersResponse] = await Promise.all([
+          fetch('/api/reservations'),
+          fetch('/api/engineer/list'), // Assuming this endpoint exists
+        ]);
+
+        if (!reservationsResponse.ok) {
+          throw new Error(`HTTP error! status: ${reservationsResponse.status}`);
         }
-        const data: Reservation[] = await response.json();
+        if (!engineersResponse.ok) {
+          throw new Error(`HTTP error! status: ${engineersResponse.status}`);
+        }
+
+        const reservations: Reservation[] = await reservationsResponse.json();
+        const engineers: Engineer[] = await engineersResponse.json();
         
-        const fetchedPrograms: Program[] = data
-          .filter((res: Reservation) => res.status === "confirmed") // Filter by status
-          .map((res: Reservation) => ({
+        const engineerMap = engineers.reduce((acc, engineer) => {
+          acc[engineer.id] = engineer.name;
+          return acc;
+        }, {} as Record<string, string>);
+
+        const fetchedPrograms: Program[] = reservations
+          .filter((res) => res.status === 'confirmed')
+          .map((res) => ({
             id: res.id,
             name: res.programName,
             time: `${res.dateTime.startTime} - ${res.dateTime.endTime}`,
             studio: getStudioDisplayName(res.studio),
             date: parseISO(res.dateTime.reservationDate),
+            engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
           }));
+
         setPrograms(fetchedPrograms);
       } catch (e: any) {
         setError(e.message);
@@ -173,6 +196,11 @@ export function WeeklyScheduleCalendar() {
                                 <div className="font-semibold">{program.name}</div>
                                 <div>{program.time}</div>
                                 <div>{program.studio}</div>
+                                {program.engineers.length > 0 && (
+                                  <div className="pt-1 mt-1 border-t border-white/50">
+                                    {program.engineers.join(', ')}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -191,3 +219,4 @@ export function WeeklyScheduleCalendar() {
     </Card>
   );
 }
+
