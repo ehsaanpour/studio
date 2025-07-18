@@ -69,6 +69,14 @@ export const producerFormSchema = z.object({
 }, {
   message: 'در صورت انتخاب ارتباط زنده یا استریم، توضیحات تکمیلی الزامی است.',
   path: ['details'],
+}).refine((data) => {
+  if (data.reservationStartTime && data.reservationEndTime) {
+    return data.reservationEndTime > data.reservationStartTime;
+  }
+  return true;
+}, {
+  message: 'ساعت پایان برنامه نمی‌تواند زودتر از ساعت شروع باشد.',
+  path: ['reservationEndTime'],
 });
 
 export type ProducerFormValues = z.infer<typeof producerFormSchema>;
@@ -633,3 +641,4 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
+
