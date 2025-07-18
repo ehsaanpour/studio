@@ -68,7 +68,7 @@ const getStatusLabel = (status: StudioReservationRequest['status']): string => {
     case 'new': return 'جدید';
     case 'read': return 'خوانده شده';
     case 'confirmed': return 'تایید شده';
-    case 'cancelled': return 'لغو شده';
+    case 'cancelled': return 'رد شده';
     default: return status;
   }
 };
@@ -135,7 +135,8 @@ export default function AdminPanelPage() {
   }, [isAdmin, router, toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
-  const oldSystemRequests = allRequests.filter(req => req.status === 'confirmed' || req.status === 'cancelled');
+  const finalizedSystemRequests = allRequests.filter(req => req.status === 'confirmed');
+  const rejectedSystemRequests = allRequests.filter(req => req.status === 'cancelled');
 
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
@@ -176,8 +177,8 @@ export default function AdminPanelPage() {
       setActiveTab('producers');
       
       // Reload producers
-      const updatedProducers = await getAllProducers();
-      setProducers(updatedProducers);
+      const producersList = await getAllProducers();
+      setProducers(producersList);
     } catch (error) {
       console.error('Error adding producer:', error);
       toast({
@@ -191,8 +192,8 @@ export default function AdminPanelPage() {
   const handleDeleteProducer = async (producerId: string) => {
     try {
       await deleteProducer(producerId);
-      const updatedProducers = await getAllProducers();
-      setProducers(updatedProducers);
+      const producersList = await getAllProducers();
+      setProducers(producersList);
       toast({
         title: "موفقیت",
         description: "تهیه‌کننده با موفقیت حذف شد.",
@@ -207,12 +208,23 @@ export default function AdminPanelPage() {
     }
   };
 
-  const handleUpdateRequestStatus = (requestId: string, status: StudioReservationRequest['status']) => {
-    updateReservationStatus(requestId, status);
-    toast({
-      title: "وضعیت بروز شد",
-      description: `درخواست به عنوان "${getStatusLabel(status)}" علامت‌گذاری شد.`,
-    });
+  const handleUpdateRequestStatus = async (requestId: string, status: StudioReservationRequest['status']) => {
+    try {
+      await updateReservationStatus(requestId, status);
+      const requests = await getReservations();
+      setAllRequests(requests);
+      toast({
+        title: "وضعیت بروز شد",
+        description: `درخواست به عنوان "${getStatusLabel(status)}" علامت‌گذاری شد.`,
+      });
+    } catch (error) {
+      console.error(`Error updating status for request ${requestId}:`, error);
+      toast({
+        title: "خطا",
+        description: "خطا در بروزرسانی وضعیت درخواست.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditProducer = (producer: Producer) => {
@@ -269,8 +281,8 @@ export default function AdminPanelPage() {
       setActiveTab('producers');
       
       // Reload producers
-      const updatedProducers = await getAllProducers();
-      setProducers(updatedProducers);
+      const producersList = await getAllProducers();
+      setProducers(producersList);
     } catch (error) {
       console.error('Error updating producer:', error);
       toast({
@@ -322,7 +334,7 @@ export default function AdminPanelPage() {
             تایید <ThumbsUp className="me-2 h-4 w-4" /> 
           </Button>
           <Button onClick={() => handleUpdateRequestStatus(request.id, 'cancelled')} size="sm" variant="destructive">
-            رد کردن <ThumbsDown className="me-2 h-4 w-4" /> 
+            رد کردن <ThumbsDown className="me-2 h-4 w-4" />
           </Button>
           {request.status === 'new' && (
              <Button onClick={() => handleUpdateRequestStatus(request.id, 'read')} size="sm" variant="outline">
@@ -364,12 +376,15 @@ export default function AdminPanelPage() {
                 </CardHeader>
                 <CardContent className="space-y-4" dir="rtl">
                   <Tabs defaultValue="new-requests" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
                       <TabsTrigger value="new-requests">
                         درخواست‌های در انتظار بررسی ({newSystemRequests.length}) <Inbox className="me-2 h-4 w-4" />
                       </TabsTrigger>
-                      <TabsTrigger value="old-requests">
-                         درخواست‌های نهایی شده ({oldSystemRequests.length}) <ShieldCheck className="me-2 h-4 w-4" />
+                      <TabsTrigger value="finalized-requests">
+                         درخواست‌های نهایی شده ({finalizedSystemRequests.length}) <ShieldCheck className="me-2 h-4 w-4" />
+                      </TabsTrigger>
+                       <TabsTrigger value="rejected-requests">
+                        درخواست‌های رد شده ({rejectedSystemRequests.length}) <XCircle className="me-2 h-4 w-4" />
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="new-requests">
@@ -379,11 +394,18 @@ export default function AdminPanelPage() {
                         newSystemRequests.map(req => renderRequestCard(req))
                       )}
                     </TabsContent>
-                    <TabsContent value="old-requests">
-                      {oldSystemRequests.length === 0 ? (
+                    <TabsContent value="finalized-requests">
+                      {finalizedSystemRequests.length === 0 ? (
                          <p className="text-muted-foreground py-4 text-center">هیچ درخواست نهایی شده‌ای وجود ندارد.</p>
                       ) : (
-                        oldSystemRequests.map(req => renderRequestCard(req))
+                        finalizedSystemRequests.map(req => renderRequestCard(req))
+                      )}
+                    </TabsContent>
+                    <TabsContent value="rejected-requests">
+                      {rejectedSystemRequests.length === 0 ? (
+                        <p className="text-muted-foreground py-4 text-center">هیچ درخواست رد شده‌ای وجود ندارد.</p>
+                      ) : (
+                        rejectedSystemRequests.map(req => renderRequestCard(req))
                       )}
                     </TabsContent>
                   </Tabs>
@@ -504,7 +526,7 @@ export default function AdminPanelPage() {
                       <Label htmlFor="producerUsername" className="text-right">نام کاربری *</Label>
                       <Input 
                         type="text" 
-                        id="producerUsername"
+                        id="producerUsername" 
                         value={newProducerUsername}
                         onChange={(e) => setNewProducerUsername(e.target.value)}
                         className="mt-1 text-right" 
@@ -558,3 +580,4 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
