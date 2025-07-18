@@ -256,13 +256,13 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
             render={({ field }) => (
               <FormItem>
                 <FormLabel>نام برنامه *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} dir="rtl">
                   <FormControl>
                     <SelectTrigger className="w-full text-right">
                       <SelectValue placeholder="یک برنامه را انتخاب کنید" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent dir="rtl">
                     {programNames.length === 0 ? (
                       <div className="px-4 py-2 text-sm text-muted-foreground text-right">
                         ابتدا در پنل تهیه‌کننده نام برنامه اضافه کنید.
@@ -401,14 +401,14 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       {studioOptions.map((option) => (
                         <FormItem
                           key={option.id}
-                          className="flex items-center space-x-3 space-x-reverse"
+                          className="flex items-center justify-between flex-row-reverse"
                         >
-                          <FormControl>
-                            <RadioGroupItem value={option.id} />
-                          </FormControl>
                           <FormLabel className="font-normal cursor-pointer">
                             {option.label}
                           </FormLabel>
+                          <FormControl>
+                            <RadioGroupItem value={option.id} />
+                          </FormControl>
                         </FormItem>
                       ))}
                     </RadioGroup>
@@ -429,21 +429,21 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       value={field.value}
                       className="flex flex-col space-y-1"
                     >
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
-                        <FormControl>
-                          <RadioGroupItem value="with_crew" />
-                        </FormControl>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal cursor-pointer">
                           استودیو با عوامل پخش
                         </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse">
                         <FormControl>
-                          <RadioGroupItem value="without_crew" />
+                          <RadioGroupItem value="with_crew" />
                         </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal cursor-pointer">
                           فضای استودی و یک نیروی فنی
                         </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="without_crew" />
+                        </FormControl>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -469,37 +469,37 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       value={field.value}
                       className="flex flex-col space-y-1"
                     >
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
-                        <FormControl>
-                          <RadioGroupItem value="no_repetition" />
-                        </FormControl>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal">
                           بدون تکرار
                         </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
-                          <RadioGroupItem value="weekly_1month" />
+                          <RadioGroupItem value="no_repetition" />
                         </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal">
                           هفتگی (یک ماه)
                         </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
-                          <RadioGroupItem value="weekly_2months" />
+                          <RadioGroupItem value="weekly_1month" />
                         </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal">
                           هفتگی (دو ماه)
                         </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-x-reverse rtl:space-x-reverse">
                         <FormControl>
-                          <RadioGroupItem value="daily_until_date" />
+                          <RadioGroupItem value="weekly_2months" />
                         </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal">
                           روزانه تا تاریخ مشخص
                         </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="daily_until_date" />
+                        </FormControl>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
