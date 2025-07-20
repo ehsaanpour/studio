@@ -32,8 +32,8 @@ export default function EngineerAssignmentClient() {
     try {
       setIsLoading(true);
       const [engineersRes, reservationsRes] = await Promise.all([
-        fetch("/api/engineer/list"),
-        fetch("/api/reservations"),
+        fetch("/api/engineer/list", { cache: "no-store" }),
+        fetch("/api/reservations", { cache: "no-store" }),
       ]);
       if (!engineersRes.ok) throw new Error("Failed to fetch engineers");
       if (!reservationsRes.ok) throw new Error("Failed to fetch reservations");
@@ -63,6 +63,29 @@ export default function EngineerAssignmentClient() {
   }, []);
 
   const shiftData: ShiftData[] = useMemo(() => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    const currentDate = today.getDate();
+
+    let startDate;
+    let endDate;
+
+    if (currentDate < 21) {
+      // From 21st of previous month to 20th of current month
+      startDate = new Date(currentYear, currentMonth - 1, 21, 0, 0, 0);
+      endDate = new Date(currentYear, currentMonth, 20, 23, 59, 59, 999);
+    } else {
+      // From 21st of current month to 20th of next month
+      startDate = new Date(currentYear, currentMonth, 21, 0, 0, 0);
+      endDate = new Date(currentYear, currentMonth + 1, 20, 23, 59, 59, 999);
+    }
+
+    const filteredReservations = reservations.filter(reservation => {
+      const reservationDate = new Date(reservation.dateTime.reservationDate);
+      return reservationDate >= startDate && reservationDate <= endDate;
+    });
+
     const data = engineers.map(engineer => ({
       engineerName: engineer.name,
       shifts: {
@@ -72,7 +95,7 @@ export default function EngineerAssignmentClient() {
       }
     }));
 
-    reservations.forEach(reservation => {
+    filteredReservations.forEach(reservation => {
       if (!reservation.engineers || reservation.engineers.length === 0) return;
 
       reservation.engineers.forEach(engineerId => {
@@ -310,3 +333,4 @@ export default function EngineerAssignmentClient() {
     </div>
   );
 }
+
