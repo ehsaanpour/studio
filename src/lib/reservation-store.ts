@@ -33,6 +33,7 @@ export async function addReservation(
   let cateringServices: CateringService[] | undefined;
   let requester: string | undefined;
   let programName: string;
+  let engineerCount: 1 | 2;
 
   if (type === 'guest') {
     const guestData = formData as GuestFormValues;
@@ -44,6 +45,8 @@ export async function addReservation(
     };
     cateringServices = guestData.cateringServices as CateringService[];
     programName = 'Guest Reservation';
+    // Guests always have 1 engineer
+    engineerCount = 1;
     requestDetailsBase = {
       dateTime: {
         reservationDate: guestData.reservationDate,
@@ -62,6 +65,7 @@ export async function addReservation(
     const producerData = formData as ProducerFormValues;
     requester = producerName;
     programName = producerData.programName;
+    engineerCount = parseInt(producerData.engineerCount, 10) as 1 | 2;
     requestDetailsBase = {
       dateTime: {
         reservationDate: producerData.reservationDate,
@@ -88,6 +92,7 @@ export async function addReservation(
     cateringServices: cateringServices,
     submittedAt: new Date(),
     status: 'new',
+    engineerCount: engineerCount,
   };
 
   try {
@@ -124,4 +129,3 @@ export async function updateReservationStatus(requestId: string, newStatus: Stud
     throw error;
   }
 }
-

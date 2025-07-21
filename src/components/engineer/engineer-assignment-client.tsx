@@ -9,6 +9,8 @@ import { Engineer, StudioReservationRequest } from "@/types";
 import { Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format as formatPersian, getDate, getMonth, getYear, setDate, setMonth, addMonths } from 'date-fns-jalali';
+import faIR from 'date-fns-jalali/locale/fa-IR';
 
 type ShiftData = {
   engineerName: string;
@@ -62,28 +64,32 @@ export default function EngineerAssignmentClient() {
     fetchData();
   }, []);
 
-  const shiftData: ShiftData[] = useMemo(() => {
+  const { shiftData, dateRangeText } = useMemo(() => {
     const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    const currentDate = today.getDate();
+    const persianDate = getDate(today); // Persian day of month
+    const persianMonth = getMonth(today); // Persian month (0-based)
+    const persianYear = getYear(today); // Persian year
 
-    let startDate;
-    let endDate;
+    let startDate: Date;
+    let endDate: Date;
 
-    if (currentDate < 21) {
-      // From 21st of previous month to 20th of current month
-      startDate = new Date(currentYear, currentMonth - 1, 21, 0, 0, 0);
-      endDate = new Date(currentYear, currentMonth, 20, 23, 59, 59, 999);
+    if (persianDate <= 20) {
+      // From 21st of previous Persian month to 20th of current Persian month
+      startDate = setDate(setMonth(today, persianMonth - 1), 21);
+      endDate = setDate(today, 20);
+      endDate.setHours(23, 59, 59, 999);
     } else {
-      // From 21st of current month to 20th of next month
-      startDate = new Date(currentYear, currentMonth, 21, 0, 0, 0);
-      endDate = new Date(currentYear, currentMonth + 1, 20, 23, 59, 59, 999);
+      // From 21st of current Persian month to 20th of next Persian month
+      startDate = setDate(today, 21);
+      endDate = setDate(setMonth(today, persianMonth + 1), 20);
+      endDate.setHours(23, 59, 59, 999);
     }
+
+    const dateRangeText = `محاسبه برنامه‌ها از ${formatPersian(startDate, 'd LLLL yyyy', { locale: faIR })} تا ${formatPersian(endDate, 'd LLLL yyyy', { locale: faIR })}`;
 
     const filteredReservations = reservations.filter(reservation => {
       const reservationDate = new Date(reservation.dateTime.reservationDate);
-      return reservationDate >= startDate && reservationDate <= endDate;
+      return reservationDate >= startDate && reservationDate <= endDate && reservation.status === 'confirmed';
     });
 
     const data = engineers.map(engineer => ({
@@ -96,9 +102,20 @@ export default function EngineerAssignmentClient() {
     }));
 
     filteredReservations.forEach(reservation => {
-      if (!reservation.engineers || reservation.engineers.length === 0) return;
+      // Handle both new format (engineers array) and old format (engineerId string)
+      const assignedEngineers = [];
+      
+      if (reservation.engineers && reservation.engineers.length > 0) {
+        // New format: engineers array
+        assignedEngineers.push(...reservation.engineers.filter(id => id));
+      } else if ((reservation as any).engineerId) {
+        // Old format: single engineerId
+        assignedEngineers.push((reservation as any).engineerId);
+      }
+      
+      if (assignedEngineers.length === 0) return;
 
-      reservation.engineers.forEach(engineerId => {
+      assignedEngineers.forEach(engineerId => {
         if (!engineerId) return;
         const engineerIndex = engineers.findIndex(e => e.id === engineerId);
         if (engineerIndex === -1) return;
@@ -117,7 +134,7 @@ export default function EngineerAssignmentClient() {
       });
     });
 
-    return data;
+    return { shiftData: data, dateRangeText };
   }, [engineers, reservations]);
 
   async function handleAddEngineer() {
@@ -240,7 +257,7 @@ export default function EngineerAssignmentClient() {
         <CardContent>
           {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
           <ul className="space-y-4">
-            {reservations.map((reservation) => {
+            {reservations.filter(reservation => reservation.status === 'confirmed').map((reservation) => {
                 const assignedEngineers = (reservation.engineers || [])
                     .map(id => engineers.find(e => e.id === id)?.name)
                     .filter(Boolean);
@@ -306,6 +323,7 @@ export default function EngineerAssignmentClient() {
       <Card>
         <CardHeader>
           <CardTitle>جدول شیفت مهندسین</CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">{dateRangeText}</p>
         </CardHeader>
         <CardContent>
           <Table>
@@ -333,4 +351,3 @@ export default function EngineerAssignmentClient() {
     </div>
   );
 }
-
