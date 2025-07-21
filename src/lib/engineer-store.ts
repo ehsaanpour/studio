@@ -1,18 +1,24 @@
-import { promises as fs } from 'fs';
 import { Engineer } from '@/types';
-const dataFilePath = 'engineers.json';
+import { readJsonFile, writeJsonFile } from './fs-utils';
+
+const ENGINEERS_FILE = 'engineers.json';
+
+interface EngineersData {
+  engineers: Engineer[];
+}
 
 async function readData(): Promise<Engineer[]> {
   try {
-    const fileContent = await fs.readFile(dataFilePath, 'utf-8');
-    return JSON.parse(fileContent);
+    const data = await readJsonFile<EngineersData>(ENGINEERS_FILE);
+    return data?.engineers || [];
   } catch (error) {
+    console.error('Error reading engineers file:', error);
     return [];
   }
 }
 
-async function writeData(data: Engineer[]): Promise<void> {
-  await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
+async function writeData(engineers: Engineer[]): Promise<void> {
+  await writeJsonFile<EngineersData>(ENGINEERS_FILE, { engineers });
 }
 
 export async function addEngineer(engineer: Omit<Engineer, 'id'>): Promise<Engineer> {
