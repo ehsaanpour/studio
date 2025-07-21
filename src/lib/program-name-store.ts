@@ -1,6 +1,9 @@
-// import { readJsonFile, writeJsonFile } from './fs-utils'; // No longer directly used here
+// No longer directly used here
 
-const PROGRAM_NAMES_FILE = 'src/data/program-names.json'; // This constant is now mostly for conceptual pathing, not direct file access
+// This constant is now mostly for conceptual pathing, not direct file access
+import { getDataFilePath } from './data-path';
+
+const PROGRAM_NAMES_FILE = getDataFilePath('program-names.json');
 
 // type Listener = () => void; // No longer needed for client-side reactivity
 // const listeners: Listener[] = []; // No longer needed for client-side reactivity

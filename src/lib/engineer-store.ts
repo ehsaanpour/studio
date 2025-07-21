@@ -1,8 +1,8 @@
 import { promises as fs } from 'fs';
-import path from 'path';
 import { Engineer } from '@/types';
+import { getDataFilePath } from './data-path';
 
-const dataFilePath = path.join(process.cwd(), 'data/engineers.json');
+const dataFilePath = getDataFilePath('engineers.json');
 
 async function readData(): Promise<Engineer[]> {
   try {
@@ -37,4 +37,3 @@ export async function removeEngineer(id: string): Promise<void> {
 export async function listEngineers(): Promise<Engineer[]> {
   return readData();
 }
-

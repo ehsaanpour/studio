@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { getDataFilePath } from '@/lib/data-path';
 
 export async function writeJsonFile(filePath: string, data: any): Promise<void> {
   try {
@@ -13,4 +14,4 @@ export async function writeJsonFile(filePath: string, data: any): Promise<void> 
     console.error(`Error writing to ${filePath}:`, error);
     throw error;
   }
-} 
+}

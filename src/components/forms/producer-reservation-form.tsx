@@ -61,6 +61,9 @@ export const producerFormSchema = z.object({
     'stream',
   ])).optional(),
   details: z.string().optional(),
+  engineerCount: z.string().refine(val => !isNaN(parseInt(val, 10)), {
+    message: "تعداد مهندس باید عدد باشد",
+  }),
 }).refine((data) => {
   if (data.additionalServices?.includes('live_communication') || data.additionalServices?.includes('stream')) {
     return data.details && data.details.trim().length > 0;
@@ -274,6 +277,27 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                         </SelectItem>
                       ))
                     )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="engineerCount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>تعداد مهندس *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} dir="rtl">
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="تعداد مهندسین را انتخاب کنید" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -641,4 +665,3 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
-
