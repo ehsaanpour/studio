@@ -65,7 +65,7 @@ export async function addReservation(
     const producerData = formData as ProducerFormValues;
     requester = producerName;
     programName = producerData.programName;
-    engineerCount = parseInt(producerData.engineerCount, 10) as 1 | 2;
+    engineerCount = 1; // Default to 1, will be updated in engineer assignment
     requestDetailsBase = {
       dateTime: {
         reservationDate: producerData.reservationDate,
