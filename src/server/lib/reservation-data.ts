@@ -4,13 +4,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { readJsonFile, writeJsonFile } from '@/lib/fs-utils';
 import type { StudioReservationRequest } from '@/types';
+import { getDataFilePath } from '@/lib/data-path';
 
 interface ReservationsData {
   reservations: StudioReservationRequest[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'src', 'data');
-const RESERVATIONS_FILE = 'reservations.json';
+const RESERVATIONS_FILE = getDataFilePath('reservations.json');
 
 function calculateDuration(startTime: string, endTime: string): number {
     const start = new Date(`1970-01-01T${startTime}:00`);
