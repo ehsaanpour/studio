@@ -2,17 +2,11 @@
 
 import path from 'path';
 import { readJsonFile, writeJsonFile } from '@/lib/fs-utils'; // Use fs-utils for file operations
-
 type ProgramName = string;
 
 interface ProgramNamesData {
   programNames: ProgramName[];
 }
-
-// Use the same data directory structure as fs-utils
-const DATA_DIR = process.env.NODE_ENV === 'production' 
-  ? path.join(process.cwd(), 'data')  // In production, use /data directory
-  : path.join(process.cwd(), 'src', 'data'); // In development, use /src/data
 
 const PROGRAM_NAMES_FILE = 'program-names.json';
 

@@ -1,8 +1,6 @@
 import { promises as fs } from 'fs';
 import { Engineer } from '@/types';
-import { getDataFilePath } from './data-path';
-
-const dataFilePath = getDataFilePath('engineers.json');
+const dataFilePath = 'engineers.json';
 
 async function readData(): Promise<Engineer[]> {
   try {

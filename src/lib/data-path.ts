@@ -13,4 +13,3 @@ const dataDir = process.env.LIARA_DATA_DIR || path.join(process.cwd(), 'data');
 export function getDataFilePath(fileName: string): string {
   return path.join(dataDir, fileName);
 }
-

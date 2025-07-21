@@ -18,6 +18,27 @@
       },
       "status": "new",
       "submittedAt": "2025-07-15T12:00:00.000Z"
+    },
+    {
+      "id": "1753088810798",
+      "type": "producer",
+      "requesterName": "hasani",
+      "programName": "صبح",
+      "dateTime": {
+        "reservationDate": "2025-07-24T07:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "11:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [],
+      "submittedAt": "2025-07-21T09:06:50.798Z",
+      "status": "new",
+      "engineerCount": 1
     }
   ]
 }
