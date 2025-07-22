@@ -44,7 +44,7 @@ export const producerFormSchema = z.object({
   reservationEndTime: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'ساعت پایان نامعتبر است (HH:MM).'),
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
-  repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_2months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
+  repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_3months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
   repetitionEndDate: z.date().optional().refine((date) => {
     if (!date) return true;
     const today = new Date();
@@ -167,7 +167,7 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
           });
         }
       } else {
-        const weeks = data.repetitionType === 'weekly_1month' ? 4 : 8;
+        const weeks = data.repetitionType === 'weekly_1month' ? 4 : 12;
         for (let i = 0; i < weeks; i++) {
           const reservationDate = new Date(data.reservationDate);
           reservationDate.setDate(reservationDate.getDate() + (i * 7));
@@ -488,10 +488,10 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
                         <FormLabel className="font-normal">
-                          هفتگی (دو ماه)
+                          هفتگی (سه ماه)
                         </FormLabel>
                         <FormControl>
-                          <RadioGroupItem value="weekly_2months" />
+                          <RadioGroupItem value="weekly_3months" />
                         </FormControl>
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
@@ -642,3 +642,4 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
     </Form>
   );
 }
+

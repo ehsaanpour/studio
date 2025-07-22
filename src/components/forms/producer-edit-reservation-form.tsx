@@ -18,7 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format as formatDateFnsJalali } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,7 @@ export const producerEditFormSchema = z.object({
     'stream',
   ])).optional(),
   details: z.string().optional(),
+  repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_3months', 'daily_until_date']).optional(),
 }).refine((data) => {
   if (data.reservationStartTime && data.reservationEndTime) {
     return data.reservationEndTime > data.reservationStartTime;
@@ -90,7 +91,8 @@ export function ProducerEditReservationForm({ request }: ProducerEditReservation
       studioSelection: request.studio,
       studioServiceType: request.studioServices.serviceType,
       additionalServices: request.additionalServices || [],
-      details: '',
+      details: request.details || '',
+      repetitionType: request.repetition?.type || 'no_repetition',
     },
   });
 
@@ -148,7 +150,7 @@ export function ProducerEditReservationForm({ request }: ProducerEditReservation
                   <PersianDatePicker
                     value={field.value}
                     onChange={(date) => {
-                      field.onChange(date);
+                      if (date) field.onChange(date);
                       setIsDatePickerOpen(false);
                     }}
                   />
@@ -294,6 +296,61 @@ export function ProducerEditReservationForm({ request }: ProducerEditReservation
             </FormItem>
           )}
         />
+        <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">جزئیات سرویس</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="repetitionType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>تکرار برنامه *</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
+                        <FormLabel className="font-normal">
+                          بدون تکرار
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="no_repetition" />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
+                        <FormLabel className="font-normal">
+                          هفتگی (یک ماه)
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="weekly_1month" />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
+                        <FormLabel className="font-normal">
+                          هفتگی (سه ماه)
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="weekly_3months" />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem className="flex items-center justify-between flex-row-reverse">
+                        <FormLabel className="font-normal">
+                          روزانه تا تاریخ مشخص
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroupItem value="daily_until_date" />
+                        </FormControl>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+           </div>
+        </div>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'بروزرسانی درخواست'}
         </Button>

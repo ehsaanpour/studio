@@ -1,6 +1,6 @@
 'use client';
 
-import { ProducerEditReservationForm } from '@/components/forms/producer-edit-reservation-form';
+import { ProducerEditReservationForm } from '../../../../components/forms/producer-edit-reservation-form';
 import { useAuth } from '@/lib/auth-context';
 import { getReservationById } from '@/lib/reservation-store';
 import type { StudioReservationRequest } from '@/types';
@@ -83,4 +83,3 @@ export default function EditRequestPage() {
     </div>
   );
 }
-
