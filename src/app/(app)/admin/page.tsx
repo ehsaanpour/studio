@@ -141,10 +141,10 @@ export default function AdminPanelPage() {
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newProducerName || !newProducerUsername || !newProducerPassword || !newProducerEmail || !newProducerPhone) {
+    if (!newProducerName || !newProducerUsername || !newProducerPassword || !newProducerPhone) {
       toast({
         title: "خطا",
-        description: "لطفاً تمامی فیلدها را تکمیل کنید.",
+        description: "لطفاً تمامی فیلدهای ستاره‌دار را تکمیل کنید.",
         variant: "destructive",
       });
       return;
@@ -242,10 +242,10 @@ export default function AdminPanelPage() {
 
   const handleUpdateProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!editingProducer || !newProducerName || !newProducerUsername || !newProducerEmail || !newProducerPhone) {
+    if (!editingProducer || !newProducerName || !newProducerUsername || !newProducerPhone) {
       toast({
         title: "خطا",
-        description: "لطفاً تمامی فیلدها را تکمیل کنید.",
+        description: "لطفاً تمامی فیلدهای ستاره‌دار را تکمیل کنید.",
         variant: "destructive",
       });
       return;
@@ -499,7 +499,7 @@ export default function AdminPanelPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerEmail" className="text-right">ایمیل *</Label>
+                      <Label htmlFor="producerEmail" className="text-right">ایمیل</Label>
                       <Input 
                         type="email" 
                         id="producerEmail" 
@@ -507,7 +507,6 @@ export default function AdminPanelPage() {
                         onChange={(e) => setNewProducerEmail(e.target.value)}
                         className="mt-1 text-right" 
                         placeholder="example@domain.com"
-                        required
                       />
                     </div>
                     <div>
