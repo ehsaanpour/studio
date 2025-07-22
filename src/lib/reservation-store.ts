@@ -22,6 +22,27 @@ export async function getReservations(): Promise<StudioReservationRequest[]> {
   }
 }
 
+export async function getReservationById(id: string): Promise<StudioReservationRequest | null> {
+  try {
+    const response = await fetch(`/api/reservations?id=${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const reservation = await response.json();
+    return {
+      ...reservation,
+      submittedAt: new Date(reservation.submittedAt),
+      dateTime: {
+        ...reservation.dateTime,
+        reservationDate: new Date(reservation.dateTime.reservationDate),
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching reservation by ID from API:', error);
+    return null;
+  }
+}
+
 export async function addReservation(
   formData: GuestFormValues | ProducerFormValues,
   type: 'guest' | 'producer',
@@ -129,3 +150,4 @@ export async function updateReservationStatus(requestId: string, newStatus: Stud
     throw error;
   }
 }
+

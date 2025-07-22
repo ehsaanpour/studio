@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Film, PlusCircle, XCircle, Trash2 } from 'lucide-react';
+import { Film, PlusCircle, XCircle, Trash2, Edit3 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
 import { getReservations } from '@/lib/reservation-store'; // Removed subscribe
@@ -390,6 +390,17 @@ export default function ProducerPanelPage() {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
+                                {(request.status === 'new' || request.status === 'read') && (
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    asChild
+                                  >
+                                    <Link href={`/producer/edit-request/${request.id}`}>
+                                      <Edit3 className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </CardHeader>
@@ -417,3 +428,4 @@ export default function ProducerPanelPage() {
     </div>
   );
 }
+

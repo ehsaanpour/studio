@@ -27,18 +27,21 @@
       "dateTime": {
         "reservationDate": "2025-07-24T07:00:00.000Z",
         "startTime": "09:00",
-        "endTime": "11:00"
+        "endTime": "10:05"
       },
-      "studio": "studio2",
+      "studio": "studio5",
       "studioServices": {
-        "serviceType": "with_crew",
+        "serviceType": "without_crew",
         "numberOfDays": 1,
         "hoursPerDay": 2
       },
-      "additionalServices": [],
+      "additionalServices": [
+        "videowall"
+      ],
       "submittedAt": "2025-07-21T09:06:50.798Z",
       "status": "new",
-      "engineerCount": 1
+      "engineerCount": 1,
+      "updatedAt": "2025-07-22T17:26:35.716Z"
     }
   ]
 }
