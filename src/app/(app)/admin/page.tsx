@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
-import type { Producer, StudioReservationRequest, AdditionalService, CateringService } from '@/types';
+import type { Producer, StudioReservationRequest, AdditionalService, CateringService, Repetition } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getReservations, updateReservationStatus } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
@@ -61,6 +61,16 @@ const cateringServiceItemsMap: Record<CateringService, string> = {
 
 const getCateringServiceLabel = (serviceId: CateringService): string => {
   return cateringServiceItemsMap[serviceId] || serviceId;
+};
+
+const getRepetitionLabel = (repetition: Repetition | undefined): string => {
+  if (!repetition) return '';
+  switch (repetition.type) {
+    case 'weekly_1month': return 'هفتگی (یک ماه)';
+    case 'weekly_3months': return 'هفتگی (سه ماه)';
+    case 'daily_until_date': return 'روزانه';
+    default: return '';
+  }
 };
 
 const getStatusLabel = (status: StudioReservationRequest['status']): string => {
@@ -302,6 +312,7 @@ export default function AdminPanelPage() {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
+            <h3 className="text-xl font-bold text-right mb-2 text-primary">{request.programName}</h3>
             <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription className="text-right">
               تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
@@ -313,6 +324,9 @@ export default function AdminPanelPage() {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-right">
+        {request.repetition && request.repetition.type !== 'no_repetition' && (
+          <p><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></p>
+        )}
         <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
         <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>

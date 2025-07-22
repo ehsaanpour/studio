@@ -1,6 +1,6 @@
 'use client';
 
-import type { StudioReservationRequest, PersonalInformation, ReservationDateTime, StudioSelection, StudioServicesInfo, AdditionalService, CateringService } from '@/types';
+import type { StudioReservationRequest, PersonalInformation, ReservationDateTime, StudioSelection, StudioServicesInfo, AdditionalService, CateringService, Repetition } from '@/types';
 import type { GuestFormValues } from '@/components/forms/guest-reservation-form';
 import type { ProducerFormValues } from '@/components/forms/producer-reservation-form';
 
@@ -54,7 +54,6 @@ export async function addReservation(
   let cateringServices: CateringService[] | undefined;
   let requester: string | undefined;
   let programName: string;
-  let engineerCount: 1 | 2;
 
   if (type === 'guest') {
     const guestData = formData as GuestFormValues;
@@ -66,8 +65,6 @@ export async function addReservation(
     };
     cateringServices = guestData.cateringServices as CateringService[];
     programName = 'Guest Reservation';
-    // Guests always have 1 engineer
-    engineerCount = 1;
     requestDetailsBase = {
       dateTime: {
         reservationDate: guestData.reservationDate,
@@ -81,12 +78,15 @@ export async function addReservation(
         hoursPerDay: guestData.studioServiceHoursPerDay,
       },
       additionalServices: guestData.additionalServices as AdditionalService[],
+      details: undefined,
+      repetition: undefined,
+      engineers: [],
+      engineerCount: 1,
     };
   } else {
     const producerData = formData as ProducerFormValues;
     requester = producerName;
     programName = producerData.programName;
-    engineerCount = 1; // Default to 1, will be updated in engineer assignment
     requestDetailsBase = {
       dateTime: {
         reservationDate: producerData.reservationDate,
@@ -100,6 +100,10 @@ export async function addReservation(
         hoursPerDay: 0, // Server will calculate this
       },
       additionalServices: producerData.additionalServices as AdditionalService[],
+      details: producerData.details,
+      repetition: { type: producerData.repetitionType, endDate: producerData.repetitionEndDate },
+      engineers: [],
+      engineerCount: 1, // Default to 1, will be updated in engineer assignment
     };
   }
 
@@ -113,7 +117,6 @@ export async function addReservation(
     cateringServices: cateringServices,
     submittedAt: new Date(),
     status: 'new',
-    engineerCount: engineerCount,
   };
 
   try {
