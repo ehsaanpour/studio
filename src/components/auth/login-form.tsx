@@ -53,7 +53,7 @@ export function LoginForm() {
         });
         // Redirect based on user role
         if (isAdmin) {
-          router.push('/dashboard');
+          router.push('/admin');
         } else {
           router.push('/producer');
         }
