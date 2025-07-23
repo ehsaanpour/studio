@@ -12,7 +12,7 @@ import {
   parseISO,
 } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,9 @@ interface Reservation {
   };
   studio: string;
   status: string;
+  repetition?: {
+    type: string;
+  };
   engineers?: string[];
 }
 
@@ -59,6 +62,7 @@ interface Program {
   studio: string; // Display name
   date: Date;
   engineers: string[];
+  isRecurring: boolean;
 }
 
 const WEEK_DAYS_PERSIAN_FULL = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
@@ -103,6 +107,7 @@ export function WeeklyScheduleCalendar() {
             studio: getStudioDisplayName(res.studio),
             date: parseISO(res.dateTime.reservationDate),
             engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
+            isRecurring: res.repetition?.type === 'weekly_1month' || res.repetition?.type === 'weekly_3months',
           }));
 
         setPrograms(fetchedPrograms);
@@ -193,7 +198,12 @@ export function WeeklyScheduleCalendar() {
                           <div className="space-y-2">
                             {programsForThisDay.map(program => (
                               <div key={program.id} className={cn("p-2 rounded-md text-xs", STUDIO_COLORS[program.studio])}>
-                                <div className="font-semibold">{program.name}</div>
+                                <div className="font-semibold flex items-center">
+                                  {program.name}
+                                  {program.isRecurring && (
+                                    <Repeat className="mr-2 h-4 w-4 text-white" />
+                                  )}
+                                </div>
                                 <div>{program.time}</div>
                                 <div>{program.studio}</div>
                                 {program.engineers.length > 0 && (
@@ -219,4 +229,3 @@ export function WeeklyScheduleCalendar() {
     </Card>
   );
 }
-
