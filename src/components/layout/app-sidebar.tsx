@@ -21,7 +21,6 @@ import { useEffect, useState } from "react";
 
 // Updated navItems for Studio Reservation System
 const navItems = [
-  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn },
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
   { href: "/engineer-assignment", label: "پنل اختصاص مهندس", icon: UserCog },
   { href: "/excel-export", label: "خروجی اکسل", icon: FileSpreadsheet },
@@ -161,3 +160,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

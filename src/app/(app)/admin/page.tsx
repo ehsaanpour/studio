@@ -331,7 +331,7 @@ export default function AdminPanelPage() {
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-right">
         {request.repetition && request.repetition.type !== 'no_repetition' && (
-          <p><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></p>
+          <div><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></div>
         )}
         <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
