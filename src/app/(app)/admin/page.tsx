@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, XCircle, Inbox, MailOpen, Check, ShieldCheck, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, XCircle, Inbox, MailOpen, Check, ShieldCheck, ThumbsUp, ThumbsDown, Repeat } from 'lucide-react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -116,7 +117,7 @@ export default function AdminPanelPage() {
 
   useEffect(() => {
     if (!isAdmin) {
-      router.push('/dashboard');
+      router.push('/admin');
       return;
     }
     async function loadRequests() {
@@ -312,7 +313,12 @@ export default function AdminPanelPage() {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-xl font-bold text-right mb-2 text-primary">{request.programName}</h3>
+            <h3 className="text-xl font-bold text-right mb-2 text-primary flex items-center">
+              {request.programName}
+              {(request.repetition?.type === 'weekly_1month' || request.repetition?.type === 'weekly_3months') && (
+                <Repeat className="mr-2 h-5 w-5 text-blue-500" />
+              )}
+            </h3>
             <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription className="text-right">
               تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
@@ -363,8 +369,8 @@ export default function AdminPanelPage() {
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
-        <Link href="/dashboard" className="flex items-center">
-          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
+        <Link href="/admin" className="flex items-center">
+          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به پنل مدیریت
         </Link>
       </Button>
       <Card className="shadow-lg">
@@ -593,4 +599,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
