@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { StudioReservationRequest } from "@/types";
 import { FileSpreadsheet, Download } from "lucide-react";
+import ExcelJS from 'exceljs';
 import { format as formatPersian, getMonth, getYear, setMonth, addMonths, setDate, getDate } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 
@@ -104,7 +105,7 @@ export default function ExcelExportClient() {
     });
   }, [reservations, selectedMonth, monthOptions]);
 
-  const exportToExcel = async () => {
+  const exportToCSV = async () => {
     if (filteredReservations.length === 0) {
       alert("هیچ داده‌ای برای صادرات وجود ندارد");
       return;
@@ -174,6 +175,74 @@ export default function ExcelExportClient() {
     }
   };
 
+  const exportToXLSX = async () => {
+    if (filteredReservations.length === 0) {
+      alert("هیچ داده‌ای برای صادرات وجود ندارد");
+      return;
+    }
+
+    setIsExporting(true);
+    
+    try {
+      const exportData = filteredReservations.map(reservation => ({
+        'شناسه برنامه': reservation.id,
+        'نام برنامه': reservation.programName,
+        'نام تهیه‌کننده': reservation.requesterName || '',
+        'نام سازمان': reservation.personalInfo?.nameOrOrganization || '',
+        'شماره تماس': reservation.personalInfo?.phoneNumber || '',
+        'آدرس ایمیل': reservation.personalInfo?.emailAddress || '',
+        'تاریخ رزرو': new Date(reservation.dateTime.reservationDate).toLocaleDateString('fa-IR'),
+        'ساعت شروع': reservation.dateTime.startTime,
+        'ساعت پایان': reservation.dateTime.endTime,
+        'استودیو': reservation.studio === 'studio2' ? 'استودیو ۲ (فرانسه)' : 
+                   reservation.studio === 'studio5' ? 'استودیو ۵ (-۳)' : 
+                   reservation.studio === 'studio6' ? 'استودیو ۶ (مایا ناصر)' : reservation.studio,
+        'نوع خدمات': reservation.studioServices.serviceType === 'with_crew' ? 'با عوامل' : 'بدون عوامل',
+        'تعداد روزها': reservation.studioServices.numberOfDays,
+        'ساعات روزانه': reservation.studioServices.hoursPerDay,
+        'خدمات اضافی': reservation.additionalServices?.join(', ') || '',
+        'خدمات پذیرایی': reservation.cateringServices?.join(', ') || '',
+        'وضعیت': reservation.status === 'confirmed' ? 'تایید شده' :
+                 reservation.status === 'new' ? 'جدید' :
+                 reservation.status === 'read' ? 'خوانده شده' :
+                 reservation.status === 'cancelled' ? 'لغو شده' : reservation.status,
+        'تاریخ ثبت': new Date(reservation.submittedAt).toLocaleDateString('fa-IR'),
+        'تاریخ آخرین به‌روزرسانی': reservation.updatedAt ? new Date(reservation.updatedAt).toLocaleDateString('fa-IR') : '',
+        'تعداد مهندس': reservation.engineerCount || '',
+        'مهندسین اختصاص یافته': reservation.engineers?.join(', ') || ''
+      }));
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('برنامه‌ها');
+
+      // Prepare headers
+      worksheet.columns = Object.keys(exportData[0]).map(key => ({
+        header: key,
+        key: key,
+        width: 20 // Adjust column width as needed
+      }));
+
+      // Add rows
+      worksheet.addRows(exportData);
+
+      const selectedOption = monthOptions.find(opt => opt.value === selectedMonth);
+      const filename = `برنامه‌های-استودیو-${selectedOption?.label.replace(/\s+/g, '-')}.xlsx`;
+
+      // Write to buffer and download
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      
+    } catch (err) {
+      alert('خطا در صادرات فایل: ' + (err instanceof Error ? err.message : 'خطای نامشخص'));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4" dir="rtl">
       <h1 className="text-2xl font-bold">خروجی اکسل</h1>
@@ -228,12 +297,20 @@ export default function ExcelExportClient() {
           
           <div className="flex gap-2">
             <Button 
-              onClick={exportToExcel} 
+              onClick={exportToCSV} 
               disabled={!selectedMonth || isExporting || filteredReservations.length === 0}
               className="flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
               {isExporting ? "در حال صادرات..." : "صادرات به CSV"}
+            </Button>
+            <Button 
+              onClick={exportToXLSX} 
+              disabled={!selectedMonth || isExporting || filteredReservations.length === 0}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? "در حال صادرات..." : "صادرات به XLSX"}
             </Button>
           </div>
           

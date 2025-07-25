@@ -8,6 +8,15 @@
       "email": "bb@presstv.ir",
       "phone": "09362056342",
       "isAdmin": false
+    },
+    {
+      "id": "1753198077543",
+      "name": "تست",
+      "username": "test",
+      "password": "$2b$10$gu6rHFl.8m.atTQMt5tbGeugg/22J8Q.U/OceMC4Z5i7P28YklSRi",
+      "email": "",
+      "phone": "تست",
+      "isAdmin": false
     }
   ]
 }

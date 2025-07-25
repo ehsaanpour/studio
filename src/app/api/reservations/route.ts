@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getReservationsServer, addReservationServer, updateReservationStatusServer } from '@/server/lib/reservation-data';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
   try {
     const reservations = await getReservationsServer();
+    if (id) {
+      const reservation = reservations.find(r => r.id === id);
+      if (reservation) {
+        return NextResponse.json(reservation);
+      } else {
+        return NextResponse.json({ message: 'Reservation not found' }, { status: 404 });
+      }
+    }
     return NextResponse.json(reservations);
   } catch (error) {
     console.error('API Error fetching reservations:', error);
@@ -35,3 +46,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: 'Error updating reservation status' }, { status: 500 });
   }
 }
+

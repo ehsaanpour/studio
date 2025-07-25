@@ -21,8 +21,6 @@ import { useEffect, useState } from "react";
 
 // Updated navItems for Studio Reservation System
 const navItems = [
-  { href: "/dashboard", label: "داشبورد", icon: LayoutDashboard },
-  { href: "/producer", label: "پنل تهیه‌کننده", icon: LogIn },
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
   { href: "/engineer-assignment", label: "پنل اختصاص مهندس", icon: UserCog },
   { href: "/excel-export", label: "خروجی اکسل", icon: FileSpreadsheet },
@@ -98,7 +96,7 @@ export function AppSidebar() {
               <SidebarMenuItem key={item.label}>
                 <Link href={item.href} className="w-full">
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href) && (item.href === "/" || item.href === "/dashboard" ? pathname === item.href : true) }
+                    isActive={pathname.startsWith(item.href) && (item.href === "/" ? pathname === item.href : true)}
                     tooltip={item.label}
                     className="justify-start w-full"
                   >
@@ -162,3 +160,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

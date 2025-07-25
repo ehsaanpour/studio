@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
 
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isProducerRoute = request.nextUrl.pathname.startsWith('/producer');
-  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard');
+
   const isLoginRoute = request.nextUrl.pathname === '/login';
 
   // Protect /admin routes: only accessible by logged-in admins
@@ -26,12 +26,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /dashboard routes: only accessible by logged-in admins
-  if (isDashboardRoute) {
-    if (!user || !user.isAdmin) {
-      return NextResponse.redirect(new URL('/producer', request.url));
-    }
-  }
+
 
   // Protect /producer routes: only accessible by logged-in non-admins (producers)
   if (isProducerRoute) {
@@ -39,14 +34,14 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     if (user.isAdmin) { // Logged in as admin, but trying to access producer route
-      return NextResponse.redirect(new URL('/dashboard', request.url)); // Redirect admin away
+      return NextResponse.redirect(new URL('/admin', request.url)); // Redirect admin away
     }
   }
 
   // If trying to access login page while already logged in
   if (isLoginRoute && user) {
     if (user.isAdmin) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/admin', request.url));
     } else {
       return NextResponse.redirect(new URL('/producer', request.url));
     }
@@ -56,5 +51,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/producer/:path*', '/dashboard/:path*', '/login'],
+  matcher: ['/admin/:path*', '/producer/:path*', '/login'],
 };

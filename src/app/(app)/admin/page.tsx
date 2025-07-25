@@ -3,12 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, XCircle, Inbox, MailOpen, Check, ShieldCheck, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { UserCog, Users, ListChecks, PlusSquare, ArrowRight, Edit3, Trash2, CheckCircle, XCircle, Inbox, MailOpen, Check, ShieldCheck, ThumbsUp, ThumbsDown, Repeat } from 'lucide-react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
-import type { Producer, StudioReservationRequest, AdditionalService, CateringService } from '@/types';
+import type { Producer, StudioReservationRequest, AdditionalService, CateringService, Repetition } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getReservations, updateReservationStatus } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
@@ -63,6 +64,16 @@ const getCateringServiceLabel = (serviceId: CateringService): string => {
   return cateringServiceItemsMap[serviceId] || serviceId;
 };
 
+const getRepetitionLabel = (repetition: Repetition | undefined): string => {
+  if (!repetition) return '';
+  switch (repetition.type) {
+    case 'weekly_1month': return 'هفتگی (یک ماه)';
+    case 'weekly_3months': return 'هفتگی (سه ماه)';
+    case 'daily_until_date': return 'روزانه';
+    default: return '';
+  }
+};
+
 const getStatusLabel = (status: StudioReservationRequest['status']): string => {
   switch (status) {
     case 'new': return 'جدید';
@@ -106,7 +117,7 @@ export default function AdminPanelPage() {
 
   useEffect(() => {
     if (!isAdmin) {
-      router.push('/dashboard');
+      router.push('/admin');
       return;
     }
     async function loadRequests() {
@@ -141,10 +152,10 @@ export default function AdminPanelPage() {
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newProducerName || !newProducerUsername || !newProducerPassword || !newProducerEmail || !newProducerPhone) {
+    if (!newProducerName || !newProducerUsername || !newProducerPassword || !newProducerPhone) {
       toast({
         title: "خطا",
-        description: "لطفاً تمامی فیلدها را تکمیل کنید.",
+        description: "لطفاً تمامی فیلدهای ستاره‌دار را تکمیل کنید.",
         variant: "destructive",
       });
       return;
@@ -242,10 +253,10 @@ export default function AdminPanelPage() {
 
   const handleUpdateProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!editingProducer || !newProducerName || !newProducerUsername || !newProducerEmail || !newProducerPhone) {
+    if (!editingProducer || !newProducerName || !newProducerUsername || !newProducerPhone) {
       toast({
         title: "خطا",
-        description: "لطفاً تمامی فیلدها را تکمیل کنید.",
+        description: "لطفاً تمامی فیلدهای ستاره‌دار را تکمیل کنید.",
         variant: "destructive",
       });
       return;
@@ -302,6 +313,12 @@ export default function AdminPanelPage() {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
+            <h3 className="text-xl font-bold text-right mb-2 text-primary flex items-center">
+              {request.programName}
+              {(request.repetition?.type === 'weekly_1month' || request.repetition?.type === 'weekly_3months') && (
+                <Repeat className="mr-2 h-5 w-5 text-blue-500" />
+              )}
+            </h3>
             <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription className="text-right">
               تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
@@ -313,6 +330,9 @@ export default function AdminPanelPage() {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-right">
+        {request.repetition && request.repetition.type !== 'no_repetition' && (
+          <div><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></div>
+        )}
         <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
         <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
@@ -349,8 +369,8 @@ export default function AdminPanelPage() {
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
-        <Link href="/dashboard" className="flex items-center">
-          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به داشبورد
+        <Link href="/admin" className="flex items-center">
+          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به پنل مدیریت
         </Link>
       </Button>
       <Card className="shadow-lg">
@@ -499,7 +519,7 @@ export default function AdminPanelPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="producerEmail" className="text-right">ایمیل *</Label>
+                      <Label htmlFor="producerEmail" className="text-right">ایمیل</Label>
                       <Input 
                         type="email" 
                         id="producerEmail" 
@@ -507,7 +527,6 @@ export default function AdminPanelPage() {
                         onChange={(e) => setNewProducerEmail(e.target.value)}
                         className="mt-1 text-right" 
                         placeholder="example@domain.com"
-                        required
                       />
                     </div>
                     <div>
@@ -580,4 +599,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-

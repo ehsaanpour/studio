@@ -60,6 +60,11 @@ export type CateringService =
   | 'lunch'
   | 'dinner';
 
+export interface Repetition {
+  type: 'no_repetition' | 'weekly_1month' | 'weekly_3months' | 'daily_until_date';
+  endDate?: Date;
+}
+
 export interface StudioReservationRequest {
   id: string; // Auto-generated or from backend
   type: 'guest' | 'producer';
@@ -73,6 +78,8 @@ export interface StudioReservationRequest {
   studioServices: StudioServicesInfo;
   additionalServices?: AdditionalService[];
   cateringServices?: CateringService[]; // Excluded for producer
+  details?: string;
+  repetition?: Repetition;
   
   status: 'new' | 'read' | 'confirmed' | 'cancelled';
   submittedAt: Date;

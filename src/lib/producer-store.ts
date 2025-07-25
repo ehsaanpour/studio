@@ -13,7 +13,7 @@ const PRODUCERS_FILE = 'producers.json';
 // Helper function to get producers from JSON file
 async function getStoredProducers(): Promise<Producer[]> {
   const data = await readJsonFile<ProducersData>(PRODUCERS_FILE);
-  return data.producers || [];
+  return data?.producers || [];
 }
 
 // Helper function to save producers to JSON file
@@ -24,8 +24,8 @@ async function saveProducers(producers: Producer[]): Promise<void> {
 export async function addProducer(producer: Omit<Producer, 'id'>): Promise<string> {
   try {
     // Validate required fields
-    if (!producer.username || !producer.password || !producer.name || !producer.email || !producer.phone) {
-      throw new Error('All fields are required');
+    if (!producer.username || !producer.password || !producer.name || !producer.phone) {
+      throw new Error('Username, password, name, and phone are required');
     }
 
     const producers = await getStoredProducers();
@@ -134,3 +134,4 @@ export async function updateProducer(id: string, updates: Partial<Omit<Producer,
     throw error;
   }
 }
+
