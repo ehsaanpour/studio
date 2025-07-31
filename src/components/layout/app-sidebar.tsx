@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/icons/logo";
-import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home, User, CalendarDays, UserCog, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, UserPlus, LogIn, ShieldCheck, Settings, LogOut, ChevronRight, ChevronLeft, Home, User, CalendarDays, UserCog, FileSpreadsheet, Calculator } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +24,7 @@ const navItems = [
   { href: "/admin", label: "پنل مدیریت", icon: ShieldCheck },
   { href: "/engineer-assignment", label: "پنل اختصاص مهندس", icon: UserCog },
   { href: "/excel-export", label: "خروجی اکسل", icon: FileSpreadsheet },
+  { href: "/engineer-shifts", label: "محاسبه شیفت مهندسین", icon: Calculator },
   { href: "/weekly-schedule", label: "برنامه هفتگی برنامه‌ها", icon: CalendarDays },
 ];
 
@@ -88,7 +89,7 @@ export function AppSidebar() {
               </Link>
             </SidebarMenuItem>
           {navItems.map((item) => {
-            const isAdminOnly = item.href === "/admin" || item.href === "/engineer-assignment" || item.href === "/excel-export";
+            const isAdminOnly = item.href === "/admin" || item.href === "/engineer-assignment" || item.href === "/excel-export" || item.href === "/engineer-shifts";
             if (isAdminOnly && !isAdmin) {
               return null;
             }

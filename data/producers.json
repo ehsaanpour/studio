@@ -30,12 +30,13 @@
     },
     {
       "id": "1753774380203",
-      "name": "darbandi",
+      "name": "خانم دربندی",
       "username": "darbandi",
-      "password": "$2b$10$2yjGMnn8g3UvYgKRl5jXHeLlqAKVMiCrAxhMEwrYZ/nRJ5kMSn2Km",
+      "password": "$2b$10$WnXSCsAj1FgJUEUM2Xfit.VmgEE/RRqbx9lV.NnHlzEZWPedd3iI.",
       "email": "darbandi@gmail.com",
       "phone": "09123544741",
-      "isAdmin": false
+      "isAdmin": false,
+      "workplace": "تولید پرس"
     },
     {
       "id": "1753886708170",
@@ -44,6 +45,15 @@
       "password": "$2b$10$4ZbVdsQct/IKqnMqcvSJN.DkaGe/WCabkjVBPMWdmwZBD97Au2G5K",
       "email": "",
       "phone": "000",
+      "isAdmin": false
+    },
+    {
+      "id": "1753953825559",
+      "name": "آیدا بلوکات",
+      "username": "Blucut",
+      "password": "$2b$10$A004fdcFcAQSUYOe8gTAKe2T5FVQrs43Tfj/B5OjTmhS0A9foFfca",
+      "email": "aida.boloukat@gmail.com",
+      "phone": "09369934266",
       "isAdmin": false
     }
   ]

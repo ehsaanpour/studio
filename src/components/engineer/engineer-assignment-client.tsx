@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,18 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Engineer, StudioReservationRequest } from "@/types";
 import { Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format as formatPersian, getDate, getMonth, getYear, setDate, setMonth, addMonths } from 'date-fns-jalali';
-import faIR from 'date-fns-jalali/locale/fa-IR';
-
-type ShiftData = {
-  engineerName: string;
-  shifts: {
-    under1Hour: number;
-    between1And2Hours: number;
-    between3And4Hours: number;
-  };
-};
 
 export default function EngineerAssignmentClient() {
   const [engineers, setEngineers] = useState<Engineer[]>([]);
@@ -29,6 +17,8 @@ export default function EngineerAssignmentClient() {
   const [error, setError] = useState<string | null>(null);
   const [selectedEngineers, setSelectedEngineers] = useState<{ [key: string]: string[] }>({});
   const [engineerCounts, setEngineerCounts] = useState<{ [key: string]: number }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   async function fetchData() {
     try {
@@ -63,79 +53,6 @@ export default function EngineerAssignmentClient() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const { shiftData, dateRangeText } = useMemo(() => {
-    const today = new Date();
-    const persianDate = getDate(today); // Persian day of month
-    const persianMonth = getMonth(today); // Persian month (0-based)
-    const persianYear = getYear(today); // Persian year
-
-    let startDate: Date;
-    let endDate: Date;
-
-    if (persianDate <= 20) {
-      // From 21st of previous Persian month to 20th of current Persian month
-      startDate = setDate(setMonth(today, persianMonth - 1), 21);
-      endDate = setDate(today, 20);
-      endDate.setHours(23, 59, 59, 999);
-    } else {
-      // From 21st of current Persian month to 20th of next Persian month
-      startDate = setDate(today, 21);
-      endDate = setDate(setMonth(today, persianMonth + 1), 20);
-      endDate.setHours(23, 59, 59, 999);
-    }
-
-    const dateRangeText = `محاسبه برنامه‌ها از ${formatPersian(startDate, 'd LLLL yyyy', { locale: faIR })} تا ${formatPersian(endDate, 'd LLLL yyyy', { locale: faIR })}`;
-
-    const filteredReservations = reservations.filter(reservation => {
-      const reservationDate = new Date(reservation.dateTime.reservationDate);
-      return reservationDate >= startDate && reservationDate <= endDate && reservation.status === 'confirmed';
-    });
-
-    const data = engineers.map(engineer => ({
-      engineerName: engineer.name,
-      shifts: {
-        under1Hour: 0,
-        between1And2Hours: 0,
-        between3And4Hours: 0,
-      }
-    }));
-
-    filteredReservations.forEach(reservation => {
-      // Handle both new format (engineers array) and old format (engineerId string)
-      const assignedEngineers = [];
-      
-      if (reservation.engineers && reservation.engineers.length > 0) {
-        // New format: engineers array
-        assignedEngineers.push(...reservation.engineers.filter(id => id));
-      } else if ((reservation as any).engineerId) {
-        // Old format: single engineerId
-        assignedEngineers.push((reservation as any).engineerId);
-      }
-      
-      if (assignedEngineers.length === 0) return;
-
-      assignedEngineers.forEach(engineerId => {
-        if (!engineerId) return;
-        const engineerIndex = engineers.findIndex(e => e.id === engineerId);
-        if (engineerIndex === -1) return;
-
-        const duration = reservation.studioServices?.hoursPerDay || 0;
-
-        if (duration > 0 && duration < 1) {
-          data[engineerIndex].shifts.under1Hour++;
-        } else if (duration >= 1 && duration <= 2) {
-          data[engineerIndex].shifts.between1And2Hours++;
-        } else if (duration >= 3 && duration <= 4) {
-          data[engineerIndex].shifts.between3And4Hours++;
-        } else if (duration > 4) {
-          data[engineerIndex].shifts.between3And4Hours += 2;
-        }
-      });
-    });
-
-    return { shiftData: data, dateRangeText };
-  }, [engineers, reservations]);
 
   async function handleAddEngineer() {
     if (!newEngineerName.trim()) return;
@@ -212,6 +129,13 @@ export default function EngineerAssignmentClient() {
     }
   }
 
+  const confirmedReservations = reservations.filter(reservation => reservation.status === 'confirmed');
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = confirmedReservations.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   return (
     <div className="space-y-4" dir="rtl">
       <h1 className="text-2xl font-bold">پنل اختصاص مهندس</h1>
@@ -257,7 +181,7 @@ export default function EngineerAssignmentClient() {
         <CardContent>
           {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
           <ul className="space-y-4">
-            {reservations.filter(reservation => reservation.status === 'confirmed').map((reservation) => {
+            {currentItems.map((reservation) => {
                 const assignedEngineers = (reservation.engineers || [])
                     .map(id => engineers.find(e => e.id === id)?.name)
                     .filter(Boolean);
@@ -317,37 +241,14 @@ export default function EngineerAssignmentClient() {
                 );
             })}
           </ul>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>جدول شیفت مهندسین</CardTitle>
-          <p className="text-sm text-muted-foreground mt-2">{dateRangeText}</p>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">نام مهندس</TableHead>
-                <TableHead className="text-right">برنامه‌های زیر ۱ ساعت</TableHead>
-                <TableHead className="text-right">برنامه‌های بین ۱ و ۲ ساعت</TableHead>
-                <TableHead className="text-right">برنامه‌های بین ۳ و ۴ ساعت</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shiftData.map((row: ShiftData, index: number) => (
-                <TableRow key={index}>
-                  <TableCell className="text-right">{row.engineerName}</TableCell>
-                  <TableCell className="text-right">{row.shifts.under1Hour}</TableCell>
-                  <TableCell className="text-right">{row.shifts.between1And2Hours}</TableCell>
-                  <TableCell className="text-right">{row.shifts.between3And4Hours}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="flex justify-center items-center space-x-2 mt-4">
+            <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>قبلی</Button>
+            <span>صفحه {currentPage}</span>
+            <Button onClick={() => paginate(currentPage + 1)} disabled={indexOfLastItem >= confirmedReservations.length}>بعدی</Button>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
