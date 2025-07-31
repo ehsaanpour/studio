@@ -134,12 +134,12 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: existingReservation ? {
-      programName: existingReservation.programName,
-      reservationDate: new Date(existingReservation.dateTime.reservationDate),
-      reservationStartTime: existingReservation.dateTime.startTime,
-      reservationEndTime: existingReservation.dateTime.endTime,
+      programName: existingReservation.programName || '',
+      reservationDate: existingReservation.dateTime?.reservationDate ? new Date(existingReservation.dateTime.reservationDate) : new Date(),
+      reservationStartTime: existingReservation.dateTime?.startTime || '09:00',
+      reservationEndTime: existingReservation.dateTime?.endTime || '17:00',
       studioSelection: existingReservation.studio,
-      studioServiceType: existingReservation.studioServices.serviceType,
+      studioServiceType: existingReservation.studioServices?.serviceType,
       repetitionType: existingReservation.repetition?.type || 'no_repetition',
       repetitionEndDate: existingReservation.repetition?.endDate ? new Date(existingReservation.repetition.endDate) : undefined,
       additionalServices: existingReservation.additionalServices || [],
@@ -174,7 +174,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
           ),
         });
       } else {
-        let reservationsToCreate = [];
+        let reservationsToCreate: ProducerFormValues[] = [];
         
         if (data.repetitionType === 'no_repetition') {
           reservationsToCreate.push(data);

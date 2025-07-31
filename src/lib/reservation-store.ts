@@ -160,14 +160,32 @@ export async function updateReservationStatus(requestId: string, newStatus: Stud
 
 export async function deleteReservation(requestId: string): Promise<void> {
   try {
-    const response = await fetch(`/api/reservations/delete?id=${requestId}`, {
-      method: 'DELETE',
+    const response = await fetch('/api/reservations/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: requestId }),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   } catch (error) {
     console.error('Error deleting reservation via API:', error);
+    throw error;
+  }
+}
+
+export async function deleteAllRejectedReservations(): Promise<void> {
+  try {
+    const response = await fetch('/api/reservations/delete-all', {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting all rejected reservations via API:', error);
     throw error;
   }
 }

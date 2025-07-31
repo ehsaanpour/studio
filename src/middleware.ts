@@ -14,36 +14,32 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  const isLoginPage = request.nextUrl.pathname === '/login';
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isProducerRoute = request.nextUrl.pathname.startsWith('/producer');
 
-  const isLoginRoute = request.nextUrl.pathname === '/login';
-
-  // Protect /admin routes: only accessible by logged-in admins
-  if (isAdminRoute) {
-    if (!user || !user.isAdmin) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  // If user is already logged in, redirect them from the login page
+  if (isLoginPage && user) {
+    return NextResponse.redirect(new URL(user.isAdmin ? '/admin' : '/producer', request.url));
   }
 
-
-
-  // Protect /producer routes: only accessible by logged-in non-admins (producers)
-  if (isProducerRoute) {
-    if (!user) { // Not logged in at all
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    if (user.isAdmin) { // Logged in as admin, but trying to access producer route
-      return NextResponse.redirect(new URL('/admin', request.url)); // Redirect admin away
-    }
+  // If user is not logged in, redirect them to the login page from protected routes
+  if (!user && (isAdminRoute || isProducerRoute)) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If trying to access login page while already logged in
-  if (isLoginRoute && user) {
-    if (user.isAdmin) {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    } else {
+  if (user) {
+    // Protect admin routes
+    if (isAdminRoute && !user.isAdmin) {
       return NextResponse.redirect(new URL('/producer', request.url));
+    }
+
+    // Protect producer routes
+    if (isProducerRoute && user.isAdmin) {
+      // Allow admins to access the edit request page
+      if (!request.nextUrl.pathname.startsWith('/producer/edit-request')) {
+        return NextResponse.redirect(new URL('/admin', request.url));
+      }
     }
   }
 
@@ -53,3 +49,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/admin/:path*', '/producer/:path*', '/login'],
 };
+

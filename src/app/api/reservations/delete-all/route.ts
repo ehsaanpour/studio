@@ -1,14 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { deleteAllReservationsServer } from '@/server/lib/reservation-data';
+import { NextResponse } from 'next/server';
+import { readJsonFile, writeJsonFile } from '@/lib/fs-utils';
+import type { StudioReservationRequest } from '@/types';
 
-export async function POST(req: NextRequest) {
+const RESERVATIONS_FILE = 'reservations.json';
+
+export async function DELETE() {
   try {
-    await deleteAllReservationsServer();
+    const data = await readJsonFile<{ reservations: StudioReservationRequest[] }>(RESERVATIONS_FILE);
+    const reservations = data?.reservations || [];
 
-    return NextResponse.json({ message: 'All reservations deleted successfully' }, { status: 200 });
+    const remainingReservations = reservations.filter((r: StudioReservationRequest) => r.status !== 'cancelled');
+
+    await writeJsonFile(RESERVATIONS_FILE, { reservations: remainingReservations });
+
+    return NextResponse.json({ message: 'All rejected reservations have been deleted.' });
   } catch (error) {
-    console.error('API Error deleting all reservations:', error);
-    return NextResponse.json({ error: 'Failed to delete all reservations' }, { status: 500 });
+    console.error('Error deleting all rejected reservations:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 

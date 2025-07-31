@@ -6,22 +6,20 @@ import Link from 'next/link';
 import { Film, PlusCircle, XCircle, Trash2, Edit3 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
-import { getReservations } from '@/lib/reservation-store'; // Removed subscribe
-import { getProgramNames, removeProgramName } from '@/lib/program-name-store'; // Removed subscribeToProgramNames
+import { getReservations, deleteReservation } from '@/lib/reservation-store';
+import { getProgramNames, removeProgramName } from '@/lib/program-name-store';
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
-import { isPast, isToday, parseISO } from 'date-fns'; // Import date-fns functions
+import { isPast, isToday, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import { AddProgramNameForm } from '@/components/forms/add-program-name-form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast'; // Import useToast
-import { ProfilePictureUpload } from '@/components/profile/profile-picture-upload'; // Import ProfilePictureUpload
-import { ArrowRight } from 'lucide-react'; // Import ArrowRight for navigation buttons
-// import { WeeklyScheduleCalendar } from '@/components/weekly-schedule-calendar'; // Import WeeklyScheduleCalendar
+import { useToast } from '@/hooks/use-toast';
+import { ProfilePictureUpload } from '@/components/profile/profile-picture-upload';
+import { ArrowRight } from 'lucide-react';
 
-// Helper function to get studio label (can be moved to a shared util later)
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
   switch (studioId) {
     case 'studio2': return 'استودیو ۲ (فرانسه)';
@@ -56,8 +54,8 @@ export default function ProducerPanelPage() {
   const [programNames, setProgramNames] = useState<string[]>([]);
   const [activeReservationsCount, setActiveReservationsCount] = useState(0);
   const [pastReservationsCount, setPastReservationsCount] = useState(0);
-  const { user, isAdmin } = useAuth(); // Get isAdmin from useAuth
-  const { toast } = useToast(); // Initialize useToast
+  const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
 
   const fetchAndSetRequests = async () => {
     try {
@@ -81,22 +79,22 @@ export default function ProducerPanelPage() {
   };
 
   useEffect(() => {
-    fetchAndSetRequests(); // Initial fetch for requests
-    fetchAndSetProgramNames(); // Initial fetch for program names
-  }, [user?.name]); // Depend on user.name to re-fetch if user changes
+    if (user?.name) {
+      fetchAndSetRequests();
+      fetchAndSetProgramNames();
+    }
+  }, [user?.name]);
 
   useEffect(() => {
     if (myRequests.length > 0) {
       let activeCount = 0;
       let pastCount = 0;
-      const now = new Date(); // Declare 'now' only once here
+      const now = new Date();
 
       myRequests.forEach(request => {
-        // Ensure reservationDate is a Date object, as it might be a string from JSON
         const reservationDate = new Date(request.dateTime.reservationDate); 
         const [hours, minutes] = request.dateTime.endTime.split(':').map(Number);
         
-        // Create a Date object for the end time of the reservation
         const reservationEndDateTime = new Date(
           reservationDate.getFullYear(),
           reservationDate.getMonth(),
@@ -105,7 +103,7 @@ export default function ProducerPanelPage() {
           minutes
         );
 
-        if (isPast(reservationEndDateTime)) { // Use isPast directly, remove additionalDigits
+        if (isPast(reservationEndDateTime)) {
           pastCount++;
         } else {
           activeCount++;
@@ -118,7 +116,7 @@ export default function ProducerPanelPage() {
       setActiveReservationsCount(0);
       setPastReservationsCount(0);
     }
-  }, [myRequests]); // Recalculate when myRequests changes
+  }, [myRequests]);
 
   const handleRemoveProgramName = async (nameToRemove: string) => {
     try {
@@ -127,7 +125,6 @@ export default function ProducerPanelPage() {
         title: 'نام برنامه حذف شد',
         description: `برنامه "${nameToRemove}" با موفقیت حذف شد.`,
       });
-      // Re-fetch program names after successful removal
       await fetchAndSetProgramNames();
     } catch (error) {
       console.error('Error removing program name:', error);
@@ -141,21 +138,8 @@ export default function ProducerPanelPage() {
 
   const handleDeleteRequest = async (requestId: string) => {
     try {
-      const response = await fetch('/api/reservations/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ requestId }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete request');
-      }
-
-      // Update the local state
+      await deleteReservation(requestId);
       setMyRequests(prevRequests => prevRequests.filter(req => req.id !== requestId));
-      
       toast({
         title: 'درخواست حذف شد',
         description: 'درخواست رزرو با موفقیت حذف شد.',
@@ -172,22 +156,9 @@ export default function ProducerPanelPage() {
 
   const handleDeleteAllRequests = async () => {
     try {
-      // Delete each request one by one
-      const deletePromises = myRequests.map(request => 
-        fetch('/api/reservations/delete', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ requestId: request.id }),
-        })
-      );
-
+      const deletePromises = myRequests.map(request => deleteReservation(request.id));
       await Promise.all(deletePromises);
-      
-      // Clear all requests from local state
       setMyRequests([]);
-      
       toast({
         title: 'تمام درخواست‌ها حذف شدند',
         description: 'تمام درخواست‌های رزرو با موفقیت حذف شدند.',
@@ -227,7 +198,6 @@ export default function ProducerPanelPage() {
           </p>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {/* Profile Section (New) */}
             <Card className="shadow-sm lg:col-span-1 xl:col-span-1">
               <CardHeader>
                 <CardTitle className="text-xl">پروفایل کاربری</CardTitle>
@@ -276,7 +246,6 @@ export default function ProducerPanelPage() {
                         ویرایش اطلاعات شخصی
                       </Link>
                     </Button>
-                    {/* Admin-specific button, not shown for producers */}
                     {isAdmin && (
                       <Button variant="outline" className="justify-start">
                         مدیریت کاربران
@@ -285,7 +254,6 @@ export default function ProducerPanelPage() {
                   </div>
                 </div>
 
-                {/* Reservation Stats (only for producers, as per original profile page) */}
                 {!isAdmin && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">آمار رزروها</h3>
@@ -304,7 +272,6 @@ export default function ProducerPanelPage() {
               </CardContent>
             </Card>
 
-            {/* Add Program Name Section */}
             <Card className="shadow-sm xl:col-span-1">
               <CardHeader>
                 <CardTitle className="text-xl">افزودن نام برنامه جدید</CardTitle>
@@ -338,7 +305,6 @@ export default function ProducerPanelPage() {
               </CardContent>
             </Card>
 
-            {/* My Requests Section */}
             <Card className="shadow-sm lg:col-span-1 xl:col-span-1">
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -412,10 +378,6 @@ export default function ProducerPanelPage() {
               </CardContent>
             </Card>
           </div>
-          {/* Weekly Schedule Calendar Section (Temporarily removed as per user request) */}
-          {/* <div className="mt-6">
-            <WeeklyScheduleCalendar />
-          </div> */}
           <div className="mt-6 flex justify-end">
             <Button asChild>
               <Link href="/weekly-schedule">

@@ -11,13 +11,14 @@ import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
 import type { Producer, StudioReservationRequest, AdditionalService, CateringService, Repetition } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { getReservations, updateReservationStatus, deleteReservation } from '@/lib/reservation-store';
+import { getReservations, updateReservationStatus, deleteReservation, deleteAllRejectedReservations } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
 import { addProducer, getAllProducers, deleteProducer, updateProducer } from '@/lib/producer-store';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 // Helper function to get studio label
 const getStudioLabel = (studioId: StudioReservationRequest['studio']) => {
@@ -123,7 +124,7 @@ export default function AdminPanelPage() {
 
   useEffect(() => {
     if (!isAdmin) {
-      router.push('/admin');
+      router.push('/login');
       return;
     }
     async function loadRequests() {
@@ -148,7 +149,6 @@ export default function AdminPanelPage() {
     };
     loadProducers();
 
-    return () => {}; // No longer need to unsubscribe from a non-existent subscription
   }, [isAdmin, router, toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
@@ -173,7 +173,6 @@ export default function AdminPanelPage() {
         password: newProducerPassword,
         email: newProducerEmail,
         phone: newProducerPhone,
-        isAdmin: false,
       });
       
       toast({
@@ -328,6 +327,25 @@ export default function AdminPanelPage() {
     }
   };
 
+  const handleDeleteAllRejectedRequests = async () => {
+    try {
+      await deleteAllRejectedReservations();
+      const requests = await getReservations();
+      setAllRequests(requests);
+      toast({
+        title: "درخواست‌های رد شده حذف شدند",
+        description: "تمام درخواست‌های رد شده با موفقیت حذف شدند.",
+      });
+    } catch (error) {
+      console.error('Error deleting all rejected requests:', error);
+      toast({
+        title: "خطا",
+        description: "خطا در حذف درخواست‌های رد شده.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -345,7 +363,7 @@ export default function AdminPanelPage() {
             </h3>
             <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription className="text-right">
-              تاریخ ثبت: {format(new Date(request.submittedAt), 'PPP p', { locale: faIR })} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
+              تاریخ ثبت: {request.submittedAt ? format(new Date(request.submittedAt), 'PPP p', { locale: faIR }) : 'نامشخص'} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
             </CardDescription>
           </div>
           <Badge variant={getStatusBadgeVariant(request.status)}>
@@ -357,9 +375,13 @@ export default function AdminPanelPage() {
         {request.repetition && request.repetition.type !== 'no_repetition' && (
           <div><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></div>
         )}
-        <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+        {request.dateTime && request.dateTime.reservationDate ? (
+          <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+        ) : (
+          <p><strong>تاریخ رزرو:</strong> <span className='text-red-500'>نامشخص</span></p>
+        )}
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
-        <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
+        {request.studioServices && <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>}
         {request.personalInfo && (
           <>
             <p><strong>تماس مهمان:</strong> {request.personalInfo.phoneNumber} - {request.personalInfo.emailAddress}</p>
@@ -390,6 +412,13 @@ export default function AdminPanelPage() {
                 علامت‌گذاری به عنوان خوانده شده <CheckCircle className="me-2 h-4 w-4" /> 
             </Button>
           )}
+        </CardFooter>
+      )}
+       {(request.status === 'cancelled') && (
+        <CardFooter className="flex justify-end gap-2">
+          <Button onClick={() => handleDeleteRequest(request.id)} size="sm" variant="destructive">
+            حذف <Trash2 className="me-2 h-4 w-4" />
+          </Button>
         </CardFooter>
       )}
       {request.status === 'confirmed' && (
@@ -492,6 +521,30 @@ export default function AdminPanelPage() {
                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست رد شده‌ای وجود ندارد.</p>
                       ) : (
                         <>
+                          <div className="flex justify-end mb-4">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  <Trash2 className="me-2 h-4 w-4" />
+                                  حذف همه ({rejectedSystemRequests.length})
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent dir="rtl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    این عمل قابل بازگشت نیست. با این کار تمام {rejectedSystemRequests.length} درخواست رد شده برای همیشه حذف خواهند شد.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>انصراف</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleDeleteAllRejectedRequests}>
+                                    حذف کن
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                           {paginatedRejectedRequests.map(req => renderRequestCard(req))}
                           {renderPagination(rejectedSystemRequests.length, rejectedRequestsPage, setRejectedRequestsPage)}
                         </>

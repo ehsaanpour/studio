@@ -12,29 +12,56 @@ import { StudioReservationRequest } from '@/types';
 import { useParams } from 'next/navigation';
 
 export default function EditProducerRequestPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { id } = useParams();
   const [reservation, setReservation] = useState<StudioReservationRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      getReservationById(id as string).then(data => {
-        setReservation(data);
-        setIsLoading(false);
-      });
-    }
-  }, [id]);
+    if (!id || !user) return;
 
-  const producerName = user?.name || "تهیه‌کننده";
+    const fetchRequest = async () => {
+      try {
+        const fetchedRequest = await getReservationById(id as string);
+        if (!fetchedRequest) {
+          setError('درخواست یافت نشد.');
+          return;
+        }
+
+        // Allow admin to edit any request
+        if (!isAdmin && fetchedRequest.requesterName !== user.name) {
+          setError('شما مجاز به ویرایش این درخواست نیستید.');
+          return;
+        }
+
+        setReservation(fetchedRequest);
+      } catch (err) {
+        setError('خطا در دریافت اطلاعات درخواست رزرو.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRequest();
+  }, [id, user, isAdmin]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">در حال بارگذاری...</div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl" dir="rtl">
       <div className="space-y-6">
         <Button variant="outline" asChild className="mb-6 w-full sm:w-auto">
-          <Link href="/admin" className="flex items-center justify-center sm:justify-start">
+          <Link href={isAdmin ? "/admin" : "/producer"} className="flex items-center justify-center sm:justify-start">
             <ArrowRight className="ms-2 h-4 w-4" />
-            <span>بازگشت به پنل مدیریت</span>
+            <span>{isAdmin ? 'بازگشت به پنل مدیریت' : 'بازگشت به پنل تهیه‌کننده'}</span>
           </Link>
         </Button>
         <Card className="shadow-lg">
@@ -48,10 +75,8 @@ export default function EditProducerRequestPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <p>در حال بارگذاری اطلاعات...</p>
-            ) : reservation ? (
-              <ProducerReservationForm producerName={producerName} existingReservation={reservation} />
+            {reservation ? (
+              <ProducerReservationForm producerName={reservation.requesterName || ''} existingReservation={reservation} />
             ) : (
               <p>درخواست مورد نظر یافت نشد.</p>
             )}

@@ -6,8 +6,7 @@ const RESERVATIONS_FILE = 'reservations.json';
 
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { id, ...updatedData } = body;
+    const { id, formData: updatedData } = await request.json();
 
     if (!id) {
       return NextResponse.json({ message: 'Reservation ID is required' }, { status: 400 });
@@ -16,7 +15,7 @@ export async function PUT(request: Request) {
     const data = await readJsonFile<{ reservations: StudioReservationRequest[] }>(RESERVATIONS_FILE);
     const reservations = data?.reservations || [];
 
-    const reservationIndex = reservations.findIndex((r: StudioReservationRequest) => r.id === id);
+    const reservationIndex = reservations.findIndex((r) => r.id === id);
 
     if (reservationIndex === -1) {
       return NextResponse.json({ message: 'Reservation not found' }, { status: 404 });
@@ -24,18 +23,12 @@ export async function PUT(request: Request) {
 
     const originalReservation = reservations[reservationIndex];
 
-    // Prevent changing status or program name
-    if (updatedData.status && updatedData.status !== originalReservation.status) {
-        return NextResponse.json({ message: 'Cannot update status' }, { status: 400 });
-    }
-    if (updatedData.programName && updatedData.programName !== originalReservation.programName) {
-        return NextResponse.json({ message: 'Cannot update program name' }, { status: 400 });
-    }
-
-    reservations[reservationIndex] = {
+    // Construct the updated reservation object from the form data
+    const updatedReservation: StudioReservationRequest = {
       ...originalReservation,
+      programName: updatedData.programName,
       dateTime: {
-        reservationDate: updatedData.reservationDate,
+        reservationDate: new Date(updatedData.reservationDate),
         startTime: updatedData.reservationStartTime,
         endTime: updatedData.reservationEndTime,
       },
@@ -45,12 +38,19 @@ export async function PUT(request: Request) {
         serviceType: updatedData.studioServiceType,
       },
       additionalServices: updatedData.additionalServices,
+      details: updatedData.details,
+      repetition: {
+        type: updatedData.repetitionType,
+        endDate: updatedData.repetitionEndDate ? new Date(updatedData.repetitionEndDate) : undefined,
+      },
       updatedAt: new Date(),
     };
 
+    reservations[reservationIndex] = updatedReservation;
+
     await writeJsonFile(RESERVATIONS_FILE, { reservations });
 
-    return NextResponse.json(reservations[reservationIndex]);
+    return NextResponse.json(updatedReservation);
   } catch (error) {
     console.error('Error updating reservation:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
