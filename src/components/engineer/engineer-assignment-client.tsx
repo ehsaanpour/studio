@@ -291,8 +291,8 @@ export default function EngineerAssignmentClient() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="current">جاری</TabsTrigger>
               <TabsTrigger value="archived">آرشیوشده</TabsTrigger>
             </TabsList>
