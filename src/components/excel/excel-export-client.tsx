@@ -48,7 +48,7 @@ export default function ExcelExportClient() {
       const persianYear = formatPersian(startDate, 'yyyy', { locale: faIR });
       
       options.push({
-        value: `${month}-${year}`,
+        value: `${month}-${year}-${i}`,
         label: `${startMonthName} - ${endMonthName} ${persianYear}`,
         startDate,
         endDate
@@ -69,7 +69,7 @@ export default function ExcelExportClient() {
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       const currentMonthOption = monthOptions.find(opt => 
-        opt.value === `${currentMonth}-${currentYear}`
+        opt.value.startsWith(`${currentMonth}-${currentYear}`)
       );
       if (currentMonthOption) {
         setSelectedMonth(currentMonthOption.value);
@@ -322,3 +322,4 @@ export default function ExcelExportClient() {
     </div>
   );
 }
+
