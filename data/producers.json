@@ -1,21 +1,49 @@
 {
   "producers": [
     {
-      "id": "1748786203313",
-      "name": "hasani",
-      "username": "hasani",
-      "password": "$2b$10$FdApN3qHgoo/aa9Z1rtS3uCwgSgpheUZiwSh5/DUxferEq.d4J4GS",
-      "email": "bb@presstv.ir",
+      "id": "1753169477301",
+      "name": "کاوه تقوایی",
+      "username": "kaveh",
+      "password": "$2b$10$kvHq/fUGQaqlSDZxxjLSl.JghrC3tDLP3mzoKoNfV2QvHPbz4POeG",
+      "email": "Keveh@gmail.com",
       "phone": "09362056342",
+      "isAdmin": false,
+      "workplace": "پرس"
+    },
+    {
+      "id": "1753169604889",
+      "name": "حسنی دخت",
+      "username": "hosnidokht",
+      "password": "$2b$10$rZr2oj8QNMSAUjpTrnk5fucUdAStguMeQEr8BVaJa5yjwyZUaLgYm",
+      "email": "hosnidokht@gmail.com",
+      "phone": "09123129131",
       "isAdmin": false
     },
     {
-      "id": "1753198077543",
-      "name": "تست",
+      "id": "1753169816219",
+      "name": "اسد",
+      "username": "asad",
+      "password": "$2b$10$9fUBpG2l.YAzzBlr20wqX.06IAPoM4xhT2Hy28bRkdE28tPJ8Z5kS",
+      "email": "asad@gmail.com",
+      "phone": "09127038230",
+      "isAdmin": false
+    },
+    {
+      "id": "1753774380203",
+      "name": "darbandi",
+      "username": "darbandi",
+      "password": "$2b$10$2yjGMnn8g3UvYgKRl5jXHeLlqAKVMiCrAxhMEwrYZ/nRJ5kMSn2Km",
+      "email": "darbandi@gmail.com",
+      "phone": "09123544741",
+      "isAdmin": false
+    },
+    {
+      "id": "1753886708170",
+      "name": "مهمان",
       "username": "test",
-      "password": "$2b$10$gu6rHFl.8m.atTQMt5tbGeugg/22J8Q.U/OceMC4Z5i7P28YklSRi",
+      "password": "$2b$10$4ZbVdsQct/IKqnMqcvSJN.DkaGe/WCabkjVBPMWdmwZBD97Au2G5K",
       "email": "",
-      "phone": "تست",
+      "phone": "000",
       "isAdmin": false
     }
   ]

@@ -333,7 +333,7 @@ export default function AdminPanelPage() {
         {request.repetition && request.repetition.type !== 'no_repetition' && (
           <div><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></div>
         )}
-        <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+        <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         <p><strong>استودیو:</strong> {getStudioLabel(request.studio)}</p>
         <p><strong>نوع سرویس:</strong> {getServiceTypeLabel(request.studioServices.serviceType)} ({request.studioServices.numberOfDays} روز, {request.studioServices.hoursPerDay} ساعت/روز)</p>
         {request.personalInfo && (
