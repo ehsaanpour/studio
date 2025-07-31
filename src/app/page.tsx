@@ -45,6 +45,11 @@ export default function LandingPage() {
                     ورود تهیه‌کننده / مدیر <ArrowLeft className="ms-2 h-5 w-5" />
                   </Link>
                 </Button>
+                <Button size="lg" asChild className="bg-gray-300 text-gray-800 hover:bg-gray-400 focus-visible:ring-gray-500">
+                  <Link href="/weekly-schedule">
+                    برنامه هفتگی <ArrowLeft className="ms-2 h-5 w-5" />
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -93,3 +98,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
