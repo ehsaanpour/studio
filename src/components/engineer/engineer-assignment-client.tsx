@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Engineer, StudioReservationRequest } from "@/types";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
@@ -21,6 +21,8 @@ export default function EngineerAssignmentClient() {
   const [engineerCounts, setEngineerCounts] = useState<{ [key: string]: number }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'assigned' | 'unassigned'>('all');
 
   async function fetchData() {
     try {
@@ -131,10 +133,25 @@ export default function EngineerAssignmentClient() {
     }
   }
 
-  const confirmedReservations = reservations.filter(reservation => reservation.status === 'confirmed');
+  const sortedAndFilteredReservations = useMemo(() => {
+    let filtered = reservations.filter(reservation => reservation.status === 'confirmed');
+
+    if (assignmentFilter === 'assigned') {
+      filtered = filtered.filter(res => res.engineers && res.engineers.length > 0);
+    } else if (assignmentFilter === 'unassigned') {
+      filtered = filtered.filter(res => !res.engineers || res.engineers.length === 0);
+    }
+
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.dateTime.reservationDate).getTime();
+      const dateB = new Date(b.dateTime.reservationDate).getTime();
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }, [reservations, sortOrder, assignmentFilter]);
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = confirmedReservations.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = sortedAndFilteredReservations.slice(indexOfFirstItem, indexOfLastItem);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -176,9 +193,24 @@ export default function EngineerAssignmentClient() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-          <CardTitle>برنامه‌های ثبت شده</CardTitle>
-          <Button variant="destructive" size="sm" onClick={handleRemoveAllReservations}>حذف همه</Button>
-        </div>
+            <CardTitle>برنامه‌های ثبت شده</CardTitle>
+            <div className="flex items-center gap-2">
+              <Select value={assignmentFilter} onValueChange={(value) => setAssignmentFilter(value as any)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="فیلتر" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">همه</SelectItem>
+                  <SelectItem value="assigned">اختصاص یافته</SelectItem>
+                  <SelectItem value="unassigned">اختصاص نیافته</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="icon" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+                <ArrowUpDown className="h-4 w-4" />
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleRemoveAllReservations}>حذف همه</Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
@@ -244,7 +276,7 @@ export default function EngineerAssignmentClient() {
             })}
           </ul>
           <div className="flex justify-center items-center space-x-2 mt-4">
-            {Array.from({ length: Math.ceil(confirmedReservations.length / itemsPerPage) }, (_, i) => (
+            {Array.from({ length: Math.ceil(sortedAndFilteredReservations.length / itemsPerPage) }, (_, i) => (
               <Button key={i + 1} onClick={() => paginate(i + 1)} variant={currentPage === i + 1 ? "default" : "outline"}>
                 {i + 1}
               </Button>
