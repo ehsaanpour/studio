@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Engineer, StudioReservationRequest } from "@/types";
 import { Trash2, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 
@@ -20,9 +21,11 @@ export default function EngineerAssignmentClient() {
   const [selectedEngineers, setSelectedEngineers] = useState<{ [key: string]: string[] }>({});
   const [engineerCounts, setEngineerCounts] = useState<{ [key: string]: number }>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [archivedPage, setArchivedPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'assigned' | 'unassigned'>('all');
+  const [activeTab, setActiveTab] = useState('current');
 
   async function fetchData() {
     try {
@@ -133,7 +136,10 @@ export default function EngineerAssignmentClient() {
     }
   }
 
-  const sortedAndFilteredReservations = useMemo(() => {
+  const { currentReservations, archivedReservations } = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     let filtered = reservations.filter(reservation => reservation.status === 'confirmed');
 
     if (assignmentFilter === 'assigned') {
@@ -142,18 +148,90 @@ export default function EngineerAssignmentClient() {
       filtered = filtered.filter(res => !res.engineers || res.engineers.length === 0);
     }
 
-    return filtered.sort((a, b) => {
+    const sorted = filtered.sort((a, b) => {
       const dateA = new Date(a.dateTime.reservationDate).getTime();
       const dateB = new Date(b.dateTime.reservationDate).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
+
+    const current = sorted.filter(res => new Date(res.dateTime.reservationDate) >= today || !res.engineers || res.engineers.length === 0);
+    const archived = sorted.filter(res => new Date(res.dateTime.reservationDate) < today && res.engineers && res.engineers.length > 0);
+
+    return { currentReservations: current, archivedReservations: archived };
   }, [reservations, sortOrder, assignmentFilter]);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedAndFilteredReservations.slice(indexOfFirstItem, indexOfLastItem);
+  const currentIndexOfLastItem = currentPage * itemsPerPage;
+  const currentIndexOfFirstItem = currentIndexOfLastItem - itemsPerPage;
+  const currentItems = currentReservations.slice(currentIndexOfFirstItem, currentIndexOfLastItem);
+
+  const archivedIndexOfLastItem = archivedPage * itemsPerPage;
+  const archivedIndexOfFirstItem = archivedIndexOfLastItem - itemsPerPage;
+  const archivedItems = archivedReservations.slice(archivedIndexOfFirstItem, archivedIndexOfLastItem);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const paginateArchived = (pageNumber: number) => setArchivedPage(pageNumber);
+
+  const renderReservations = (items: StudioReservationRequest[]) => {
+    return items.map((reservation) => {
+      const assignedEngineers = (reservation.engineers || [])
+        .map(id => engineers.find(e => e.id === id)?.name)
+        .filter(Boolean);
+
+      return (
+        <li key={reservation.id} className="p-4 border rounded-md space-y-4 bg-card">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-grow">
+              <p className="font-semibold text-lg text-primary">{reservation.programName}</p>
+              <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
+              <p className="text-sm text-muted-foreground">تاریخ: {format(new Date(reservation.dateTime.reservationDate), 'EEEE, yyyy/MM/dd', { locale: faIR })}</p>
+              <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
+              <div className="flex items-center gap-2 mt-2"><Label>تعداد مهندس</Label><Select value={String(engineerCounts[reservation.id] || 1)} onValueChange={(value) => { const count = parseInt(value, 10); setEngineerCounts(prev => ({ ...prev, [reservation.id]: count })); setSelectedEngineers(prev => { const currentSelection = prev[reservation.id] || []; const newSelection = Array(count).fill('').map((_, i) => currentSelection[i] || ''); return { ...prev, [reservation.id]: newSelection }; }); }}><SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(num => (<SelectItem key={num} value={String(num)}>{num}</SelectItem>))}</SelectContent></Select></div>
+              {assignedEngineers.length > 0 && 
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">مهندسین فعلی: {assignedEngineers.join(', ')}</p>
+              }
+            </div>
+            <div className="flex flex-col gap-2 w-56">
+                {Array.from({ length: engineerCounts[reservation.id] || 1 }).map((_, index) => (
+                    <Select
+                        key={index}
+                        onValueChange={(engineerId) => {
+                            const newSelections = { ...selectedEngineers };
+                            if (!newSelections[reservation.id]) {
+                                newSelections[reservation.id] = Array(engineerCounts[reservation.id] || 1).fill('');
+                            }
+                            newSelections[reservation.id][index] = engineerId;
+                            setSelectedEngineers(newSelections);
+                        }}
+                        value={selectedEngineers[reservation.id]?.[index] || ''}
+                        dir="rtl"
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={`مهندس ${index + 1}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {engineers.map((engineer) => (
+                                <SelectItem key={engineer.id} value={engineer.id}>
+                                    {engineer.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                ))}
+                <div className="flex gap-2 mt-2">
+                    <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [], engineerCounts[reservation.id] || 1)}>
+                        ثبت
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => handleRemoveReservation(reservation.id)}>
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">حذف</span>
+                    </Button>
+                </div>
+            </div>
+          </div>
+        </li>
+      );
+    });
+  }
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -213,75 +291,38 @@ export default function EngineerAssignmentClient() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
-          <ul className="space-y-4">
-            {currentItems.map((reservation) => {
-                const assignedEngineers = (reservation.engineers || [])
-                    .map(id => engineers.find(e => e.id === id)?.name)
-                    .filter(Boolean);
-
-                return (
-                    <li key={reservation.id} className="p-4 border rounded-md space-y-4 bg-card">
-                        <div className="flex justify-between items-start gap-4">
-                            <div className="flex-grow">
-                                <p className="font-semibold text-lg text-primary">{reservation.programName}</p>
-                                <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
-                                <p className="text-sm text-muted-foreground">تاریخ: {format(new Date(reservation.dateTime.reservationDate), 'EEEE, yyyy/MM/dd', { locale: faIR })}</p>
-                                <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
-                                <div className="flex items-center gap-2 mt-2"><Label>تعداد مهندس</Label><Select value={String(engineerCounts[reservation.id] || 1)} onValueChange={(value) => { const count = parseInt(value, 10); setEngineerCounts(prev => ({ ...prev, [reservation.id]: count })); setSelectedEngineers(prev => { const currentSelection = prev[reservation.id] || []; const newSelection = Array(count).fill('').map((_, i) => currentSelection[i] || ''); return { ...prev, [reservation.id]: newSelection }; }); }}><SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(num => (<SelectItem key={num} value={String(num)}>{num}</SelectItem>))}</SelectContent></Select></div>
-                                {assignedEngineers.length > 0 && 
-                                    <p className="text-sm font-medium text-green-600 dark:text-green-400">مهندسین فعلی: {assignedEngineers.join(', ')}</p>
-                                }
-                            </div>
-                            <div className="flex flex-col gap-2 w-56">
-                                {Array.from({ length: engineerCounts[reservation.id] || 1 }).map((_, index) => (
-                                    <Select
-                                        key={index}
-                                        onValueChange={(engineerId) => {
-                                            const newSelections = { ...selectedEngineers };
-                                            if (!newSelections[reservation.id]) {
-                                                newSelections[reservation.id] = Array(engineerCounts[reservation.id] || 1).fill('');
-                                            }
-                                            newSelections[reservation.id][index] = engineerId;
-                                            setSelectedEngineers(newSelections);
-                                        }}
-                                        value={selectedEngineers[reservation.id]?.[index] || ''}
-                                        dir="rtl"
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={`مهندس ${index + 1}`} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {engineers.map((engineer) => (
-                                                <SelectItem key={engineer.id} value={engineer.id}>
-                                                    {engineer.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ))}
-                                <div className="flex gap-2 mt-2">
-                                    <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [], engineerCounts[reservation.id] || 1)}>
-                                        ثبت
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => handleRemoveReservation(reservation.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">حذف</span>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                );
-            })}
-          </ul>
-          <div className="flex justify-center items-center space-x-2 mt-4">
-            {Array.from({ length: Math.ceil(sortedAndFilteredReservations.length / itemsPerPage) }, (_, i) => (
-              <Button key={i + 1} onClick={() => paginate(i + 1)} variant={currentPage === i + 1 ? "default" : "outline"}>
-                {i + 1}
-              </Button>
-            ))}
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="current">جاری</TabsTrigger>
+              <TabsTrigger value="archived">آرشیوشده</TabsTrigger>
+            </TabsList>
+            <TabsContent value="current">
+              {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
+              <ul className="space-y-4">
+                {renderReservations(currentItems)}
+              </ul>
+              <div className="flex justify-center items-center space-x-2 mt-4">
+                {Array.from({ length: Math.ceil(currentReservations.length / itemsPerPage) }, (_, i) => (
+                  <Button key={i + 1} onClick={() => paginate(i + 1)} variant={currentPage === i + 1 ? "default" : "outline"}>
+                    {i + 1}
+                  </Button>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="archived">
+              {isLoading && <p>در حال بارگذاری برنامه‌ها...</p>}
+              <ul className="space-y-4">
+                {renderReservations(archivedItems)}
+              </ul>
+              <div className="flex justify-center items-center space-x-2 mt-4">
+                {Array.from({ length: Math.ceil(archivedReservations.length / itemsPerPage) }, (_, i) => (
+                  <Button key={i + 1} onClick={() => paginateArchived(i + 1)} variant={archivedPage === i + 1 ? "default" : "outline"}>
+                    {i + 1}
+                  </Button>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
