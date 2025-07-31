@@ -110,6 +110,14 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [programNames, setProgramNames] = useState<string[]>([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -258,12 +266,23 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
       setIsLoading(false);
     }
   }
+  
+  const iranTime = new Intl.DateTimeFormat('fa-IR', {
+    dateStyle: 'full',
+    timeStyle: 'medium',
+    timeZone: 'Asia/Tehran',
+  }).format(currentTime);
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8" dir="rtl">
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">اطلاعات برنامه</h3>
+           <div className="flex justify-between items-center">
+              <h3 className="text-lg sm:text-xl font-semibold text-primary">اطلاعات برنامه</h3>
+              <div className="text-sm text-muted-foreground">
+                {iranTime}
+              </div>
+            </div>
           <FormField
             control={form.control}
             name="programName"
@@ -355,15 +374,10 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
                     <Input
-                      type="time"
+                      type="text"
                       {...field}
-                      onKeyDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        const target = e.currentTarget as HTMLInputElement;
-                        if (target.showPicker) {
-                          target.showPicker();
-                        }
-                      }}
+                      placeholder="HH:MM"
+                      pattern="(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]"
                       className="w-full text-right"
                     />
                   </FormControl>
@@ -379,15 +393,10 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
                     <Input
-                      type="time"
+                      type="text"
                       {...field}
-                      onKeyDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        const target = e.currentTarget as HTMLInputElement;
-                        if (target.showPicker) {
-                          target.showPicker();
-                        }
-                      }}
+                      placeholder="HH:MM"
+                      pattern="(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]"
                       className="w-full text-right"
                     />
                   </FormControl>
