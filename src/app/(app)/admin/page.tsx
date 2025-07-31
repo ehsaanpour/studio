@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import React, { useState, FormEvent, useEffect } from 'react';
 import type { Producer, StudioReservationRequest, AdditionalService, CateringService, Repetition } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { getReservations, updateReservationStatus } from '@/lib/reservation-store';
+import { getReservations, updateReservationStatus, deleteReservation } from '@/lib/reservation-store';
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
@@ -219,6 +219,25 @@ export default function AdminPanelPage() {
     }
   };
 
+  const handleDeleteRequest = async (requestId: string) => {
+    try {
+      await deleteReservation(requestId);
+      const requests = await getReservations();
+      setAllRequests(requests);
+      toast({
+        title: "درخواست حذف شد",
+        description: "درخواست با موفقیت حذف شد.",
+      });
+    } catch (error) {
+      console.error(`Error deleting request ${requestId}:`, error);
+      toast({
+        title: "خطا",
+        description: "خطا در حذف درخواست.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleUpdateRequestStatus = async (requestId: string, status: StudioReservationRequest['status']) => {
     try {
       await updateReservationStatus(requestId, status);
@@ -361,6 +380,13 @@ export default function AdminPanelPage() {
                 علامت‌گذاری به عنوان خوانده شده <CheckCircle className="me-2 h-4 w-4" /> 
             </Button>
           )}
+        </CardFooter>
+      )}
+      {request.status === 'confirmed' && (
+        <CardFooter className="flex justify-end gap-2">
+          <Button onClick={() => handleDeleteRequest(request.id)} size="sm" variant="destructive">
+            حذف <Trash2 className="me-2 h-4 w-4" />
+          </Button>
         </CardFooter>
       )}
     </Card>
@@ -599,3 +625,4 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
