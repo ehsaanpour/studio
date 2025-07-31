@@ -45,13 +45,22 @@ export interface StudioServicesInfo {
 }
 
 export type AdditionalService =
+
   | 'videowall'
+
   | 'xdcam'
+
   | 'crane'
+
   | 'makeup_artist'
+
   | 'service_staff'
+
   | 'live_communication' // ارتباط اینترنتی / ارتباط زنده
-  | 'stream'; // استریم
+
+  | 'stream' // استریم
+
+  | 'live_program';
 
 export type CateringService =
   | 'drinks'
@@ -107,12 +116,3 @@ export interface Producer {
   email: string;
   phone: string;
   workplace?: string;
-  isAdmin?: boolean;
-  profilePictureUrl?: string;
-}
-
-export interface Engineer {
-  id: string;
-  name: string;
-}
-

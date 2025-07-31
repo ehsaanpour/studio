@@ -46,6 +46,7 @@ const additionalServiceItemsMap: Record<AdditionalService, string> = {
   service_staff: 'نیروی خدمات',
   live_communication: 'ارتباط زنده',
   stream: 'استریم',
+  live_program: 'برنامه زنده',
 };
 
 const getAdditionalServiceLabel = (serviceId: AdditionalService): string => {
@@ -373,6 +374,11 @@ export default function AdminPanelPage() {
       </CardContent>
       {(request.status === 'new' || request.status === 'read') && (
         <CardFooter className="flex justify-end gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/producer/edit-request/${request.id}`}>
+              ویرایش <Edit3 className="me-2 h-4 w-4" />
+            </Link>
+          </Button>
           <Button onClick={() => handleUpdateRequestStatus(request.id, 'confirmed')} size="sm" variant="default" className="bg-green-600 hover:bg-green-700 text-white">
             تایید <ThumbsUp className="me-2 h-4 w-4" /> 
           </Button>

@@ -100,15 +100,20 @@ export function WeeklyScheduleCalendar() {
 
         const fetchedPrograms: Program[] = reservations
           .filter((res) => res.status === 'confirmed')
-          .map((res) => ({
-            id: res.id,
-            name: res.programName,
-            time: `${res.dateTime.startTime} - ${res.dateTime.endTime}`,
-            studio: getStudioDisplayName(res.studio),
-            date: parseISO(res.dateTime.reservationDate),
-            engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
-            isRecurring: res.repetition?.type === 'weekly_1month' || res.repetition?.type === 'weekly_3months',
-          }));
+          .map((res) => {
+            const d = parseISO(res.dateTime.reservationDate);
+            // HACK: Correct for timezone issue where stored UTC date is a day behind.
+            const correctedDate = new Date(d.setDate(d.getDate() + 1));
+            return {
+              id: res.id,
+              name: res.programName,
+              time: `${res.dateTime.startTime} - ${res.dateTime.endTime}`,
+              studio: getStudioDisplayName(res.studio),
+              date: correctedDate,
+              engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
+              isRecurring: res.repetition?.type === 'weekly_1month' || res.repetition?.type === 'weekly_3months',
+            }
+          });
 
         setPrograms(fetchedPrograms);
       } catch (e: any) {
@@ -229,3 +234,4 @@ export function WeeklyScheduleCalendar() {
     </Card>
   );
 }
+

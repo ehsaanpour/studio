@@ -65,9 +65,11 @@ export async function addReservation(
     };
     cateringServices = guestData.cateringServices as CateringService[];
     programName = 'Guest Reservation';
+    const guestLocalDate = guestData.reservationDate;
+    const guestUtcDate = new Date(Date.UTC(guestLocalDate.getFullYear(), guestLocalDate.getMonth(), guestLocalDate.getDate()));
     requestDetailsBase = {
       dateTime: {
-        reservationDate: guestData.reservationDate,
+        reservationDate: guestUtcDate,
         startTime: guestData.reservationStartTime,
         endTime: guestData.reservationEndTime,
       },
@@ -87,9 +89,11 @@ export async function addReservation(
     const producerData = formData as ProducerFormValues;
     requester = producerName;
     programName = producerData.programName;
+    const producerLocalDate = producerData.reservationDate;
+    const producerUtcDate = new Date(Date.UTC(producerLocalDate.getFullYear(), producerLocalDate.getMonth(), producerLocalDate.getDate()));
     requestDetailsBase = {
       dateTime: {
-        reservationDate: producerData.reservationDate,
+        reservationDate: producerUtcDate,
         startTime: producerData.reservationStartTime,
         endTime: producerData.reservationEndTime,
       },
@@ -167,3 +171,23 @@ export async function deleteReservation(requestId: string): Promise<void> {
     throw error;
   }
 }
+
+export async function updateReservation(id: string, formData: ProducerFormValues): Promise<void> {
+  try {
+    const response = await fetch('/api/reservations/edit',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, formData }),
+      });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error updating reservation via API:', error);
+    throw error;
+  }
+}
+

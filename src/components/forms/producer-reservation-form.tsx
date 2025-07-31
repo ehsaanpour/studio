@@ -24,9 +24,9 @@ import { format as formatDateFnsJalali } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
-import { addReservation } from '@/lib/reservation-store';
+import { addReservation, updateReservation } from '@/lib/reservation-store';
 import { PersianDatePicker } from '@/components/ui/persian-date-picker'; 
-import type { AdditionalService } from '@/types';
+import type { AdditionalService, StudioReservationRequest } from '@/types';
 import { getProgramNames } from '@/lib/program-name-store';
 
 export const producerFormSchema = z.object({
@@ -59,6 +59,7 @@ export const producerFormSchema = z.object({
     'service_staff',
     'live_communication',
     'stream',
+    'live_program',
   ])).optional(),
   details: z.string().optional(),
 }).refine((data) => {
@@ -95,13 +96,15 @@ const additionalServiceItems: { id: AdditionalService; label: string }[] = [
   { id: 'service_staff', label: 'نیروی خدمات' },
   { id: 'live_communication', label: 'ارتباط زنده' },
   { id: 'stream', label: 'استریم' },
+  { id: 'live_program', label: 'برنامه زنده' },
 ];
 
 interface ProducerReservationFormProps {
   producerName: string; 
+  existingReservation?: StudioReservationRequest | null;
 }
 
-export function ProducerReservationForm({ producerName }: ProducerReservationFormProps) {
+export function ProducerReservationForm({ producerName, existingReservation }: ProducerReservationFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -130,7 +133,18 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
 
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
-    defaultValues: {
+    defaultValues: existingReservation ? {
+      programName: existingReservation.programName,
+      reservationDate: new Date(existingReservation.dateTime.reservationDate),
+      reservationStartTime: existingReservation.dateTime.startTime,
+      reservationEndTime: existingReservation.dateTime.endTime,
+      studioSelection: existingReservation.studio,
+      studioServiceType: existingReservation.studioServices.serviceType,
+      repetitionType: existingReservation.repetition?.type || 'no_repetition',
+      repetitionEndDate: existingReservation.repetition?.endDate ? new Date(existingReservation.repetition.endDate) : undefined,
+      additionalServices: existingReservation.additionalServices || [],
+      details: existingReservation.details || '',
+    } : {
       programName: '',
       reservationDate: new Date(),
       reservationStartTime: '09:00',
@@ -146,81 +160,93 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
 
   async function onSubmit(data: ProducerFormValues) {
     setIsLoading(true);
-    console.log('Producer Reservation Data Submitted:', data, 'by', producerName);
-    
     try {
-      let reservationsToCreate = [];
-      
-      if (data.repetitionType === 'no_repetition') {
-        reservationsToCreate.push(data);
-      } else if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
-        const startDate = new Date(data.reservationDate);
-        const endDate = new Date(data.repetitionEndDate);
-        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        for (let i = 0; i <= daysDiff; i++) {
-          const reservationDate = new Date(startDate);
-          reservationDate.setDate(startDate.getDate() + i);
-          reservationsToCreate.push({
-            ...data,
-            reservationDate,
-          });
-        }
-      } else {
-        const weeks = data.repetitionType === 'weekly_1month' ? 4 : 12;
-        for (let i = 0; i < weeks; i++) {
-          const reservationDate = new Date(data.reservationDate);
-          reservationDate.setDate(reservationDate.getDate() + (i * 7));
-          reservationsToCreate.push({
-            ...data,
-            reservationDate,
-          });
-        }
-      }
-
-      for (const reservationData of reservationsToCreate) {
-        const response = await fetch('/api/reservations/check-availability', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            dateTime: {
-              reservationDate: reservationData.reservationDate,
-              startTime: reservationData.reservationStartTime,
-              endTime: reservationData.reservationEndTime,
-            },
-            studio: reservationData.studioSelection,
-          }),
+      if (existingReservation) {
+        await updateReservation(existingReservation.id, data);
+        toast({
+          title: 'درخواست شما بروزرسانی شد',
+          description: 'درخواست رزرو شما با موفقیت بروزرسانی شد.',
+          action: (
+            <div className="flex items-center text-green-500">
+              <CheckCircle className="ms-2 h-5 w-5" />
+              <span>موفق</span>
+            </div>
+          ),
         });
-
-        const { isAvailable, message } = await response.json();
+      } else {
+        let reservationsToCreate = [];
         
-        if (!isAvailable) {
-          toast({
-            title: 'زمان رزرو در دسترس نیست',
-            description: message,
-            variant: 'destructive',
-          });
-          setIsLoading(false);
-          return;
+        if (data.repetitionType === 'no_repetition') {
+          reservationsToCreate.push(data);
+        } else if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
+          const startDate = new Date(data.reservationDate);
+          const endDate = new Date(data.repetitionEndDate);
+          const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          for (let i = 0; i <= daysDiff; i++) {
+            const reservationDate = new Date(startDate);
+            reservationDate.setDate(startDate.getDate() + i);
+            reservationsToCreate.push({
+              ...data,
+              reservationDate,
+            });
+          }
+        } else {
+          const weeks = data.repetitionType === 'weekly_1month' ? 4 : 12;
+          for (let i = 0; i < weeks; i++) {
+            const reservationDate = new Date(data.reservationDate);
+            reservationDate.setDate(reservationDate.getDate() + (i * 7));
+            reservationsToCreate.push({
+              ...data,
+              reservationDate,
+            });
+          }
         }
-      }
 
-      for (const reservationData of reservationsToCreate) {
-        await addReservation(reservationData, 'producer', producerName);
-      }
+        for (const reservationData of reservationsToCreate) {
+          const response = await fetch('/api/reservations/check-availability', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              dateTime: {
+                reservationDate: reservationData.reservationDate,
+                startTime: reservationData.reservationStartTime,
+                endTime: reservationData.reservationEndTime,
+              },
+              studio: reservationData.studioSelection,
+            }),
+          });
 
-      toast({
-        title: 'درخواست شما ثبت شد',
-        description: `درخواست رزرو شما با موفقیت برای ${reservationsToCreate.length} روز ارسال شد.`,
-        action: (
-          <div className="flex items-center text-green-500">
-            <CheckCircle className="ms-2 h-5 w-5" />
-            <span>موفق</span>
-          </div>
-        ),
-      });
+          const { isAvailable, message } = await response.json();
+          
+          if (!isAvailable) {
+            toast({
+              title: 'زمان رزرو در دسترس نیست',
+              description: message,
+              variant: 'destructive',
+            });
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        for (const reservationData of reservationsToCreate) {
+          await addReservation(reservationData, 'producer', producerName);
+        }
+
+        toast({
+          title: 'درخواست شما ثبت شد',
+          description: `درخواست رزرو شما با موفقیت برای ${reservationsToCreate.length} روز ارسال شد.`,
+          action: (
+            <div className="flex items-center text-green-500">
+              <CheckCircle className="ms-2 h-5 w-5" />
+              <span>موفق</span>
+            </div>
+          ),
+        });
+      }
     } catch (error) {
       console.error('Error submitting reservation:', error);
       toast({
@@ -230,18 +256,6 @@ export function ProducerReservationForm({ producerName }: ProducerReservationFor
       });
     } finally {
       setIsLoading(false);
-      form.reset({
-        programName: '',
-        reservationDate: new Date(),
-        reservationStartTime: '09:00',
-        reservationEndTime: '17:00',
-        studioSelection: undefined,
-        studioServiceType: undefined,
-        repetitionType: undefined,
-        repetitionEndDate: undefined,
-        additionalServices: [],
-        details: '',
-      });
     }
   }
 

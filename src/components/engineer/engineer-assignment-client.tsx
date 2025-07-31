@@ -183,7 +183,7 @@ export default function EngineerAssignmentClient() {
             <div className="flex-grow">
               <p className="font-semibold text-lg text-primary">{reservation.programName}</p>
               <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
-              <p className="text-sm text-muted-foreground">تاریخ: {format(new Date(reservation.dateTime.reservationDate), 'EEEE, yyyy/MM/dd', { locale: faIR })}</p>
+              <p className="text-sm text-muted-foreground">تاریخ: {format(new Date(reservation.dateTime.reservationDate.split('T')[0]), 'EEEE, yyyy/MM/dd', { locale: faIR })}</p>
               <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
               <div className="flex items-center gap-2 mt-2"><Label>تعداد مهندس</Label><Select value={String(engineerCounts[reservation.id] || 1)} onValueChange={(value) => { const count = parseInt(value, 10); setEngineerCounts(prev => ({ ...prev, [reservation.id]: count })); setSelectedEngineers(prev => { const currentSelection = prev[reservation.id] || []; const newSelection = Array(count).fill('').map((_, i) => currentSelection[i] || ''); return { ...prev, [reservation.id]: newSelection }; }); }}><SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(num => (<SelectItem key={num} value={String(num)}>{num}</SelectItem>))}</SelectContent></Select></div>
               {assignedEngineers.length > 0 && 
@@ -328,4 +328,3 @@ export default function EngineerAssignmentClient() {
     </div>
   );
 }
-
