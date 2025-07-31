@@ -110,9 +110,10 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [programNames, setProgramNames] = useState<string[]>([]);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    setCurrentTime(new Date());
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -267,11 +268,11 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
     }
   }
   
-  const iranTime = new Intl.DateTimeFormat('fa-IR', {
+  const iranTime = currentTime ? new Intl.DateTimeFormat('fa-IR', {
     dateStyle: 'full',
     timeStyle: 'medium',
     timeZone: 'Asia/Tehran',
-  }).format(currentTime);
+  }).format(currentTime) : '';
 
   return (
     <Form {...form}>
@@ -374,10 +375,17 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
                     <Input
-                      type="text"
+                      type="time"
                       {...field}
-                      placeholder="HH:MM"
-                      pattern="(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]"
+                      onKeyDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        const target = e.currentTarget as HTMLInputElement;
+                        try {
+                          target.showPicker();
+                        } catch (error) {
+                          console.error('showPicker() is not supported by this browser.');
+                        }
+                      }}
                       className="w-full text-right"
                     />
                   </FormControl>
@@ -393,10 +401,17 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
                     <Input
-                      type="text"
+                      type="time"
                       {...field}
-                      placeholder="HH:MM"
-                      pattern="(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]"
+                      onKeyDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        const target = e.currentTarget as HTMLInputElement;
+                        try {
+                          target.showPicker();
+                        } catch (error) {
+                          console.error('showPicker() is not supported by this browser.');
+                        }
+                      }}
                       className="w-full text-right"
                     />
                   </FormControl>
