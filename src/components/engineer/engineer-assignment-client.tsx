@@ -244,9 +244,11 @@ export default function EngineerAssignmentClient() {
             })}
           </ul>
           <div className="flex justify-center items-center space-x-2 mt-4">
-            <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>قبلی</Button>
-            <span>صفحه {currentPage}</span>
-            <Button onClick={() => paginate(currentPage + 1)} disabled={indexOfLastItem >= confirmedReservations.length}>بعدی</Button>
+            {Array.from({ length: Math.ceil(confirmedReservations.length / itemsPerPage) }, (_, i) => (
+              <Button key={i + 1} onClick={() => paginate(i + 1)} variant={currentPage === i + 1 ? "default" : "outline"}>
+                {i + 1}
+              </Button>
+            ))}
           </div>
         </CardContent>
       </Card>

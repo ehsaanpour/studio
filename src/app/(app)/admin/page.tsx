@@ -115,6 +115,11 @@ export default function AdminPanelPage() {
   // Add state for active tab
   const [activeTab, setActiveTab] = useState('requests');
 
+  const [newRequestsPage, setNewRequestsPage] = useState(1);
+  const [finalizedRequestsPage, setFinalizedRequestsPage] = useState(1);
+  const [rejectedRequestsPage, setRejectedRequestsPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     if (!isAdmin) {
       router.push('/admin');
@@ -148,7 +153,6 @@ export default function AdminPanelPage() {
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
   const finalizedSystemRequests = allRequests.filter(req => req.status === 'confirmed');
   const rejectedSystemRequests = allRequests.filter(req => req.status === 'cancelled');
-
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -392,6 +396,30 @@ export default function AdminPanelPage() {
     </Card>
   );
 
+  const renderPagination = (totalItems: number, currentPage: number, onPageChange: (page: number) => void) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-4">
+        {pageNumbers.map(number => (
+          <Button key={number} onClick={() => onPageChange(number)} variant={currentPage === number ? 'default' : 'outline'}>
+            {number}
+          </Button>
+        ))}
+      </div>
+    );
+  };
+
+  const paginatedNewRequests = newSystemRequests.slice((newRequestsPage - 1) * itemsPerPage, newRequestsPage * itemsPerPage);
+  const paginatedFinalizedRequests = finalizedSystemRequests.slice((finalizedRequestsPage - 1) * itemsPerPage, finalizedRequestsPage * itemsPerPage);
+  const paginatedRejectedRequests = rejectedSystemRequests.slice((rejectedRequestsPage - 1) * itemsPerPage, rejectedRequestsPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       <Button variant="outline" asChild className="mb-6">
@@ -437,21 +465,30 @@ export default function AdminPanelPage() {
                       {newSystemRequests.length === 0 ? (
                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست در انتظار بررسی وجود ندارد.</p>
                       ) : (
-                        newSystemRequests.map(req => renderRequestCard(req))
+                        <>
+                          {paginatedNewRequests.map(req => renderRequestCard(req))}
+                          {renderPagination(newSystemRequests.length, newRequestsPage, setNewRequestsPage)}
+                        </>
                       )}
                     </TabsContent>
                     <TabsContent value="finalized-requests">
                       {finalizedSystemRequests.length === 0 ? (
                          <p className="text-muted-foreground py-4 text-center">هیچ درخواست نهایی شده‌ای وجود ندارد.</p>
                       ) : (
-                        finalizedSystemRequests.map(req => renderRequestCard(req))
+                        <>
+                          {paginatedFinalizedRequests.map(req => renderRequestCard(req))}
+                          {renderPagination(finalizedSystemRequests.length, finalizedRequestsPage, setFinalizedRequestsPage)}
+                        </>
                       )}
                     </TabsContent>
                     <TabsContent value="rejected-requests">
                       {rejectedSystemRequests.length === 0 ? (
                         <p className="text-muted-foreground py-4 text-center">هیچ درخواست رد شده‌ای وجود ندارد.</p>
                       ) : (
-                        rejectedSystemRequests.map(req => renderRequestCard(req))
+                        <>
+                          {paginatedRejectedRequests.map(req => renderRequestCard(req))}
+                          {renderPagination(rejectedSystemRequests.length, rejectedRequestsPage, setRejectedRequestsPage)}
+                        </>
                       )}
                     </TabsContent>
                   </Tabs>
