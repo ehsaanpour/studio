@@ -12,6 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 
+// Helper function to parse date strings consistently
+const parseDateString = (dateString: string | Date): Date => {
+    if (dateString instanceof Date) {
+        return dateString;
+    }
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
 export default function EngineerAssignmentClient() {
   const [engineers, setEngineers] = useState<Engineer[]>([]);
   const [reservations, setReservations] = useState<StudioReservationRequest[]>([]);
@@ -120,13 +129,13 @@ export default function EngineerAssignmentClient() {
     }
 
     const sorted = filtered.sort((a, b) => {
-      const dateA = new Date(a.dateTime.reservationDate).getTime();
-      const dateB = new Date(b.dateTime.reservationDate).getTime();
+      const dateA = parseDateString(a.dateTime.reservationDate).getTime();
+      const dateB = parseDateString(b.dateTime.reservationDate).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
-    const current = sorted.filter(res => new Date(res.dateTime.reservationDate) >= today || !res.engineers || res.engineers.length === 0);
-    const archived = sorted.filter(res => new Date(res.dateTime.reservationDate) < today && res.engineers && res.engineers.length > 0);
+    const current = sorted.filter(res => parseDateString(res.dateTime.reservationDate) >= today || !res.engineers || res.engineers.length === 0);
+    const archived = sorted.filter(res => parseDateString(res.dateTime.reservationDate) < today && res.engineers && res.engineers.length > 0);
 
     return { currentReservations: current, archivedReservations: archived };
   }, [reservations, sortOrder, assignmentFilter]);
@@ -154,7 +163,7 @@ export default function EngineerAssignmentClient() {
             <div className="flex-grow">
               <p className="font-semibold text-lg text-primary">{reservation.programName}</p>
               <p className="text-sm text-muted-foreground">تهیه‌کننده: {reservation.requesterName}</p>
-              <p className="text-sm text-muted-foreground">تاریخ: {format(new Date(reservation.dateTime.reservationDate.split('T')[0]), 'EEEE, yyyy/MM/dd', { locale: faIR })}</p>
+              <p className="text-sm text-muted-foreground">تاریخ: {format(parseDateString(reservation.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })}</p>
               <p className="text-sm text-muted-foreground">ساعت: {reservation.dateTime.startTime} - {reservation.dateTime.endTime}</p>
               <div className="flex items-center gap-2 mt-2"><Label>تعداد مهندس</Label><Select value={String(engineerCounts[reservation.id] || 1)} onValueChange={(value) => { const count = parseInt(value, 10); setEngineerCounts(prev => ({ ...prev, [reservation.id]: count })); setSelectedEngineers(prev => { const currentSelection = prev[reservation.id] || []; const newSelection = Array(count).fill('').map((_, i) => currentSelection[i] || ''); return { ...prev, [reservation.id]: newSelection }; }); }}><SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(num => (<SelectItem key={num} value={String(num)}>{num}</SelectItem>))}</SelectContent></Select></div>
               {assignedEngineers.length > 0 && 
@@ -294,4 +303,3 @@ export default function EngineerAssignmentClient() {
     </div>
   );
 }
-
