@@ -34,6 +34,7 @@ const getStatusLabel = (status: StudioReservationRequest['status']): string => {
     case 'new': return 'در انتظار بررسی';
     case 'read': return 'در حال بررسی';
     case 'confirmed': return 'تایید شده';
+    case 'finalized': return 'تایید شده';
     case 'cancelled': return 'لغو شده';
     default: return status;
   }
@@ -62,6 +63,8 @@ export default function ProducerPanelPage() {
   const [programNames, setProgramNames] = useState<string[]>([]);
   const [activeReservationsCount, setActiveReservationsCount] = useState(0);
   const [pastReservationsCount, setPastReservationsCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -140,7 +143,17 @@ export default function ProducerPanelPage() {
   const handleDeleteRequest = async (requestId: string) => {
     try {
       await deleteReservation(requestId);
-      setMyRequests(prevRequests => prevRequests.filter(req => req.id !== requestId));
+      setMyRequests(prevRequests => {
+        const updatedRequests = prevRequests.filter(req => req.id !== requestId);
+        // Reset to page 1 if current page would be empty after deletion
+        const newTotalPages = Math.ceil(updatedRequests.length / itemsPerPage);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        } else if (updatedRequests.length === 0) {
+          setCurrentPage(1);
+        }
+        return updatedRequests;
+      });
       toast({ title: 'درخواست حذف شد', description: 'درخواست رزرو با موفقیت حذف شد.' });
     } catch (error) {
       console.error('Error deleting request:', error);
@@ -153,11 +166,22 @@ export default function ProducerPanelPage() {
       const deletePromises = myRequests.map(request => deleteReservation(request.id));
       await Promise.all(deletePromises);
       setMyRequests([]);
+      setCurrentPage(1); // Reset to first page when all requests are deleted
       toast({ title: 'تمام درخواست‌ها حذف شدند', description: 'تمام درخواست‌های رزرو با موفقیت حذف شدند.' });
     } catch (error) {
       console.error('Error deleting all requests:', error);
       toast({ title: 'خطا', description: 'خطا در حذف درخواست‌ها. لطفاً دوباره تلاش کنید.', variant: 'destructive' });
     }
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(myRequests.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentRequests = myRequests.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -300,9 +324,9 @@ export default function ProducerPanelPage() {
                 {myRequests.length === 0 ? (
                   <p className="text-center text-muted-foreground">هیچ درخواست رزروی ثبت نشده است.</p>
                 ) : (
-                  <ScrollArea className="h-[800px]">
-                    <div className="space-y-4">
-                      {myRequests.map(request => (
+                  <>
+                    <div className="space-y-4 min-h-[480px]">
+                      {currentRequests.map(request => (
                         <Card key={request.id} className="shadow-sm">
                           <CardHeader>
                             <div className="flex justify-between items-start text-right">
@@ -332,7 +356,25 @@ export default function ProducerPanelPage() {
                         </Card>
                       ))}
                     </div>
-                  </ScrollArea>
+                    
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center space-x-2 mt-6">
+                        <div className="flex space-x-1" dir="rtl">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <Button
+                              key={page}
+                              onClick={() => goToPage(page)}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              className="min-w-[40px]"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -349,4 +391,3 @@ export default function ProducerPanelPage() {
     </div>
   );
 }
-
