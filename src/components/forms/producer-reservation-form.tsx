@@ -149,8 +149,8 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
       reservationEndTime: existingReservation.dateTime.endTime,
       studioSelection: existingReservation.studio,
       studioServiceType: existingReservation.studioServices.serviceType,
-      repetitionType: existingReservation.repetition.type || 'no_repetition',
-      repetitionEndDate: existingReservation.repetition.endDate ? parseYYYYMMDD(existingReservation.repetition.endDate as string) : undefined,
+      repetitionType: existingReservation.repetition?.type || 'no_repetition',
+      repetitionEndDate: existingReservation.repetition?.endDate,
     } : {
       programName: '',
       reservationDate: new Date(),
@@ -201,7 +201,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 endTime: reservationData.reservationEndTime,
               },
               studio: reservationData.studioSelection,
-              reservationIdToExclude: existingReservation?.id,
+              reservationIdToExclude: undefined,
             }),
           });
           const { isAvailable, message } = await response.json();
@@ -231,7 +231,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
           details: d.details || '',
           repetition: {
             type: d.repetitionType,
-            endDate: d.repetitionEndDate ? formatDateToYYYYMMDD(d.repetitionEndDate) : undefined,
+            endDate: d.repetitionEndDate,
           },
           engineers: [],
           engineerCount: 1,
@@ -331,7 +331,18 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem>
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full text-right" />
+                    <Input 
+                      type="time" 
+                      {...field} 
+                      className="w-full text-right cursor-pointer" 
+                      onKeyDown={(e) => e.preventDefault()}
+                      onKeyPress={(e) => e.preventDefault()}
+                      onInput={(e) => e.preventDefault()}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onClick={(e) => {
+                        e.currentTarget.showPicker?.();
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -344,7 +355,18 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem>
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input type="time" {...field} className="w-full text-right" />
+                    <Input 
+                      type="time" 
+                      {...field} 
+                      className="w-full text-right cursor-pointer" 
+                      onKeyDown={(e) => e.preventDefault()}
+                      onKeyPress={(e) => e.preventDefault()}
+                      onInput={(e) => e.preventDefault()}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onClick={(e) => {
+                        e.currentTarget.showPicker?.();
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
