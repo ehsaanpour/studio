@@ -69,7 +69,7 @@ export default function EngineerShiftsPage() {
 
     const filteredReservations = reservations.filter(reservation => {
       const reservationDate = new Date(reservation.dateTime.reservationDate);
-      return reservationDate >= startDate && reservationDate <= endDate && reservation.status === 'confirmed';
+      return reservationDate >= startDate && reservationDate <= endDate && (reservation.status === 'confirmed' || reservation.status === 'finalized');
     });
 
     const data = engineers.map(engineer => ({
@@ -150,4 +150,3 @@ export default function EngineerShiftsPage() {
     </div>
   );
 }
-

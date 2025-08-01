@@ -117,3 +117,8 @@ export interface Producer {
   phone: string;
   workplace?: string;
 }
+
+export interface Engineer {
+  id: string;
+  name: string;
+}

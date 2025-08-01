@@ -77,35 +77,6 @@ export default function EngineerAssignmentClient() {
     }
   }
 
-  async function handleRemoveReservation(id: string) {
-    if (!confirm('آیا از حذف این برنامه مطمئن هستید؟')) return;
-    try {
-      const response = await fetch(`/api/reservations/delete`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id }),
-        });
-      if (!response.ok) throw new Error("Failed to remove reservation");
-      fetchData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
-    }
-  }
-
-  async function handleRemoveAllReservations() {
-    if (!confirm('آیا از حذف تمام برنامه‌ها مطمئن هستید؟ این عمل قابل بازگشت نیست.')) return;
-    try {
-      const response = await fetch(`/api/reservations/delete-all`, { 
-        method: 'POST',
-      });
-      if (!response.ok) throw new Error("Failed to remove all reservations");
-      fetchData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
-    }
-  }
-
   async function handleRemoveEngineer(id: string) {
     try {
       const response = await fetch("/api/engineer/remove", {
@@ -140,7 +111,7 @@ export default function EngineerAssignmentClient() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let filtered = reservations.filter(reservation => reservation.status === 'confirmed');
+    let filtered = reservations.filter(reservation => reservation.status === 'confirmed' || reservation.status === 'finalized');
 
     if (assignmentFilter === 'assigned') {
       filtered = filtered.filter(res => res.engineers && res.engineers.length > 0);
@@ -221,10 +192,6 @@ export default function EngineerAssignmentClient() {
                     <Button className="flex-1" onClick={() => handleAssignEngineers(reservation.id, selectedEngineers[reservation.id]?.filter(id => id) || [], engineerCounts[reservation.id] || 1)}>
                         ثبت
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleRemoveReservation(reservation.id)}>
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">حذف</span>
-                    </Button>
                 </div>
             </div>
           </div>
@@ -286,7 +253,6 @@ export default function EngineerAssignmentClient() {
               <Button variant="outline" size="icon" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
                 <ArrowUpDown className="h-4 w-4" />
               </Button>
-              <Button variant="destructive" size="sm" onClick={handleRemoveAllReservations}>حذف همه</Button>
             </div>
           </div>
         </CardHeader>
@@ -328,3 +294,4 @@ export default function EngineerAssignmentClient() {
     </div>
   );
 }
+

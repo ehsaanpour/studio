@@ -61,8 +61,8 @@
       "engineers": [],
       "engineerCount": 1,
       "submittedAt": "2025-07-29T07:35:19.108Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-01T08:17:36.554Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-01T12:34:09.441Z"
     },
     {
       "id": "1753774519129",
@@ -89,11 +89,13 @@
       "repetition": {
         "type": "weekly_3months"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091480060"
+      ],
       "engineerCount": 1,
       "submittedAt": "2025-07-29T07:35:19.129Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-01T08:17:29.249Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-01T12:37:30.269Z"
     },
     {
       "id": "1753774519152",
@@ -402,11 +404,13 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091480060"
+      ],
       "engineerCount": 1,
       "submittedAt": "2025-07-29T09:11:26.392Z",
-      "status": "confirmed",
-      "updatedAt": "2025-07-29T09:22:20.667Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-01T12:26:59.280Z"
     },
     {
       "id": "1753795814942",
@@ -729,13 +733,15 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091480060"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754040673039-zfjkx0l",
       "submittedAt": "2025-08-01T09:31:13.039Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-01T09:31:37.159Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-01T12:34:07.422Z"
     },
     {
       "type": "producer",
@@ -764,8 +770,8 @@
       "cateringServices": [],
       "id": "1754050710812-52f7i2v",
       "submittedAt": "2025-08-01T12:18:30.812Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-01T12:19:04.051Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-01T12:34:28.453Z"
     }
   ]
 }
