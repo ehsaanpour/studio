@@ -20,24 +20,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
-import { format as formatDateFnsJalali } from 'date-fns-jalali';
+import { format as formatDateFnsJalali, parse } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
-import { addReservation, updateReservation } from '@/lib/reservation-store';
+import { addReservations, updateReservation } from '@/lib/reservation-store';
 import { PersianDatePicker } from '@/components/ui/persian-date-picker';
 import type { AdditionalService, StudioReservationRequest } from '@/types';
 import { getProgramNames } from '@/lib/program-name-store';
 
-// Helper to parse date strings (both YYYY-MM-DD and ISO) to a local Date object.
-const parseYYYYMMDD = (dateString: string): Date => {
-  if (dateString.includes('T')) {
-    dateString = dateString.split('T')[0];
-  }
-  const [year, month, day] = dateString.split('-').map(Number);
-  return new Date(year, month - 1, day);
+const formatDateToYYYYMMDD = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
+const parseYYYYMMDD = (dateString: string): Date => {
+    if (!dateString) return new Date();
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
 export const producerFormSchema = z.object({
   programName: z.string().min(1, 'نام برنامه الزامی است.'),
   reservationDate: z.date({
@@ -54,12 +57,7 @@ export const producerFormSchema = z.object({
   studioSelection: z.enum(['studio2', 'studio5', 'studio6'], { required_error: 'انتخاب استودیو الزامی است.' }),
   studioServiceType: z.enum(['with_crew', 'without_crew'], { required_error: 'انتخاب سرویس استودیو الزامی است.' }),
   repetitionType: z.enum(['no_repetition', 'weekly_1month', 'weekly_3months', 'daily_until_date'], { required_error: 'انتخاب نوع تکرار الزامی است.' }),
-  repetitionEndDate: z.date().optional().refine((date) => {
-    if (!date) return true;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date >= today;
-  }, 'تاریخ پایان باید از امروز به بعد باشد.'),
+  repetitionEndDate: z.date().optional(),
   additionalServices: z.array(z.enum([
     'videowall',
     'xdcam',
@@ -123,45 +121,36 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
 
   useEffect(() => {
     setCurrentTime(new Date());
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     let isSubscribed = true;
-
     const fetchAndSetProgramNames = async () => {
       try {
         const names = await getProgramNames();
-        if (isSubscribed) {
-          setProgramNames(names);
-        }
+        if (isSubscribed) setProgramNames(names);
       } catch (error) {
         console.error('Error fetching program names:', error);
       }
     };
-
-    fetchAndSetProgramNames(); // Initial fetch
-    return () => {
-      isSubscribed = false;
-    };
+    fetchAndSetProgramNames();
+    return () => { isSubscribed = false; };
   }, []);
 
   const form = useForm<ProducerFormValues>({
     resolver: zodResolver(producerFormSchema),
     defaultValues: existingReservation ? {
+      ...existingReservation,
       programName: existingReservation.programName || '',
-      reservationDate: existingReservation.dateTime?.reservationDate ? parseYYYYMMDD(existingReservation.dateTime.reservationDate) : new Date(),
-      reservationStartTime: existingReservation.dateTime?.startTime || '09:00',
-      reservationEndTime: existingReservation.dateTime?.endTime || '17:00',
+      reservationDate: parseYYYYMMDD(existingReservation.dateTime.reservationDate as string),
+      reservationStartTime: existingReservation.dateTime.startTime,
+      reservationEndTime: existingReservation.dateTime.endTime,
       studioSelection: existingReservation.studio,
-      studioServiceType: existingReservation.studioServices?.serviceType,
-      repetitionType: existingReservation.repetition?.type || 'no_repetition',
-      repetitionEndDate: existingReservation.repetition?.endDate ? new Date(existingReservation.repetition.endDate) : undefined,
-      additionalServices: existingReservation.additionalServices || [],
-      details: existingReservation.details || '',
+      studioServiceType: existingReservation.studioServices.serviceType,
+      repetitionType: existingReservation.repetition.type || 'no_repetition',
+      repetitionEndDate: existingReservation.repetition.endDate ? parseYYYYMMDD(existingReservation.repetition.endDate as string) : undefined,
     } : {
       programName: '',
       reservationDate: new Date(),
@@ -169,8 +158,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
       reservationEndTime: '17:00',
       studioSelection: undefined,
       studioServiceType: undefined,
-      repetitionType: undefined,
-      repetitionEndDate: undefined,
+      repetitionType: 'no_repetition',
       additionalServices: [],
       details: '',
     },
@@ -181,118 +169,97 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
     try {
       if (existingReservation) {
         await updateReservation(existingReservation.id, data);
-        toast({
-          title: 'درخواست شما بروزرسانی شد',
-          description: 'درخواست رزرو شما با موفقیت بروزرسانی شد.',
-          action: (
-            <div className="flex items-center text-green-500">
-              <CheckCircle className="ms-2 h-5 w-5" />
-              <span>موفق</span>
-            </div>
-          ),
-        });
+        toast({ title: 'درخواست شما بروزرسانی شد', description: 'درخواست رزرو شما با موفقیت بروزرسانی شد.' });
       } else {
         let reservationsToCreate: ProducerFormValues[] = [];
-        
         if (data.repetitionType === 'no_repetition') {
           reservationsToCreate.push(data);
         } else if (data.repetitionType === 'daily_until_date' && data.repetitionEndDate) {
-          const startDate = new Date(data.reservationDate);
+          let currentDate = new Date(data.reservationDate);
           const endDate = new Date(data.repetitionEndDate);
-          const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-          
-          for (let i = 0; i <= daysDiff; i++) {
-            const reservationDate = new Date(startDate);
-            reservationDate.setDate(startDate.getDate() + i);
-            reservationsToCreate.push({
-              ...data,
-              reservationDate,
-            });
+          while (currentDate <= endDate) {
+            reservationsToCreate.push({ ...data, reservationDate: new Date(currentDate) });
+            currentDate.setDate(currentDate.getDate() + 1);
           }
-        } else {
+        } else { // Weekly repetitions
           const weeks = data.repetitionType === 'weekly_1month' ? 4 : 12;
           for (let i = 0; i < weeks; i++) {
             const reservationDate = new Date(data.reservationDate);
             reservationDate.setDate(reservationDate.getDate() + (i * 7));
-            reservationsToCreate.push({
-              ...data,
-              reservationDate,
-            });
+            reservationsToCreate.push({ ...data, reservationDate });
           }
         }
 
         for (const reservationData of reservationsToCreate) {
           const response = await fetch('/api/reservations/check-availability', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               dateTime: {
-                reservationDate: reservationData.reservationDate,
+                reservationDate: formatDateToYYYYMMDD(reservationData.reservationDate),
                 startTime: reservationData.reservationStartTime,
                 endTime: reservationData.reservationEndTime,
               },
               studio: reservationData.studioSelection,
+              reservationIdToExclude: existingReservation?.id,
             }),
           });
-
           const { isAvailable, message } = await response.json();
-          
           if (!isAvailable) {
-            toast({
-              title: 'زمان رزرو در دسترس نیست',
-              description: message,
-              variant: 'destructive',
-            });
+            toast({ title: 'زمان رزرو در دسترس نیست', description: message, variant: 'destructive' });
             setIsLoading(false);
             return;
           }
         }
 
-        for (const reservationData of reservationsToCreate) {
-          await addReservation(reservationData, 'producer', producerName);
-        }
+        const reservationRequests: Omit<StudioReservationRequest, 'id' | 'submittedAt' | 'status'>[] = reservationsToCreate.map(d => ({
+          type: 'producer',
+          requesterName: producerName,
+          programName: d.programName,
+          dateTime: {
+            reservationDate: formatDateToYYYYMMDD(d.reservationDate),
+            startTime: d.reservationStartTime,
+            endTime: d.reservationEndTime,
+          },
+          studio: d.studioSelection,
+          studioServices: {
+            serviceType: d.studioServiceType,
+            numberOfDays: 1,
+            hoursPerDay: 0, // Server calculates this
+          },
+          additionalServices: d.additionalServices || [],
+          details: d.details || '',
+          repetition: {
+            type: d.repetitionType,
+            endDate: d.repetitionEndDate ? formatDateToYYYYMMDD(d.repetitionEndDate) : undefined,
+          },
+          engineers: [],
+          engineerCount: 1,
+          cateringServices: [],
+          personalInfo: undefined,
+        }));
 
-        toast({
-          title: 'درخواست شما ثبت شد',
-          description: `درخواست رزرو شما با موفقیت برای ${reservationsToCreate.length} روز ارسال شد.`,
-          action: (
-            <div className="flex items-center text-green-500">
-              <CheckCircle className="ms-2 h-5 w-5" />
-              <span>موفق</span>
-            </div>
-          ),
-        });
+        await addReservations(reservationRequests);
+        toast({ title: 'درخواست شما ثبت شد', description: `درخواست رزرو شما با موفقیت برای ${reservationsToCreate.length} روز ارسال شد.` });
       }
     } catch (error) {
       console.error('Error submitting reservation:', error);
-      toast({
-        title: 'خطا در ثبت درخواست',
-        description: 'متأسفانه در ثبت درخواست شما مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا در ثبت درخواست', description: 'متأسفانه در ثبت درخواست شما مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   }
-  
-  const iranTime = currentTime ? new Intl.DateTimeFormat('fa-IR', {
-    dateStyle: 'full',
-    timeStyle: 'medium',
-    timeZone: 'Asia/Tehran',
-  }).format(currentTime) : '';
+
+  const iranTime = currentTime ? new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full', timeStyle: 'medium', timeZone: 'Asia/Tehran' }).format(currentTime) : '';
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8" dir="rtl">
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-           <div className="flex justify-between items-center">
-              <h3 className="text-lg sm:text-xl font-semibold text-primary">اطلاعات برنامه</h3>
-              <div className="text-sm text-muted-foreground">
-                {iranTime}
-              </div>
-            </div>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg sm:text-xl font-semibold text-primary">اطلاعات برنامه</h3>
+            <div className="text-sm text-muted-foreground">{iranTime}</div>
+          </div>
           <FormField
             control={form.control}
             name="programName"
@@ -312,9 +279,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                       </div>
                     ) : (
                       programNames.map((name) => (
-                        <SelectItem key={name} value={name} className="text-right">
-                          {name}
-                        </SelectItem>
+                        <SelectItem key={name} value={name} className="text-right">{name}</SelectItem>
                       ))
                     )}
                   </SelectContent>
@@ -323,7 +288,6 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
               </FormItem>
             )}
           />
-
         </div>
 
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
@@ -340,16 +304,9 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                       <FormControl>
                         <Button
                           variant={"outline"}
-                          className={cn(
-                            "w-full justify-end text-right font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
+                          className={cn("w-full justify-end text-right font-normal", !field.value && "text-muted-foreground")}
                         >
-                          {field.value ? (
-                            formatDateFnsJalali(field.value, 'PPP', { locale: faIR })
-                          ) : (
-                            <span>یک تاریخ انتخاب کنید</span>
-                          )}
+                          {field.value ? formatDateFnsJalali(field.value, 'PPP', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
                           <CalendarIcon className="me-2 h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -357,17 +314,8 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                     <PopoverContent className="w-auto p-0" align="end">
                       <PersianDatePicker
                         value={field.value}
-                        onChange={(date) => {
-                           field.onChange(date);
-                           setIsDatePickerOpen(false);
-                        }}
-                        disabled={(date) => {
-                          const today = new Date();
-                          today.setHours(0, 0, 0, 0);
-                          const tomorrow = new Date(today);
-                          tomorrow.setDate(today.getDate() + 1);
-                          return date < tomorrow;
-                        }}
+                        onChange={(date) => { field.onChange(date); setIsDatePickerOpen(false); }}
+                        disabled={(date) => { const today = new Date(); today.setHours(0, 0, 0, 0); const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1); return date < tomorrow; }}
                       />
                     </PopoverContent>
                   </Popover>
@@ -383,20 +331,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem>
                   <FormLabel>ساعت شروع برنامه *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="time"
-                      {...field}
-                      onKeyDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        const target = e.currentTarget as HTMLInputElement;
-                        try {
-                          target.showPicker();
-                        } catch (error) {
-                          console.error('showPicker() is not supported by this browser.');
-                        }
-                      }}
-                      className="w-full text-right"
-                    />
+                    <Input type="time" {...field} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -409,20 +344,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem>
                   <FormLabel>ساعت پایان برنامه *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="time"
-                      {...field}
-                      onKeyDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        const target = e.currentTarget as HTMLInputElement;
-                        try {
-                          target.showPicker();
-                        } catch (error) {
-                          console.error('showPicker() is not supported by this browser.');
-                        }
-                      }}
-                      className="w-full text-right"
-                    />
+                    <Input type="time" {...field} className="w-full text-right" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -441,22 +363,11 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem className="space-y-3">
                   <FormLabel>استودیو *</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       {studioOptions.map((option) => (
-                        <FormItem
-                          key={option.id}
-                          className="flex items-center justify-between flex-row-reverse"
-                        >
-                          <FormLabel className="font-normal cursor-pointer">
-                            {option.label}
-                          </FormLabel>
-                          <FormControl>
-                            <RadioGroupItem value={option.id} />
-                          </FormControl>
+                        <FormItem key={option.id} className="flex items-center justify-between flex-row-reverse">
+                          <FormLabel className="font-normal cursor-pointer">{option.label}</FormLabel>
+                          <FormControl><RadioGroupItem value={option.id} /></FormControl>
                         </FormItem>
                       ))}
                     </RadioGroup>
@@ -472,26 +383,14 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem className="space-y-3">
                   <FormLabel>نوع سرویس استودیو *</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal cursor-pointer">
-                          استودیو با عوامل پخش
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="with_crew" />
-                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">استودیو با عوامل پخش</FormLabel>
+                        <FormControl><RadioGroupItem value="with_crew" /></FormControl>
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal cursor-pointer">
-                          فضای استودی و یک نیروی فنی
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="without_crew" />
-                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">فضای استودی و یک نیروی فنی</FormLabel>
+                        <FormControl><RadioGroupItem value="without_crew" /></FormControl>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -512,42 +411,22 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormItem className="space-y-3">
                   <FormLabel>تکرار برنامه *</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal">
-                          بدون تکرار
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="no_repetition" />
-                        </FormControl>
+                        <FormLabel className="font-normal">بدون تکرار</FormLabel>
+                        <FormControl><RadioGroupItem value="no_repetition" /></FormControl>
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal">
-                          هفتگی (یک ماه)
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="weekly_1month" />
-                        </FormControl>
+                        <FormLabel className="font-normal">هفتگی (یک ماه)</FormLabel>
+                        <FormControl><RadioGroupItem value="weekly_1month" /></FormControl>
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal">
-                          هفتگی (سه ماه)
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="weekly_3months" />
-                        </FormControl>
+                        <FormLabel className="font-normal">هفتگی (سه ماه)</FormLabel>
+                        <FormControl><RadioGroupItem value="weekly_3months" /></FormControl>
                       </FormItem>
                       <FormItem className="flex items-center justify-between flex-row-reverse">
-                        <FormLabel className="font-normal">
-                          روزانه تا تاریخ مشخص
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroupItem value="daily_until_date" />
-                        </FormControl>
+                        <FormLabel className="font-normal">روزانه تا تاریخ مشخص</FormLabel>
+                        <FormControl><RadioGroupItem value="daily_until_date" /></FormControl>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -567,16 +446,9 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            className={cn(
-                              "w-full justify-end text-right font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
+                            className={cn("w-full justify-end text-right font-normal", !field.value && "text-muted-foreground")}
                           >
-                            {field.value ? (
-                              formatDateFnsJalali(field.value, 'PPP', { locale: faIR })
-                            ) : (
-                              <span>یک تاریخ انتخاب کنید</span>
-                            )}
+                            {field.value ? formatDateFnsJalali(field.value, 'PPP', { locale: faIR }) : <span>یک تاریخ انتخاب کنید</span>}
                             <CalendarIcon className="me-2 h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -584,14 +456,8 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                       <PopoverContent className="w-auto p-0" align="end">
                         <PersianDatePicker
                           value={field.value}
-                          onChange={(date) => {
-                            field.onChange(date);
-                            setIsEndDatePickerOpen(false);
-                          }}
-                          disabled={(date) => {
-                            const startDate = form.getValues('reservationDate');
-                            return date < startDate;
-                          }}
+                          onChange={(date) => { field.onChange(date); setIsEndDatePickerOpen(false); }}
+                          disabled={(date) => { const startDate = form.getValues('reservationDate'); return date < startDate; }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -604,49 +470,40 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
         </div>
 
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
-            <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">سرویس‌های تکمیلی</h3>
-            <FormField
-              control={form.control}
-              name="additionalServices"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="mb-4">
-                    <FormLabel className="text-base">سرویس‌های مورد نیاز را انتخاب کنید</FormLabel>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      در صورت انتخاب پخش زنده و استریم، لطفا بستر پخش زنده مانند گوگل میت، زوم، مایکروسافت تیمز و... 
-                      و برای پخش زنده بسترهای آن مثل یوتیوب، اینستاگرام، آپارات و... در قسمت توضیحات به صورت کامل درج شود.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {additionalServiceItems.map((item) => (
-                        <FormItem
-                          key={item.id}
-                          className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse p-4 border rounded-lg"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(item.id)}
-                              onCheckedChange={(checked) => {
-                                return checked
-                                  ? field.onChange([...(field.value || []), item.id])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item.id
-                                      )
-                                    );
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            {item.label}
-                          </FormLabel>
-                        </FormItem>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <h3 className="text-lg sm:text-xl font-semibold text-primary border-b pb-2 mb-4">سرویس‌های تکمیلی</h3>
+          <FormField
+            control={form.control}
+            name="additionalServices"
+            render={({ field }) => (
+              <FormItem>
+                <div className="mb-4">
+                  <FormLabel className="text-base">سرویس‌های مورد نیاز را انتخاب کنید</FormLabel>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    در صورت انتخاب پخش زنده و استریم، لطفا بستر پخش زنده مانند گوگل میت، زوم، مایکروسافت تیمز و... 
+                    و برای پخش زنده بسترهای آن مثل یوتیوب، اینستاگرام، آپارات و... در قسمت توضیحات به صورت کامل درج شود.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {additionalServiceItems.map((item) => (
+                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-x-reverse rtl:space-x-reverse p-4 border rounded-lg">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item.id)}
+                          onCheckedChange={(checked) => {
+                            return checked
+                              ? field.onChange([...(field.value || []), item.id])
+                              : field.onChange(field.value?.filter((value) => value !== item.id));
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{item.label}</FormLabel>
+                    </FormItem>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="space-y-4 p-4 sm:p-6 border rounded-lg shadow-sm bg-card">
@@ -659,12 +516,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
                 <FormLabel>توضیحات</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={
-                      form.watch('additionalServices')?.includes('live_communication') || 
-                      form.watch('additionalServices')?.includes('stream')
-                        ? "لطفاً بستر پخش زنده و بسترهای آن را مشخص کنید..."
-                        : "توضیحات تکمیلی خود را وارد کنید..."
-                    }
+                    placeholder={form.watch('additionalServices')?.includes('live_communication') || form.watch('additionalServices')?.includes('stream') ? "لطفاً بستر پخش زنده و بسترهای آن را مشخص کنید..." : "توضیحات تکمیلی خود را وارد کنید..."}
                     className="resize-none"
                     {...field}
                   />
@@ -677,10 +529,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
 
         <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
           {isLoading ? (
-            <>
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-              <span>در حال ثبت...</span>
-            </>
+            <><Loader2 className="me-2 h-4 w-4 animate-spin" /><span>در حال ثبت...</span></>
           ) : (
             'ثبت درخواست'
           )}

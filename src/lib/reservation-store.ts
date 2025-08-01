@@ -38,8 +38,6 @@ export async function getReservationById(id: string): Promise<StudioReservationR
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const reservation = await response.json();
-    // The reservationDate is now a string, so we don't need to convert it.
-    // We also convert submittedAt to a Date object.
     return {
       ...reservation,
       submittedAt: new Date(reservation.submittedAt),
@@ -50,97 +48,24 @@ export async function getReservationById(id: string): Promise<StudioReservationR
   }
 }
 
-export async function addReservation(
-  formData: GuestFormValues | ProducerFormValues,
-  type: 'guest' | 'producer',
-  producerName?: string
+// This function now accepts an array of reservations to prevent duplicate API calls from loops.
+export async function addReservations(
+  reservations: Omit<StudioReservationRequest, 'id' | 'submittedAt' | 'status'>[]
 ): Promise<void> {
-  const newId = Date.now().toString();
-  let requestDetailsBase: Omit<StudioReservationRequest, 'id' | 'type' | 'requesterName' | 'personalInfo' | 'cateringServices' | 'submittedAt' | 'status' | 'updatedAt' | 'programName'>;
-  let personalInfo: PersonalInformation | undefined;
-  let cateringServices: CateringService[] | undefined;
-  let requester: string | undefined;
-  let programName: string;
-
-  if (type === 'guest') {
-    const guestData = formData as GuestFormValues;
-    requester = guestData.personalInfoName;
-    personalInfo = {
-      nameOrOrganization: guestData.personalInfoName,
-      phoneNumber: guestData.personalInfoPhone,
-      emailAddress: guestData.personalInfoEmail,
-    };
-    cateringServices = guestData.cateringServices as CateringService[];
-    programName = 'Guest Reservation';
-    const reservationDateString = formatDateToYYYYMMDD(guestData.reservationDate);
-    requestDetailsBase = {
-      dateTime: {
-        reservationDate: reservationDateString,
-        startTime: guestData.reservationStartTime,
-        endTime: guestData.reservationEndTime,
-      },
-      studio: guestData.studioSelection,
-      studioServices: {
-        serviceType: guestData.studioServiceType,
-        numberOfDays: guestData.studioServiceDays,
-        hoursPerDay: guestData.studioServiceHoursPerDay,
-      },
-      additionalServices: guestData.additionalServices as AdditionalService[],
-      details: undefined,
-      repetition: undefined,
-      engineers: [],
-      engineerCount: 1,
-    };
-  } else {
-    const producerData = formData as ProducerFormValues;
-    requester = producerName;
-    programName = producerData.programName;
-    const reservationDateString = formatDateToYYYYMMDD(producerData.reservationDate);
-    requestDetailsBase = {
-      dateTime: {
-        reservationDate: reservationDateString,
-        startTime: producerData.reservationStartTime,
-        endTime: producerData.reservationEndTime,
-      },
-      studio: producerData.studioSelection,
-      studioServices: {
-        serviceType: producerData.studioServiceType,
-        numberOfDays: 1,
-        hoursPerDay: 0, // Server will calculate this
-      },
-      additionalServices: producerData.additionalServices as AdditionalService[],
-      details: producerData.details,
-      repetition: { type: producerData.repetitionType, endDate: producerData.repetitionEndDate },
-      engineers: [],
-      engineerCount: 1, // Default to 1, will be updated in engineer assignment
-    };
-  }
-
-  const newRequest: StudioReservationRequest = {
-    id: newId,
-    type: type,
-    requesterName: requester,
-    programName: programName,
-    personalInfo: personalInfo,
-    ...requestDetailsBase,
-    cateringServices: cateringServices,
-    submittedAt: new Date(),
-    status: 'new',
-  };
-
   try {
     const response = await fetch('/api/reservations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ formData: newRequest, type, producerName }),
+      body: JSON.stringify({ reservations }), // Send the array of reservations
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
   } catch (error) {
-    console.error('Error adding reservation via API:', error);
+    console.error('Error adding reservations via API:', error);
     throw error;
   }
 }
@@ -197,14 +122,19 @@ export async function deleteAllRejectedReservations(): Promise<void> {
 
 export async function updateReservation(id: string, formData: ProducerFormValues): Promise<void> {
   try {
-    const response = await fetch('/api/reservations/edit',
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, formData }),
-      });
+    const formattedData = {
+      ...formData,
+      reservationDate: formatDateToYYYYMMDD(formData.reservationDate),
+      repetitionEndDate: formData.repetitionEndDate ? formatDateToYYYYMMDD(formData.repetitionEndDate) : undefined,
+    };
+
+    const response = await fetch('/api/reservations/edit', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, formData: formattedData }),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

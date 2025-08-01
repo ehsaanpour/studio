@@ -28,7 +28,7 @@ export async function PUT(request: Request) {
       ...originalReservation,
       programName: updatedData.programName,
       dateTime: {
-        reservationDate: new Date(updatedData.reservationDate),
+        reservationDate: updatedData.reservationDate, // Expecting a string
         startTime: updatedData.reservationStartTime,
         endTime: updatedData.reservationEndTime,
       },
@@ -41,7 +41,7 @@ export async function PUT(request: Request) {
       details: updatedData.details,
       repetition: {
         type: updatedData.repetitionType,
-        endDate: updatedData.repetitionEndDate ? new Date(updatedData.repetitionEndDate) : undefined,
+        endDate: updatedData.repetitionEndDate, // Expecting a string or undefined
       },
       updatedAt: new Date(),
     };

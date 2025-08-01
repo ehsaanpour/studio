@@ -1,11 +1,8 @@
 'use server';
 
-import fs from 'fs/promises';
-import path from 'path';
 import { readJsonFile, writeJsonFile } from '@/lib/fs-utils';
 import type { StudioReservationRequest } from '@/types';
 
-// This interface is crucial for correctly typing the nested structure of reservations.json
 interface ReservationsData {
   reservations: StudioReservationRequest[];
 }
@@ -22,12 +19,9 @@ function calculateDuration(startTime: string, endTime: string): number {
     return difference / (1000 * 60 * 60);
 }
 
-// Helper function to get reservations from JSON file
 async function getStoredReservations(): Promise<StudioReservationRequest[]> {
   try {
-    // Correctly type the expected data structure from the JSON file.
     const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
-    // Return the nested reservations array, or an empty array if data is null.
     return data?.reservations || [];
   } catch (error) {
     console.error('Error reading reservations file:', error);
@@ -35,7 +29,6 @@ async function getStoredReservations(): Promise<StudioReservationRequest[]> {
   }
 }
 
-// Helper function to save reservations to JSON file
 async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
   try {
     const correctedReservations = reservations.map(r => {
@@ -44,7 +37,6 @@ async function saveReservations(reservations: StudioReservationRequest[]): Promi
         }
         return r;
     });
-    // Wrap the array in the expected { reservations: [...] } structure.
     await writeJsonFile(RESERVATIONS_FILE, { reservations: correctedReservations });
   } catch (error) {
     console.error('Error saving reservations:', error);
@@ -61,13 +53,19 @@ export async function getReservationsServer(): Promise<StudioReservationRequest[
   }
 }
 
-export async function addReservationServer(newRequest: StudioReservationRequest): Promise<void> {
+export async function addReservationServer(newRequests: Omit<StudioReservationRequest, 'id' | 'submittedAt' | 'status'>[]): Promise<void> {
   try {
-    const reservations = await getStoredReservations();
-    reservations.push(newRequest);
-    await saveReservations(reservations);
+    const existingReservations = await getStoredReservations();
+    const reservationsWithIds = newRequests.map((request) => ({
+      ...request,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      submittedAt: new Date(),
+      status: 'new' as const,
+    }));
+    const updatedReservations = [...existingReservations, ...reservationsWithIds];
+    await saveReservations(updatedReservations);
   } catch (error) {
-    console.error('Server Error adding reservation:', error);
+    console.error('Server Error adding reservations:', error);
     throw error;
   }
 }

@@ -8,9 +8,9 @@ import React, { useState, useEffect } from 'react';
 import type { StudioReservationRequest } from '@/types';
 import { getReservations, deleteReservation } from '@/lib/reservation-store';
 import { getProgramNames, removeProgramName } from '@/lib/program-name-store';
-import { format } from 'date-fns-jalali';
+import { format, parse } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
-import { isPast, isToday, parseISO } from 'date-fns';
+import { isPast } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import { AddProgramNameForm } from '@/components/forms/add-program-name-form';
@@ -49,6 +49,14 @@ const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "def
   }
 };
 
+const parseDateString = (dateString: string | Date): Date => {
+    if (dateString instanceof Date) {
+        return dateString;
+    }
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
 export default function ProducerPanelPage() {
   const [myRequests, setMyRequests] = useState<StudioReservationRequest[]>([]);
   const [programNames, setProgramNames] = useState<string[]>([]);
@@ -66,6 +74,7 @@ export default function ProducerPanelPage() {
       setMyRequests(filteredRequests);
     } catch (error) {
       console.error('Error fetching requests:', error);
+      toast({ title: 'خطا', description: 'دریافت اطلاعات با مشکل روبرو شد.', variant: 'destructive' });
     }
   };
 
@@ -89,10 +98,9 @@ export default function ProducerPanelPage() {
     if (myRequests.length > 0) {
       let activeCount = 0;
       let pastCount = 0;
-      const now = new Date();
 
       myRequests.forEach(request => {
-        const reservationDate = new Date(request.dateTime.reservationDate); 
+        const reservationDate = parseDateString(request.dateTime.reservationDate as string);
         const [hours, minutes] = request.dateTime.endTime.split(':').map(Number);
         
         const reservationEndDateTime = new Date(
@@ -121,18 +129,11 @@ export default function ProducerPanelPage() {
   const handleRemoveProgramName = async (nameToRemove: string) => {
     try {
       await removeProgramName(nameToRemove);
-      toast({
-        title: 'نام برنامه حذف شد',
-        description: `برنامه "${nameToRemove}" با موفقیت حذف شد.`,
-      });
+      toast({ title: 'نام برنامه حذف شد', description: `برنامه "${nameToRemove}" با موفقیت حذف شد.` });
       await fetchAndSetProgramNames();
     } catch (error) {
       console.error('Error removing program name:', error);
-      toast({
-        title: 'خطا در حذف',
-        description: `خطا در حذف برنامه "${nameToRemove}".`,
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا در حذف', description: `خطا در حذف برنامه "${nameToRemove}".`, variant: 'destructive' });
     }
   };
 
@@ -140,17 +141,10 @@ export default function ProducerPanelPage() {
     try {
       await deleteReservation(requestId);
       setMyRequests(prevRequests => prevRequests.filter(req => req.id !== requestId));
-      toast({
-        title: 'درخواست حذف شد',
-        description: 'درخواست رزرو با موفقیت حذف شد.',
-      });
+      toast({ title: 'درخواست حذف شد', description: 'درخواست رزرو با موفقیت حذف شد.' });
     } catch (error) {
       console.error('Error deleting request:', error);
-      toast({
-        title: 'خطا',
-        description: 'خطا در حذف درخواست. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا', description: 'خطا در حذف درخواست. لطفاً دوباره تلاش کنید.', variant: 'destructive' });
     }
   };
 
@@ -159,17 +153,10 @@ export default function ProducerPanelPage() {
       const deletePromises = myRequests.map(request => deleteReservation(request.id));
       await Promise.all(deletePromises);
       setMyRequests([]);
-      toast({
-        title: 'تمام درخواست‌ها حذف شدند',
-        description: 'تمام درخواست‌های رزرو با موفقیت حذف شدند.',
-      });
+      toast({ title: 'تمام درخواست‌ها حذف شدند', description: 'تمام درخواست‌های رزرو با موفقیت حذف شدند.' });
     } catch (error) {
       console.error('Error deleting all requests:', error);
-      toast({
-        title: 'خطا',
-        description: 'خطا در حذف درخواست‌ها. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا', description: 'خطا در حذف درخواست‌ها. لطفاً دوباره تلاش کنید.', variant: 'destructive' });
     }
   };
 
@@ -237,19 +224,13 @@ export default function ProducerPanelPage() {
                   <h3 className="text-lg font-semibold">تنظیمات حساب کاربری</h3>
                   <div className="grid gap-4">
                     <Button variant="outline" asChild className="justify-start">
-                      <Link href="/profile/change-password">
-                        تغییر رمز عبور
-                      </Link>
+                      <Link href="/profile/change-password">تغییر رمز عبور</Link>
                     </Button>
                     <Button variant="outline" asChild className="justify-start">
-                      <Link href="/profile/edit-profile">
-                        ویرایش اطلاعات شخصی
-                      </Link>
+                      <Link href="/profile/edit-profile">ویرایش اطلاعات شخصی</Link>
                     </Button>
                     {isAdmin && (
-                      <Button variant="outline" className="justify-start">
-                        مدیریت کاربران
-                      </Button>
+                      <Button variant="outline" className="justify-start">مدیریت کاربران</Button>
                     )}
                   </div>
                 </div>
@@ -289,12 +270,7 @@ export default function ProducerPanelPage() {
                       {programNames.map((name, index) => (
                         <li key={index} className="flex items-center justify-between text-sm">
                           <span className="flex-grow text-right">{name}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveProgramName(name)}
-                            className="ms-2"
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => handleRemoveProgramName(name)} className="ms-2">
                             <XCircle className="h-4 w-4 text-red-500" />
                           </Button>
                         </li>
@@ -313,11 +289,7 @@ export default function ProducerPanelPage() {
                     <CardDescription>لیست تمام درخواست‌های رزرو شما</CardDescription>
                   </div>
                   {myRequests.length > 0 && (
-                    <Button
-                      variant="destructive"
-                      onClick={handleDeleteAllRequests}
-                      className="flex items-center gap-2"
-                    >
+                    <Button variant="destructive" onClick={handleDeleteAllRequests} className="flex items-center gap-2">
                       <Trash2 className="h-4 w-4" />
                       حذف همه درخواست‌ها
                     </Button>
@@ -335,33 +307,20 @@ export default function ProducerPanelPage() {
                           <CardHeader>
                             <div className="flex justify-between items-start text-right">
                               <div>
-                                <CardTitle className="text-lg">
-                                  {request.programName} - {getStudioLabel(request.studio)}
-                                </CardTitle>
+                                <CardTitle className="text-lg">{request.programName} - {getStudioLabel(request.studio)}</CardTitle>
                                 <CardDescription>
-                                  تاریخ: {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })}
+                                  تاریخ: {format(parseDateString(request.dateTime.reservationDate as string), 'EEEE, PPP', { locale: faIR })}
                                   <br />
                                   ساعت: {request.dateTime.startTime} تا {request.dateTime.endTime}
                                 </CardDescription>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Badge variant={getStatusBadgeVariant(request.status)} className="text-sm px-3 py-1 font-semibold">
-                                  {getStatusLabel(request.status)}
-                                </Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteRequest(request.id)}
-                                  className="text-destructive hover:text-destructive/90"
-                                >
+                                <Badge variant={getStatusBadgeVariant(request.status)} className="text-sm px-3 py-1 font-semibold">{getStatusLabel(request.status)}</Badge>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteRequest(request.id)} className="text-destructive hover:text-destructive/90">
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
-                                {(request.status === 'new' || request.status === 'read') && (
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    asChild
-                                  >
+                                {(request.status === 'new' || request.status === 'read' || request.status === 'confirmed') && (
+                                  <Button variant="outline" size="icon" asChild>
                                     <Link href={`/producer/edit-request/${request.id}`}>
                                       <Edit3 className="h-4 w-4" />
                                     </Link>
@@ -390,3 +349,4 @@ export default function ProducerPanelPage() {
     </div>
   );
 }
+

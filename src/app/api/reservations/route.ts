@@ -24,12 +24,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { formData: newRequest } = await request.json(); // Expecting the full newRequest object
-    await addReservationServer(newRequest);
-    return NextResponse.json({ message: 'Reservation added successfully' }, { status: 201 });
+    const { reservations } = await request.json();
+    if (!Array.isArray(reservations) || reservations.length === 0) {
+      return NextResponse.json({ message: 'Reservations array is required' }, { status: 400 });
+    }
+    await addReservationServer(reservations);
+    return NextResponse.json({ message: 'Reservations added successfully' }, { status: 201 });
   } catch (error) {
-    console.error('API Error adding reservation:', error);
-    return NextResponse.json({ message: 'Error adding reservation' }, { status: 500 });
+    console.error('API Error adding reservations:', error);
+    return NextResponse.json({ message: 'Error adding reservations' }, { status: 500 });
   }
 }
 
@@ -46,3 +49,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: 'Error updating reservation status' }, { status: 500 });
   }
 }
+

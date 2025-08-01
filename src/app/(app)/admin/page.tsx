@@ -12,7 +12,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import type { Producer, StudioReservationRequest, AdditionalService, CateringService, Repetition } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getReservations, updateReservationStatus, deleteReservation, deleteAllRejectedReservations } from '@/lib/reservation-store';
-import { format } from 'date-fns-jalali';
+import { format, parse } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { Badge } from '@/components/ui/badge';
 import { addProducer, getAllProducers, deleteProducer, updateProducer } from '@/lib/producer-store';
@@ -98,6 +98,14 @@ const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "def
   }
 };
 
+const parseDateString = (dateString: string | Date): Date => {
+    if (dateString instanceof Date) {
+        return dateString;
+    }
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
 export default function AdminPanelPage() {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
@@ -112,11 +120,9 @@ export default function AdminPanelPage() {
   const [newProducerEmail, setNewProducerEmail] = useState('');
   const [newProducerPhone, setNewProducerPhone] = useState('');
 
-  // Add state for editing
   const [editingProducer, setEditingProducer] = useState<Producer | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Add state for active tab
   const [activeTab, setActiveTab] = useState('requests');
 
   const [newRequestsPage, setNewRequestsPage] = useState(1);
@@ -135,7 +141,6 @@ export default function AdminPanelPage() {
     }
     loadRequests();
 
-    // Load producers from Firestore
     const loadProducers = async () => {
       try {
         const producersList = await getAllProducers();
@@ -182,7 +187,6 @@ export default function AdminPanelPage() {
         description: `تهیه‌کننده "${newProducerName}" با موفقیت اضافه شد.`,
       });
       
-      // Clear form and editing state
       setNewProducerName('');
       setNewProducerUsername('');
       setNewProducerPassword('');
@@ -190,10 +194,8 @@ export default function AdminPanelPage() {
       setNewProducerPhone('');
       setNewProducerWorkplace('');
 
-      // Optionally switch back to producers list after adding
       setActiveTab('producers');
       
-      // Reload producers
       const producersList = await getAllProducers();
       setProducers(producersList);
     } catch (error) {
@@ -268,11 +270,10 @@ export default function AdminPanelPage() {
     setNewProducerName(producer.name);
     setNewProducerWorkplace(producer.workplace || '');
     setNewProducerUsername(producer.username);
-    setNewProducerPassword(''); // Clear password for security
+    setNewProducerPassword('');
     setNewProducerEmail(producer.email || '');
     setNewProducerPhone(producer.phone || '');
     setIsEditing(true);
-    // Switch to the add-producer tab
     setActiveTab('add-producer');
   };
 
@@ -294,7 +295,6 @@ export default function AdminPanelPage() {
         email: newProducerEmail,
         phone: newProducerPhone,
         workplace: newProducerWorkplace,
-        // Only update password if a new one is provided
         ...(newProducerPassword ? { password: newProducerPassword } : {}),
       });
       
@@ -303,7 +303,6 @@ export default function AdminPanelPage() {
         description: `تهیه‌کننده "${newProducerName}" با موفقیت بروزرسانی شد.`,
       });
       
-      // Clear form and editing state
       setEditingProducer(null);
       setIsEditing(false);
       setNewProducerName('');
@@ -313,10 +312,8 @@ export default function AdminPanelPage() {
       setNewProducerPhone('');
       setNewProducerWorkplace('');
       
-      // Switch back to producers list after updating
       setActiveTab('producers');
       
-      // Reload producers
       const producersList = await getAllProducers();
       setProducers(producersList);
     } catch (error) {
@@ -365,7 +362,7 @@ export default function AdminPanelPage() {
             </h3>
             <CardTitle className="text-lg text-right">درخواست از: {request.requesterName || (request.type === 'guest' ? request.personalInfo?.nameOrOrganization : 'تهیه‌کننده نامشخص')}</CardTitle>
             <CardDescription className="text-right">
-              تاریخ ثبت: {request.submittedAt ? format(new Date(request.submittedAt), 'PPP p', { locale: faIR }) : 'نامشخص'} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
+              تاریخ ثبت: {request.submittedAt ? format(parseDateString(request.submittedAt), 'PPP p', { locale: faIR }) : 'نامشخص'} - نوع: {request.type === 'guest' ? 'مهمان' : 'تهیه‌کننده'}
             </CardDescription>
           </div>
           <Badge variant={getStatusBadgeVariant(request.status)}>
@@ -378,7 +375,7 @@ export default function AdminPanelPage() {
           <div><strong>نوع تکرار:</strong> <Badge variant="outline">{getRepetitionLabel(request.repetition)}</Badge></div>
         )}
         {request.dateTime && request.dateTime.reservationDate ? (
-          <p><strong>تاریخ رزرو:</strong> {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
+          <p><strong>تاریخ رزرو:</strong> {format(parseDateString(request.dateTime.reservationDate as string), 'EEEE, PPP', { locale: faIR })} از {request.dateTime.startTime} تا {request.dateTime.endTime}</p>
         ) : (
           <p><strong>تاریخ رزرو:</strong> <span className='text-red-500'>نامشخص</span></p>
         )}
@@ -464,11 +461,6 @@ export default function AdminPanelPage() {
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" asChild className="mb-6">
-        <Link href="/admin" className="flex items-center">
-          <ArrowRight className="ms-2 h-4 w-4" /> بازگشت به پنل مدیریت
-        </Link>
-      </Button>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl font-bold flex items-center">
@@ -677,42 +669,28 @@ export default function AdminPanelPage() {
                         id="producerUsername" 
                         value={newProducerUsername}
                         onChange={(e) => setNewProducerUsername(e.target.value)}
-                        className="mt-1 text-right" 
-                        placeholder="برای ورود به سیستم"
+                        className="mt-1 text-right"
+                        placeholder="نام کاربری برای ورود به سیستم"
                         required
                       />
                     </div>
                     <div>
                       <Label htmlFor="producerPassword" className="text-right">رمز عبور *</Label>
                       <Input 
-                        type="password"
-                        id="producerPassword"
+                        type="password" 
+                        id="producerPassword" 
                         value={newProducerPassword}
                         onChange={(e) => setNewProducerPassword(e.target.value)}
-                        className="mt-1 text-right"
-                        placeholder={isEditing ? 'برای تغییر رمز، رمز جدید را وارد کنید' : 'رمز عبور'}
+                        className="mt-1 text-right" 
+                        placeholder="رمز عبور"
+                        required={!isEditing}
                       />
+                      {isEditing && <p className="text-xs text-muted-foreground mt-1">در صورت عدم نیاز به تغییر رمز، این فیلد را خالی بگذارید.</p>}
                     </div>
-                    <Button type="submit" className="w-full">
-                      {isEditing ? 'بروزرسانی تهیه‌کننده' : 'افزودن تهیه‌کننده'}
-                    </Button>
+                    <Button type="submit" className="w-full">{isEditing ? 'بروزرسانی' : 'افزودن'}</Button>
                     {isEditing && (
-                      <Button 
-                        type="button" 
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditingProducer(null);
-                          setNewProducerName('');
-                          setNewProducerUsername('');
-                          setNewProducerPassword('');
-                          setNewProducerEmail('');
-                          setNewProducerPhone('');
-                          setNewProducerWorkplace('');
-                        }}
-                        variant="outline"
-                        className="w-full mt-2"
-                      >
-                        انصراف
+                      <Button type="button" variant="ghost" onClick={() => { setIsEditing(false); setEditingProducer(null); }} className="w-full mt-2">
+                        لغو ویرایش
                       </Button>
                     )}
                   </form>
@@ -725,4 +703,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
