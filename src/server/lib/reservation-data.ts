@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { readJsonFile, writeJsonFile } from '@/lib/fs-utils';
 import type { StudioReservationRequest } from '@/types';
+
+// This interface is crucial for correctly typing the nested structure of reservations.json
 interface ReservationsData {
   reservations: StudioReservationRequest[];
 }
@@ -23,7 +25,9 @@ function calculateDuration(startTime: string, endTime: string): number {
 // Helper function to get reservations from JSON file
 async function getStoredReservations(): Promise<StudioReservationRequest[]> {
   try {
+    // Correctly type the expected data structure from the JSON file.
     const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
+    // Return the nested reservations array, or an empty array if data is null.
     return data?.reservations || [];
   } catch (error) {
     console.error('Error reading reservations file:', error);
@@ -34,13 +38,13 @@ async function getStoredReservations(): Promise<StudioReservationRequest[]> {
 // Helper function to save reservations to JSON file
 async function saveReservations(reservations: StudioReservationRequest[]): Promise<void> {
   try {
-    // Recalculate duration for all producer reservations before saving to fix any bad data.
     const correctedReservations = reservations.map(r => {
         if (r.type === 'producer') {
             r.studioServices.hoursPerDay = calculateDuration(r.dateTime.startTime, r.dateTime.endTime);
         }
         return r;
     });
+    // Wrap the array in the expected { reservations: [...] } structure.
     await writeJsonFile(RESERVATIONS_FILE, { reservations: correctedReservations });
   } catch (error) {
     console.error('Error saving reservations:', error);
@@ -74,7 +78,7 @@ export async function updateReservationStatusServer(requestId: string, newStatus
     const index = reservations.findIndex(r => r.id === requestId);
     if (index !== -1) {
       reservations[index].status = newStatus;
-      reservations[index].updatedAt = new Date(); // Update timestamp
+      reservations[index].updatedAt = new Date();
       await saveReservations(reservations);
     } else {
       throw new Error('Reservation not found');
@@ -92,8 +96,8 @@ export async function assignEngineerToServer(reservationId: string, engineerIds:
     if (index !== -1) {
       reservations[index].engineers = engineerIds;
       reservations[index].engineerCount = engineerCount;
+      reservations[index].status = 'finalized';
       reservations[index].updatedAt = new Date();
-      // Ensure engineerId is removed if it exists for backward compatibility
       if ('engineerId' in reservations[index]) {
         delete (reservations[index] as any).engineerId;
       }

@@ -82,6 +82,7 @@ const getStatusLabel = (status: StudioReservationRequest['status']): string => {
     case 'read': return 'خوانده شده';
     case 'confirmed': return 'تایید شده';
     case 'cancelled': return 'رد شده';
+    case 'finalized': return 'نهایی شده';
     default: return status;
   }
 };
@@ -92,6 +93,7 @@ const getStatusBadgeVariant = (status: StudioReservationRequest['status']): "def
     case 'read': return 'secondary';
     case 'confirmed': return 'default'; // Uses primary color, good for positive
     case 'cancelled': return 'outline';
+    case 'finalized': return 'default';
     default: return 'secondary';
   }
 };
@@ -152,7 +154,7 @@ export default function AdminPanelPage() {
   }, [isAdmin, router, toast]);
 
   const newSystemRequests = allRequests.filter(req => req.status === 'new' || req.status === 'read');
-  const finalizedSystemRequests = allRequests.filter(req => req.status === 'confirmed');
+  const finalizedSystemRequests = allRequests.filter(req => req.status === 'confirmed' || req.status === 'finalized');
   const rejectedSystemRequests = allRequests.filter(req => req.status === 'cancelled');
 
   const handleAddProducer = async (event: FormEvent<HTMLFormElement>) => {
@@ -421,8 +423,13 @@ export default function AdminPanelPage() {
           </Button>
         </CardFooter>
       )}
-      {request.status === 'confirmed' && (
+      {(request.status === 'confirmed' || request.status === 'finalized') && (
         <CardFooter className="flex justify-end gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/producer/edit-request/${request.id}`}>
+              ویرایش <Edit3 className="me-2 h-4 w-4" />
+            </Link>
+          </Button>
           <Button onClick={() => handleDeleteRequest(request.id)} size="sm" variant="destructive">
             حذف <Trash2 className="me-2 h-4 w-4" />
           </Button>
@@ -678,39 +685,36 @@ export default function AdminPanelPage() {
                     <div>
                       <Label htmlFor="producerPassword" className="text-right">رمز عبور *</Label>
                       <Input 
-                        type="password" 
-                        id="producerPassword" 
+                        type="password"
+                        id="producerPassword"
                         value={newProducerPassword}
                         onChange={(e) => setNewProducerPassword(e.target.value)}
-                        className="mt-1 text-right" 
-                        placeholder="یک رمز عبور قوی انتخاب کنید"
-                        required
+                        className="mt-1 text-right"
+                        placeholder={isEditing ? 'برای تغییر رمز، رمز جدید را وارد کنید' : 'رمز عبور'}
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        {isEditing ? 'بروزرسانی تهیه‌کننده' : 'افزودن تهیه‌کننده'} 
-                        {isEditing ? <Edit3 className="me-2 h-4 w-4"/> : <PlusSquare className="me-2 h-4 w-4"/>}
+                    <Button type="submit" className="w-full">
+                      {isEditing ? 'بروزرسانی تهیه‌کننده' : 'افزودن تهیه‌کننده'}
+                    </Button>
+                    {isEditing && (
+                      <Button 
+                        type="button" 
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditingProducer(null);
+                          setNewProducerName('');
+                          setNewProducerUsername('');
+                          setNewProducerPassword('');
+                          setNewProducerEmail('');
+                          setNewProducerPhone('');
+                          setNewProducerWorkplace('');
+                        }}
+                        variant="outline"
+                        className="w-full mt-2"
+                      >
+                        انصراف
                       </Button>
-                      {isEditing && (
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => {
-                            setIsEditing(false);
-                            setEditingProducer(null);
-                            setNewProducerName('');
-                            setNewProducerUsername('');
-                            setNewProducerPassword('');
-                            setNewProducerEmail('');
-                            setNewProducerPhone('');
-                            setNewProducerWorkplace('');
-                          }}
-                        >
-                          انصراف
-                        </Button>
-                      )}
-                    </div>
+                    )}
                   </form>
                 </CardContent>
               </Card>

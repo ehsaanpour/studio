@@ -4,6 +4,15 @@ import type { StudioReservationRequest, PersonalInformation, ReservationDateTime
 import type { GuestFormValues } from '@/components/forms/guest-reservation-form';
 import type { ProducerFormValues } from '@/components/forms/producer-reservation-form';
 
+// Helper to format date to YYYY-MM-DD
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+
 export async function getReservations(): Promise<StudioReservationRequest[]> {
   try {
     const response = await fetch('/api/reservations');
@@ -29,13 +38,11 @@ export async function getReservationById(id: string): Promise<StudioReservationR
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const reservation = await response.json();
+    // The reservationDate is now a string, so we don't need to convert it.
+    // We also convert submittedAt to a Date object.
     return {
       ...reservation,
       submittedAt: new Date(reservation.submittedAt),
-      dateTime: {
-        ...reservation.dateTime,
-        reservationDate: new Date(reservation.dateTime.reservationDate),
-      },
     };
   } catch (error) {
     console.error('Error fetching reservation by ID from API:', error);
@@ -65,11 +72,10 @@ export async function addReservation(
     };
     cateringServices = guestData.cateringServices as CateringService[];
     programName = 'Guest Reservation';
-    const guestLocalDate = guestData.reservationDate;
-    const guestUtcDate = new Date(Date.UTC(guestLocalDate.getFullYear(), guestLocalDate.getMonth(), guestLocalDate.getDate()));
+    const reservationDateString = formatDateToYYYYMMDD(guestData.reservationDate);
     requestDetailsBase = {
       dateTime: {
-        reservationDate: guestUtcDate,
+        reservationDate: reservationDateString,
         startTime: guestData.reservationStartTime,
         endTime: guestData.reservationEndTime,
       },
@@ -89,11 +95,10 @@ export async function addReservation(
     const producerData = formData as ProducerFormValues;
     requester = producerName;
     programName = producerData.programName;
-    const producerLocalDate = producerData.reservationDate;
-    const producerUtcDate = new Date(Date.UTC(producerLocalDate.getFullYear(), producerLocalDate.getMonth(), producerLocalDate.getDate()));
+    const reservationDateString = formatDateToYYYYMMDD(producerData.reservationDate);
     requestDetailsBase = {
       dateTime: {
-        reservationDate: producerUtcDate,
+        reservationDate: reservationDateString,
         startTime: producerData.reservationStartTime,
         endTime: producerData.reservationEndTime,
       },

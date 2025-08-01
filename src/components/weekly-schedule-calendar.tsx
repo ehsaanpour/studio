@@ -8,8 +8,6 @@ import {
   startOfWeek,
   endOfWeek,
   eachDayOfInterval,
-  isSameDay,
-  parseISO,
 } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
@@ -17,6 +15,15 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Helper to parse date strings (both YYYY-MM-DD and ISO) to a local Date object.
+const parseYYYYMMDD = (dateString: string): Date => {
+  if (dateString.includes('T')) {
+    dateString = dateString.split('T')[0];
+  }
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 // Define studio colors
 const STUDIO_COLORS: { [key: string]: string } = {
@@ -30,7 +37,6 @@ const getStudioDisplayName = (studioName: string): string => {
   if (studioName.toLowerCase().includes("studio2")) return "استودیو ۲ (فرانسه)";
   if (studioName.toLowerCase().includes("studio5")) return "استودیو ۵ (-۳)";
   if (studioName.toLowerCase().includes("studio6")) return "استودیو ۶ (مایا ناصر)";
-  // Default to a known studio or a generic name if no match
   return "نامشخص"; 
 };
 
@@ -38,7 +44,7 @@ interface Reservation {
   id: string;
   programName: string;
   dateTime: {
-    reservationDate: string; // ISO string
+    reservationDate: string; // YYYY-MM-DD string or ISO string
     startTime: string;
     endTime: string;
   };
@@ -80,7 +86,7 @@ export function WeeklyScheduleCalendar() {
       try {
         const [reservationsResponse, engineersResponse] = await Promise.all([
           fetch('/api/reservations'),
-          fetch('/api/engineer/list'), // Assuming this endpoint exists
+          fetch('/api/engineer/list'),
         ]);
 
         if (!reservationsResponse.ok) {
@@ -99,17 +105,14 @@ export function WeeklyScheduleCalendar() {
         }, {} as Record<string, string>);
 
         const fetchedPrograms: Program[] = reservations
-          .filter((res) => res.status === 'confirmed')
+          .filter((res) => res.status === 'confirmed' || res.status === 'finalized')
           .map((res) => {
-            const d = parseISO(res.dateTime.reservationDate);
-            // HACK: Correct for timezone issue where stored UTC date is a day behind.
-            const correctedDate = new Date(d.setDate(d.getDate() + 1));
             return {
               id: res.id,
               name: res.programName,
               time: `${res.dateTime.startTime} - ${res.dateTime.endTime}`,
               studio: getStudioDisplayName(res.studio),
-              date: correctedDate,
+              date: parseYYYYMMDD(res.dateTime.reservationDate),
               engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
               isRecurring: res.repetition?.type === 'weekly_1month' || res.repetition?.type === 'weekly_3months',
             }
@@ -125,7 +128,7 @@ export function WeeklyScheduleCalendar() {
     };
 
     fetchPrograms();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   const handlePrevWeek = () => {
     setCurrentWeekStart((prev) => subWeeks(prev, 1));
@@ -139,11 +142,14 @@ export function WeeklyScheduleCalendar() {
   const daysInWeek = eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
 
   const programsByDay: { [key: string]: Program[] } = {};
-  daysInWeek.forEach(day => {
-    const dayKey = formatDateFnsJalali(day, 'yyyy-MM-dd', { locale: faIR });
-    programsByDay[dayKey] = programs.filter(program => isSameDay(program.date, day));
+  programs.forEach(program => {
+      const dayKey = formatDateFnsJalali(program.date, 'yyyy-MM-dd', { locale: faIR });
+      if (!programsByDay[dayKey]) {
+          programsByDay[dayKey] = [];
+      }
+      programsByDay[dayKey].push(program);
   });
-
+  
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -234,4 +240,3 @@ export function WeeklyScheduleCalendar() {
     </Card>
   );
 }
-

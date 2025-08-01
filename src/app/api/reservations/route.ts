@@ -15,10 +15,10 @@ export async function GET(request: Request) {
         return NextResponse.json({ message: 'Reservation not found' }, { status: 404 });
       }
     }
-    return NextResponse.json(reservations);
+    return NextResponse.json(reservations, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('API Error fetching reservations:', error);
-    return NextResponse.json({ message: 'Error fetching reservations' }, { status: 500 });
+    return NextResponse.json({ message: 'Error fetching reservations' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
@@ -46,4 +46,3 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: 'Error updating reservation status' }, { status: 500 });
   }
 }
-

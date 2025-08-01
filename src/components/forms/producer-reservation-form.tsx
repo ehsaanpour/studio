@@ -13,21 +13,30 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea'; 
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react'; 
+import { CalendarIcon, CheckCircle, Loader2 } from 'lucide-react';
 import { format as formatDateFnsJalali } from 'date-fns-jalali';
 import faIR from 'date-fns-jalali/locale/fa-IR';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import { addReservation, updateReservation } from '@/lib/reservation-store';
-import { PersianDatePicker } from '@/components/ui/persian-date-picker'; 
+import { PersianDatePicker } from '@/components/ui/persian-date-picker';
 import type { AdditionalService, StudioReservationRequest } from '@/types';
 import { getProgramNames } from '@/lib/program-name-store';
+
+// Helper to parse date strings (both YYYY-MM-DD and ISO) to a local Date object.
+const parseYYYYMMDD = (dateString: string): Date => {
+  if (dateString.includes('T')) {
+    dateString = dateString.split('T')[0];
+  }
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export const producerFormSchema = z.object({
   programName: z.string().min(1, 'نام برنامه الزامی است.'),
@@ -100,7 +109,7 @@ const additionalServiceItems: { id: AdditionalService; label: string }[] = [
 ];
 
 interface ProducerReservationFormProps {
-  producerName: string; 
+  producerName: string;
   existingReservation?: StudioReservationRequest | null;
 }
 
@@ -144,7 +153,7 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
     resolver: zodResolver(producerFormSchema),
     defaultValues: existingReservation ? {
       programName: existingReservation.programName || '',
-      reservationDate: existingReservation.dateTime?.reservationDate ? new Date(existingReservation.dateTime.reservationDate) : new Date(),
+      reservationDate: existingReservation.dateTime?.reservationDate ? parseYYYYMMDD(existingReservation.dateTime.reservationDate) : new Date(),
       reservationStartTime: existingReservation.dateTime?.startTime || '09:00',
       reservationEndTime: existingReservation.dateTime?.endTime || '17:00',
       studioSelection: existingReservation.studio,
@@ -669,8 +678,8 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
         <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
           {isLoading ? (
             <>
-              <span>در حال ثبت...</span>
               <Loader2 className="me-2 h-4 w-4 animate-spin" />
+              <span>در حال ثبت...</span>
             </>
           ) : (
             'ثبت درخواست'
@@ -680,4 +689,3 @@ export function ProducerReservationForm({ producerName, existingReservation }: P
     </Form>
   );
 }
-

@@ -31,7 +31,7 @@ export interface PersonalInformation {
 }
 
 export interface ReservationDateTime {
-  reservationDate: Date;
+  reservationDate: string; // YYYY-MM-DD
   startTime: string; // HH:MM
   endTime: string; // HH:MM
 }
@@ -90,7 +90,7 @@ export interface StudioReservationRequest {
   details?: string;
   repetition?: Repetition;
   
-  status: 'new' | 'read' | 'confirmed' | 'cancelled';
+  status: 'new' | 'read' | 'confirmed' | 'cancelled' | 'finalized';
   submittedAt: Date;
   updatedAt?: Date;
   engineers?: string[];
@@ -116,3 +116,4 @@ export interface Producer {
   email: string;
   phone: string;
   workplace?: string;
+}
