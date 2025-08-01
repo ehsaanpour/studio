@@ -339,7 +339,7 @@ export default function ProducerPanelPage() {
                                   {request.programName} - {getStudioLabel(request.studio)}
                                 </CardTitle>
                                 <CardDescription>
-                                  تاریخ: {format(new Date(request.dateTime.reservationDate), 'PPP', { locale: faIR })}
+                                  تاریخ: {format(new Date(request.dateTime.reservationDate), 'EEEE, PPP', { locale: faIR })}
                                   <br />
                                   ساعت: {request.dateTime.startTime} تا {request.dateTime.endTime}
                                 </CardDescription>
@@ -390,4 +390,3 @@ export default function ProducerPanelPage() {
     </div>
   );
 }
-
