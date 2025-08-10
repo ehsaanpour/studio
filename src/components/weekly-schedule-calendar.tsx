@@ -202,13 +202,18 @@ export function WeeklyScheduleCalendar() {
                 <tr>
                   {daysInWeek.map((day) => {
                     const dayKey = formatDateFnsJalali(day, 'yyyy-MM-dd', { locale: faIR });
-                    const programsForThisDay = programsByDay[dayKey] || [];
+                    const programsForThisDay = (programsByDay[dayKey] || []).sort((a, b) => {
+                      // Extract start time from "HH:MM - HH:MM" format and compare
+                      const startTimeA = a.time.split(' - ')[0];
+                      const startTimeB = b.time.split(' - ')[0];
+                      return startTimeA.localeCompare(startTimeB);
+                    });
                     return (
                       <td key={dayKey} className="p-2 border align-top min-w-[150px]">
                         {programsForThisDay.length > 0 ? (
                           <div className="space-y-2">
                             {programsForThisDay.map(program => (
-                              <div key={program.id} className={cn("p-2 rounded-md text-xs", STUDIO_COLORS[program.studio])}>
+                              <div key={program.id} className={cn("p-2 rounded-md text-sm", STUDIO_COLORS[program.studio])}>
                                 <div className="font-semibold flex items-center">
                                   {program.name}
                                   {program.isRecurring && (
