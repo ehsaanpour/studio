@@ -10,21 +10,24 @@ const RESERVATIONS_FILE = 'reservations.json';
 
 export async function POST(request: Request) {
   try {
-    const { dateTime, studio } = await request.json();
+    const { dateTime, studio, reservationIdToExclude } = await request.json();
     
     // Read existing reservations
     const data = await readJsonFile<ReservationsData>(RESERVATIONS_FILE);
-    const reservations = data.reservations || [];
+    const reservations = data?.reservations || [];
 
-    // Check for overlapping reservations
-    const hasOverlap = reservations.some(reservation => {
+    // Find conflicting reservations (same studio, same date, overlapping time)
+    const conflictingReservation = reservations.find(reservation => {
       // Skip cancelled reservations
       if (reservation.status === 'cancelled') return false;
+      
+      // Skip the reservation being excluded (for edit operations)
+      if (reservationIdToExclude && reservation.id === reservationIdToExclude) return false;
 
-      // Check if it's the same studio
+      // Only check reservations for the SAME studio
       if (reservation.studio !== studio) return false;
 
-      // Check if it's the same date
+      // Only check reservations for the same date
       const reservationDate = new Date(reservation.dateTime.reservationDate);
       const requestedDate = new Date(dateTime.reservationDate);
       if (reservationDate.toDateString() !== requestedDate.toDateString()) return false;
@@ -42,9 +45,28 @@ export async function POST(request: Request) {
       );
     });
 
+    const isAvailable = !conflictingReservation;
+    
+    let message;
+    if (isAvailable) {
+      message = 'این زمان و استودیو قابل رزرو است.';
+    } else if (conflictingReservation) {
+      // Get studio display name for the message
+      const studioDisplayNames: { [key: string]: string } = {
+        "studio2": "استودیو ۲ (فرانسه)",
+        "studio5": "استودیو ۵ (-۳)",
+        "studio6": "استودیو ۶ (مایا ناصر)"
+      };
+      const studioName = studioDisplayNames[studio] || studio;
+      const conflictTime = `${conflictingReservation.dateTime.startTime} - ${conflictingReservation.dateTime.endTime}`;
+      message = `این زمان در ${studioName} قبلاً رزرو شده است (${conflictTime}). لطفاً زمان دیگری انتخاب کنید یا استودیو دیگری را امتحان کنید.`;
+    } else {
+      message = 'این زمان قبلاً رزرو شده است.';
+    }
+
     return NextResponse.json({ 
-      isAvailable: !hasOverlap,
-      message: hasOverlap ? 'این زمان قبلاً رزرو شده است.' : 'این زمان قابل رزرو است.'
+      isAvailable,
+      message
     });
   } catch (error) {
     console.error('Error checking reservation availability:', error);
@@ -53,4 +75,4 @@ export async function POST(request: Request) {
       message: 'خطا در بررسی دسترسی‌پذیری زمان رزرو.'
     }, { status: 500 });
   }
-} 
+}
