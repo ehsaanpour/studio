@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { StudioReservationRequest } from "@/types";
+import { StudioReservationRequest, Engineer } from "@/types";
 import { FileSpreadsheet, Download } from "lucide-react";
 import ExcelJS from 'exceljs';
 import { format as formatPersian, getMonth, getYear, setMonth, addMonths, setDate, getDate } from 'date-fns-jalali';
@@ -20,6 +20,7 @@ type MonthOption = {
 
 export default function ExcelExportClient() {
   const [reservations, setReservations] = useState<StudioReservationRequest[]>([]);
+  const [engineers, setEngineers] = useState<Engineer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>("");
@@ -80,10 +81,16 @@ export default function ExcelExportClient() {
   async function fetchData() {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/reservations", { cache: "no-store" });
-      if (!response.ok) throw new Error("Failed to fetch reservations");
-      const data = await response.json();
-      setReservations(data);
+      const [reservationsRes, engineersRes] = await Promise.all([
+        fetch("/api/reservations", { cache: "no-store" }),
+        fetch("/api/engineer/list", { cache: "no-store" })
+      ]);
+      if (!reservationsRes.ok) throw new Error("Failed to fetch reservations");
+      if (!engineersRes.ok) throw new Error("Failed to fetch engineers");
+      const reservationsData = await reservationsRes.json();
+      const engineersData = await engineersRes.json();
+      setReservations(reservationsData);
+      setEngineers(engineersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
@@ -101,7 +108,7 @@ export default function ExcelExportClient() {
       const reservationDate = new Date(reservation.dateTime.reservationDate);
       return reservationDate >= selectedOption.startDate && 
              reservationDate <= selectedOption.endDate &&
-             reservation.status === 'confirmed';
+             (reservation.status === 'confirmed' || reservation.status === 'finalized');
     });
   }, [reservations, selectedMonth, monthOptions]);
 
@@ -140,7 +147,11 @@ export default function ExcelExportClient() {
         'تاریخ ثبت': new Date(reservation.submittedAt).toLocaleDateString('fa-IR'),
         'تاریخ آخرین به‌روزرسانی': reservation.updatedAt ? new Date(reservation.updatedAt).toLocaleDateString('fa-IR') : '',
         'تعداد مهندس': reservation.engineerCount || '',
-        'مهندسین اختصاص یافته': reservation.engineers?.join(', ') || ''
+        'مهندسین اختصاص یافته': reservation.engineers ? 
+          reservation.engineers
+            .map(id => engineers.find(e => e.id === id)?.name)
+            .filter(Boolean)
+            .join(', ') : ''
       }));
 
       // Convert to CSV format
@@ -209,7 +220,11 @@ export default function ExcelExportClient() {
         'تاریخ ثبت': new Date(reservation.submittedAt).toLocaleDateString('fa-IR'),
         'تاریخ آخرین به‌روزرسانی': reservation.updatedAt ? new Date(reservation.updatedAt).toLocaleDateString('fa-IR') : '',
         'تعداد مهندس': reservation.engineerCount || '',
-        'مهندسین اختصاص یافته': reservation.engineers?.join(', ') || ''
+        'مهندسین اختصاص یافته': reservation.engineers ? 
+          reservation.engineers
+            .map(id => engineers.find(e => e.id === id)?.name)
+            .filter(Boolean)
+            .join(', ') : ''
       }));
 
       const workbook = new ExcelJS.Workbook();
@@ -322,4 +337,3 @@ export default function ExcelExportClient() {
     </div>
   );
 }
-

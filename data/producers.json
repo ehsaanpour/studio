@@ -96,6 +96,14 @@
       "password": "$2b$10$qX5QXoGWIn32PR0.0uQXqOfp60A73EAJedotFny1qGLtmf0q349H.",
       "email": "asadi@gmail.com",
       "phone": "09376277721"
+    },
+    {
+      "id": "1754914575383",
+      "name": "احسان فتاحی",
+      "username": "fattahi",
+      "password": "$2b$10$CTS8WHLI9T74/drlu8L/huqSEMgdmpYZmYShw/Jr5l3leTctLyEba",
+      "email": "fattahi@gmail.com",
+      "phone": "09125908635"
     }
   ]
 }

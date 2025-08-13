@@ -56,12 +56,13 @@
         "type": "no_repetition"
       },
       "engineers": [
-        "1753091480060"
+        "1753091480060",
+        "1754722674809"
       ],
-      "engineerCount": 1,
+      "engineerCount": 2,
       "submittedAt": "2025-07-29T09:11:26.392Z",
       "status": "finalized",
-      "updatedAt": "2025-08-01T13:58:16.946Z"
+      "updatedAt": "2025-08-11T09:04:09.082Z"
     },
     {
       "id": "1753795814942",
@@ -85,12 +86,13 @@
         "type": "no_repetition"
       },
       "engineers": [
-        "1753091509592"
+        "1753091509592",
+        "1753091480060"
       ],
-      "engineerCount": 1,
+      "engineerCount": 2,
       "submittedAt": "2025-07-29T13:30:14.942Z",
-      "status": "confirmed",
-      "updatedAt": "2025-07-30T16:24:43.798Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:04:35.545Z"
     },
     {
       "id": "1753978152186",
@@ -114,12 +116,13 @@
         "type": "weekly_3months"
       },
       "engineers": [
-        "1753091480060"
+        "1753091480060",
+        "1754722674809"
       ],
-      "engineerCount": 1,
+      "engineerCount": 2,
       "submittedAt": "2025-07-31T16:09:12.186Z",
       "status": "finalized",
-      "updatedAt": "2025-08-02T13:20:20.462Z"
+      "updatedAt": "2025-08-11T09:04:57.515Z"
     },
     {
       "id": "1753978152246",
@@ -849,13 +852,15 @@
       "repetition": {
         "type": "weekly_3months"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091515954"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754142032880-zia5eak",
       "submittedAt": "2025-08-02T13:40:32.880Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-02T13:44:16.108Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:01:41.960Z"
     },
     {
       "type": "producer",
@@ -1190,14 +1195,15 @@
         "type": "no_repetition"
       },
       "engineers": [
-        "1753091480060"
+        "1753091480060",
+        "1754722674809"
       ],
-      "engineerCount": 1,
+      "engineerCount": 2,
       "cateringServices": [],
       "id": "1754241852938-z93zg9d",
       "submittedAt": "2025-08-03T17:24:12.938Z",
       "status": "finalized",
-      "updatedAt": "2025-08-04T08:02:02.572Z"
+      "updatedAt": "2025-08-11T09:05:07.715Z"
     },
     {
       "type": "producer",
@@ -1223,13 +1229,15 @@
       "repetition": {
         "type": "weekly_3months"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091480060"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754295206539-49shmvl",
       "submittedAt": "2025-08-04T08:13:26.539Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-04T08:15:39.458Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:01:46.844Z"
     },
     {
       "type": "producer",
@@ -1607,13 +1615,15 @@
       "repetition": {
         "type": "weekly_3months"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091515954"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754295255762-vlk8dny",
       "submittedAt": "2025-08-04T08:14:15.762Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-04T08:15:34.890Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:03:49.853Z"
     },
     {
       "type": "producer",
@@ -1991,13 +2001,15 @@
       "repetition": {
         "type": "weekly_3months"
       },
-      "engineers": [],
+      "engineers": [
+        "1753790677405"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754295313509-739w9yg",
       "submittedAt": "2025-08-04T08:15:13.509Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-04T08:15:30.284Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:03:41.608Z"
     },
     {
       "type": "producer",
@@ -2409,13 +2421,15 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
+      "engineers": [
+        "1753091480060"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754654677410-f5qyp5w",
       "submittedAt": "2025-08-08T12:04:37.410Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-09T03:50:52.672Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:00:20.235Z"
     },
     {
       "type": "producer",
@@ -2442,13 +2456,16 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
-      "engineerCount": 1,
+      "engineers": [
+        "1754902835226",
+        "1754722674809"
+      ],
+      "engineerCount": 2,
       "cateringServices": [],
       "id": "1754671726266-h825faa",
       "submittedAt": "2025-08-08T16:48:46.266Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-09T04:27:41.501Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:02:53.834Z"
     },
     {
       "type": "producer",
@@ -2476,13 +2493,15 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
+      "engineers": [
+        "1754902835226"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754672357171-hp7rbjn",
       "submittedAt": "2025-08-08T16:59:17.171Z",
-      "status": "confirmed",
-      "updatedAt": "2025-08-09T07:45:31.056Z"
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:00:44.147Z"
     },
     {
       "type": "producer",
@@ -2534,13 +2553,47 @@
       "repetition": {
         "type": "no_repetition"
       },
-      "engineers": [],
+      "engineers": [
+        "1753790677405"
+      ],
       "engineerCount": 1,
       "cateringServices": [],
       "id": "1754757106205-n7kwcvs",
       "submittedAt": "2025-08-09T16:31:46.205Z",
+      "status": "finalized",
+      "updatedAt": "2025-08-11T09:00:51.897Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "بدون خط",
+      "dateTime": {
+        "reservationDate": "2025-08-12",
+        "startTime": "20:00",
+        "endTime": "21:30"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 1.5
+      },
+      "additionalServices": [
+        "makeup_artist",
+        "live_communication",
+        "service_staff"
+      ],
+      "details": "ارتباط زنده اینترنتی گوگل میت",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1754893269927-8f3ttb5",
+      "submittedAt": "2025-08-11T06:21:09.927Z",
       "status": "confirmed",
-      "updatedAt": "2025-08-09T16:38:05.209Z"
+      "updatedAt": "2025-08-11T09:00:04.879Z"
     }
   ]
 }
