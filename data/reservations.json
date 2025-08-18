@@ -2594,6 +2594,593 @@
       "submittedAt": "2025-08-11T06:21:09.927Z",
       "status": "confirmed",
       "updatedAt": "2025-08-11T09:00:04.879Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "خوش نویس",
+      "programName": "ایران تودی",
+      "dateTime": {
+        "reservationDate": "2025-08-17",
+        "startTime": "14:30",
+        "endTime": "17:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2.5
+      },
+      "additionalServices": [],
+      "details": "",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755348924799-4v82rfb",
+      "submittedAt": "2025-08-16T12:55:24.799Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-16T12:58:02.512Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "بدون خط",
+      "dateTime": {
+        "reservationDate": "2025-08-19",
+        "startTime": "15:00",
+        "endTime": "17:30"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2.5
+      },
+      "additionalServices": [
+        "videowall",
+        "makeup_artist",
+        "service_staff",
+        "crane",
+        "live_communication"
+      ],
+      "details": "ارتباط انلاین. نیاز به استفاده از گوگل میت یا زوم",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755416946222-bjh3s0x",
+      "submittedAt": "2025-08-17T07:49:06.222Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-17T08:55:17.138Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "جواد عین آبادی",
+      "programName": "Trend",
+      "dateTime": {
+        "reservationDate": "2025-08-26",
+        "startTime": "10:00",
+        "endTime": "13:00"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 3
+      },
+      "additionalServices": [
+        "makeup_artist"
+      ],
+      "details": "",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755421362021-df2l5nv",
+      "submittedAt": "2025-08-17T09:02:42.021Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T05:06:43.667Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "احسان فتاحی",
+      "programName": "Quick Take",
+      "dateTime": {
+        "reservationDate": "2025-08-18",
+        "startTime": "11:00",
+        "endTime": "12:30"
+      },
+      "studio": "studio2",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 1.5
+      },
+      "additionalServices": [],
+      "details": "نیاز به راه اندازی اتوکیو",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755430639079-olq80sp",
+      "submittedAt": "2025-08-17T11:37:19.079Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T05:06:45.077Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "خوش نویس",
+      "programName": "True Promise",
+      "dateTime": {
+        "reservationDate": "2025-08-19",
+        "startTime": "09:00",
+        "endTime": "12:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "with_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 3
+      },
+      "additionalServices": [
+        "videowall",
+        "crane"
+      ],
+      "details": "",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755434025151-oia84ud",
+      "submittedAt": "2025-08-17T12:33:45.151Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T05:06:46.114Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "خوش نویس",
+      "programName": "ایران تودی",
+      "dateTime": {
+        "reservationDate": "2025-08-18",
+        "startTime": "14:00",
+        "endTime": "16:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [],
+      "details": "",
+      "repetition": {
+        "type": "no_repetition"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755434260072-nf0uefx",
+      "submittedAt": "2025-08-17T12:37:40.072Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T05:52:37.497Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-08-25",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-ndsrf1f",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:02.594Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-09-01",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-wwbp565",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:11.092Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-09-08",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-d8v6v2a",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:15.130Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-09-15",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-0jxg9sc",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:17.019Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-09-22",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-95fbybz",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:17.961Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-09-29",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-t4cvxbe",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:19.291Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-10-06",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-ofgvrte",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:20.257Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-10-13",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-k8e4p3u",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:21.138Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-10-20",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-ljhnpb1",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:22.281Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-10-27",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-ipbt4z3",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:23.149Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-11-03",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-t08vywr",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:23.918Z"
+    },
+    {
+      "type": "producer",
+      "requesterName": "کاوه تقوایی",
+      "programName": "شکاف اقتصادی",
+      "dateTime": {
+        "reservationDate": "2025-11-10",
+        "startTime": "15:00",
+        "endTime": "17:00"
+      },
+      "studio": "studio6",
+      "studioServices": {
+        "serviceType": "without_crew",
+        "numberOfDays": 1,
+        "hoursPerDay": 2
+      },
+      "additionalServices": [
+        "videowall",
+        "xdcam",
+        "crane",
+        "makeup_artist",
+        "service_staff"
+      ],
+      "details": "در استودیو مایا ناصر",
+      "repetition": {
+        "type": "weekly_3months"
+      },
+      "engineers": [],
+      "engineerCount": 1,
+      "cateringServices": [],
+      "id": "1755496743474-zjyaaau",
+      "submittedAt": "2025-08-18T05:59:03.474Z",
+      "status": "confirmed",
+      "updatedAt": "2025-08-18T06:13:26.586Z"
     }
   ]
 }

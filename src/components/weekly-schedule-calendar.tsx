@@ -54,6 +54,9 @@ interface Reservation {
     type: string;
   };
   engineers?: string[];
+  studioServices: {
+    serviceType: 'with_crew' | 'without_crew';
+  };
 }
 
 interface Engineer {
@@ -69,6 +72,7 @@ interface Program {
   date: Date;
   engineers: string[];
   isRecurring: boolean;
+  serviceType: string;
 }
 
 const WEEK_DAYS_PERSIAN_FULL = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
@@ -115,7 +119,8 @@ export function WeeklyScheduleCalendar() {
               date: parseYYYYMMDD(res.dateTime.reservationDate),
               engineers: res.engineers?.map(id => engineerMap[id]).filter(Boolean) || [],
               isRecurring: res.repetition?.type === 'weekly_1month' || res.repetition?.type === 'weekly_3months',
-            }
+              serviceType: res.studioServices?.serviceType === 'with_crew' ? 'با عوامل' : 'بدون عوامل',
+            };
           });
 
         setPrograms(fetchedPrograms);
@@ -222,6 +227,7 @@ export function WeeklyScheduleCalendar() {
                                 </div>
                                 <div>{program.time}</div>
                                 <div>{program.studio}</div>
+                                <div>{program.serviceType}</div>
                                 {program.engineers.length > 0 && (
                                   <div className="pt-1 mt-1 border-t border-white/50">
                                     {program.engineers.join(', ')}
@@ -245,3 +251,4 @@ export function WeeklyScheduleCalendar() {
     </Card>
   );
 }
+

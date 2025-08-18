@@ -104,6 +104,15 @@
       "password": "$2b$10$CTS8WHLI9T74/drlu8L/huqSEMgdmpYZmYShw/Jr5l3leTctLyEba",
       "email": "fattahi@gmail.com",
       "phone": "09125908635"
+    },
+    {
+      "id": "1755420974803",
+      "name": "جواد عین آبادی",
+      "username": "javad",
+      "password": "$2b$10$ZXGVTG0g6b6T.E44rYSCG.UMnDOUZkhJK3YEFQ4ZV0Mr3ricSD86G",
+      "email": "eynabadi@gmail.com",
+      "phone": "09388600141",
+      "workplace": "پرس"
     }
   ]
 }
