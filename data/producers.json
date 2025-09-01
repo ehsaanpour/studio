@@ -113,6 +113,22 @@
       "email": "eynabadi@gmail.com",
       "phone": "09388600141",
       "workplace": "پرس"
+    },
+    {
+      "id": "1755508156303",
+      "name": "حسین موسوی",
+      "username": "mousavi",
+      "password": "$2b$10$MI9w4MQQczq2yad1ioQoD.9IxsjwMB0OxYbHY.66hUD5KJmZuHUEq",
+      "email": "",
+      "phone": "09391614855"
+    },
+    {
+      "id": "1756198092902",
+      "name": "نوبخت",
+      "username": "nobakht",
+      "password": "$2b$10$o8zldftGFdomr3ulNLEdwuCMA6hNiUdmk7GQY3NsTQqGtBjj64Ama",
+      "email": "",
+      "phone": "09190187612"
     }
   ]
 }
